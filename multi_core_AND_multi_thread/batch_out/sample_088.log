@@ -1,0 +1,51 @@
+OpenMP worker threads = 4
+Loaded config:
+  fc = 3000000000.000 Hz
+  fs = 1000000.000 Hz
+  PRF = 10000.000 Hz
+  pulse width = 0.000010000 s
+  sweep BW = 100000.000 Hz
+  pulses = 128
+  fast-time samples = 100
+  lambda = 0.099930819 m
+  pulse samples = 10
+[run 1] load=1.004 ms, pulse_ready=0.364 ms, pulse_apply=0.642 ms, pulse_total=1.006 ms, mti=0.117 ms, mtd=0.236 ms, doppler_total=0.353 ms, cfar=0.314 ms, total=2.786 ms, detections=10
+[run 2] load=1.011 ms, pulse_ready=0.118 ms, pulse_apply=0.491 ms, pulse_total=0.609 ms, mti=0.146 ms, mtd=0.221 ms, doppler_total=0.368 ms, cfar=0.289 ms, total=2.408 ms, detections=10
+[run 3] load=1.122 ms, pulse_ready=0.169 ms, pulse_apply=0.516 ms, pulse_total=0.685 ms, mti=0.178 ms, mtd=0.208 ms, doppler_total=0.386 ms, cfar=0.282 ms, total=2.601 ms, detections=10
+[run 4] load=0.788 ms, pulse_ready=0.042 ms, pulse_apply=0.479 ms, pulse_total=0.521 ms, mti=0.148 ms, mtd=0.199 ms, doppler_total=0.347 ms, cfar=0.280 ms, total=2.056 ms, detections=10
+[run 5] load=0.810 ms, pulse_ready=0.040 ms, pulse_apply=0.480 ms, pulse_total=0.520 ms, mti=0.121 ms, mtd=0.224 ms, doppler_total=0.345 ms, cfar=0.285 ms, total=2.085 ms, detections=10
+
+CA-CFAR detections: 10
+Showing up to 30 detections:
+idx range_bin doppler_bin range(m) vel(m/s) power threshold
+0 47 73 6895.23 31.23 2.089030e-09 1.190605e-09
+1 46 73 6745.33 31.23 1.963388e-09 1.198963e-09
+2 48 73 7045.12 31.23 1.924680e-09 1.180571e-09
+3 45 73 6595.43 31.23 1.770840e-09 1.194605e-09
+4 49 73 7195.02 31.23 1.608190e-09 1.168898e-09
+5 44 73 6445.54 31.23 1.456729e-09 1.156821e-09
+6 47 72 6895.23 27.32 1.269286e-09 1.141584e-09
+7 50 73 7344.92 31.23 1.226455e-09 1.136035e-09
+8 48 72 7045.12 27.32 1.223656e-09 1.131449e-09
+9 46 72 6745.33 27.32 1.155171e-09 1.152368e-09
+Strongest detection after CA-CFAR:
+  Range bin    = 47
+  Doppler bin  = 73
+  Range        = 6895.23 m
+  Radial vel.  = 31.23 m/s
+  Power        = 2.089030e-09
+  Threshold    = 1.190605e-09
+Print Time: 0.000044759 sec
+
+Average over 5 runs:
+  load               = 0.947 ms (0.000946907 sec)
+  pulse_ready        = 0.147 ms (0.000146640 sec)
+  pulse_apply        = 0.521 ms (0.000521459 sec)
+  pulse_total        = 0.668 ms (0.000668099 sec)
+  mti                = 0.142 ms (0.000141808 sec)
+  mtd                = 0.218 ms (0.000217674 sec)
+  doppler_total      = 0.359 ms (0.000359482 sec)
+  cfar               = 0.290 ms (0.000289881 sec)
+  total              = 2.387 ms (0.002387404 sec)
+  algo_only          = 1.317 ms (0.001317463 sec)
+  detections         = 10.00

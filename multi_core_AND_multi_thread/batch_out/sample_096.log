@@ -1,0 +1,58 @@
+OpenMP worker threads = 4
+Loaded config:
+  fc = 3000000000.000 Hz
+  fs = 1000000.000 Hz
+  PRF = 10000.000 Hz
+  pulse width = 0.000010000 s
+  sweep BW = 100000.000 Hz
+  pulses = 128
+  fast-time samples = 100
+  lambda = 0.099930819 m
+  pulse samples = 10
+[run 1] load=1.311 ms, pulse_ready=0.365 ms, pulse_apply=0.693 ms, pulse_total=1.058 ms, mti=0.121 ms, mtd=0.230 ms, doppler_total=0.351 ms, cfar=0.306 ms, total=3.147 ms, detections=17
+[run 2] load=1.363 ms, pulse_ready=0.111 ms, pulse_apply=0.541 ms, pulse_total=0.652 ms, mti=0.156 ms, mtd=0.442 ms, doppler_total=0.598 ms, cfar=0.320 ms, total=3.063 ms, detections=17
+[run 3] load=0.891 ms, pulse_ready=1.101 ms, pulse_apply=0.584 ms, pulse_total=1.685 ms, mti=0.202 ms, mtd=0.687 ms, doppler_total=0.889 ms, cfar=0.468 ms, total=4.063 ms, detections=17
+[run 4] load=0.688 ms, pulse_ready=0.045 ms, pulse_apply=0.473 ms, pulse_total=0.518 ms, mti=0.147 ms, mtd=0.203 ms, doppler_total=0.350 ms, cfar=0.568 ms, total=2.248 ms, detections=17
+[run 5] load=1.244 ms, pulse_ready=0.048 ms, pulse_apply=0.739 ms, pulse_total=0.787 ms, mti=0.182 ms, mtd=0.228 ms, doppler_total=0.410 ms, cfar=0.296 ms, total=2.868 ms, detections=17
+
+CA-CFAR detections: 17
+Showing up to 30 detections:
+idx range_bin doppler_bin range(m) vel(m/s) power threshold
+0 68 11 10043.05 -210.79 4.106250e-09 3.571586e-09
+1 69 11 10192.94 -210.79 3.592378e-09 3.574711e-09
+2 48 73 7045.12 31.23 2.317097e-09 1.072512e-09
+3 47 73 6895.23 31.23 2.245097e-09 1.082904e-09
+4 49 73 7195.02 31.23 2.001948e-09 1.124624e-09
+5 46 73 6745.33 31.23 1.797509e-09 1.138836e-09
+6 50 73 7344.92 31.23 1.554283e-09 1.205668e-09
+7 93 15 13790.45 -195.18 1.476834e-09 1.161319e-09
+8 94 15 13940.35 -195.18 1.476488e-09 1.046367e-09
+9 48 72 7045.12 27.32 1.356357e-09 1.069045e-09
+10 47 72 6895.23 27.32 1.341949e-09 1.074495e-09
+11 45 73 6595.43 31.23 1.301639e-09 1.181683e-09
+12 95 15 14090.25 -195.18 1.228167e-09 9.670605e-10
+13 46 72 6745.33 27.32 1.141746e-09 1.124029e-09
+14 94 56 13940.35 -35.13 6.535628e-11 4.757465e-11
+15 93 56 13790.45 -35.13 6.339040e-11 5.266108e-11
+16 95 56 14090.25 -35.13 5.251187e-11 4.752804e-11
+Strongest detection after CA-CFAR:
+  Range bin    = 68
+  Doppler bin  = 11
+  Range        = 10043.05 m
+  Radial vel.  = -210.79 m/s
+  Power        = 4.106250e-09
+  Threshold    = 3.571586e-09
+Print Time: 0.000068889 sec
+
+Average over 5 runs:
+  load               = 1.099 ms (0.001099363 sec)
+  pulse_ready        = 0.334 ms (0.000333881 sec)
+  pulse_apply        = 0.606 ms (0.000606126 sec)
+  pulse_total        = 0.940 ms (0.000940007 sec)
+  mti                = 0.162 ms (0.000161830 sec)
+  mtd                = 0.358 ms (0.000357689 sec)
+  doppler_total      = 0.520 ms (0.000519518 sec)
+  cfar               = 0.391 ms (0.000391400 sec)
+  total              = 3.078 ms (0.003077786 sec)
+  algo_only          = 1.851 ms (0.001850925 sec)
+  detections         = 17.00

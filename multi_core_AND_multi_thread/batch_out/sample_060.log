@@ -1,0 +1,54 @@
+OpenMP worker threads = 4
+Loaded config:
+  fc = 3000000000.000 Hz
+  fs = 1000000.000 Hz
+  PRF = 10000.000 Hz
+  pulse width = 0.000010000 s
+  sweep BW = 100000.000 Hz
+  pulses = 128
+  fast-time samples = 100
+  lambda = 0.099930819 m
+  pulse samples = 10
+[run 1] load=1.835 ms, pulse_ready=1.688 ms, pulse_apply=0.725 ms, pulse_total=2.414 ms, mti=0.121 ms, mtd=0.248 ms, doppler_total=0.369 ms, cfar=0.486 ms, total=5.238 ms, detections=13
+[run 2] load=1.311 ms, pulse_ready=0.057 ms, pulse_apply=0.537 ms, pulse_total=0.594 ms, mti=0.156 ms, mtd=0.228 ms, doppler_total=0.384 ms, cfar=0.302 ms, total=2.724 ms, detections=13
+[run 3] load=0.979 ms, pulse_ready=0.042 ms, pulse_apply=0.468 ms, pulse_total=0.510 ms, mti=0.163 ms, mtd=0.199 ms, doppler_total=0.362 ms, cfar=0.294 ms, total=2.273 ms, detections=13
+[run 4] load=0.756 ms, pulse_ready=0.040 ms, pulse_apply=0.478 ms, pulse_total=0.518 ms, mti=0.149 ms, mtd=0.202 ms, doppler_total=0.351 ms, cfar=0.293 ms, total=2.042 ms, detections=13
+[run 5] load=0.698 ms, pulse_ready=0.042 ms, pulse_apply=0.493 ms, pulse_total=0.535 ms, mti=0.129 ms, mtd=0.214 ms, doppler_total=0.344 ms, cfar=0.371 ms, total=2.071 ms, detections=13
+
+CA-CFAR detections: 13
+Showing up to 30 detections:
+idx range_bin doppler_bin range(m) vel(m/s) power threshold
+0 48 73 7045.12 31.23 2.481056e-09 1.386143e-09
+1 47 73 6895.23 31.23 2.452233e-09 1.401656e-09
+2 49 73 7195.02 31.23 2.201643e-09 1.381703e-09
+3 46 73 6745.33 31.23 2.169780e-09 1.418695e-09
+4 34 8 4946.58 -222.50 2.081079e-09 2.036653e-09
+5 45 73 6595.43 31.23 1.731680e-09 1.404479e-09
+6 50 73 7344.92 31.23 1.707502e-09 1.384323e-09
+7 48 72 7045.12 27.32 1.546730e-09 1.365650e-09
+8 47 72 6895.23 27.32 1.530993e-09 1.383465e-09
+9 49 72 7195.02 27.32 1.457619e-09 1.357803e-09
+10 68 27 10043.05 -148.33 1.427963e-09 1.408518e-09
+11 67 27 9893.15 -148.33 1.401188e-09 1.384031e-09
+12 87 42 12891.08 -89.78 5.898060e-10 5.840194e-10
+Strongest detection after CA-CFAR:
+  Range bin    = 48
+  Doppler bin  = 73
+  Range        = 7045.12 m
+  Radial vel.  = 31.23 m/s
+  Power        = 2.481056e-09
+  Threshold    = 1.386143e-09
+Print Time: 0.000054555 sec
+
+Average over 5 runs:
+  load               = 1.116 ms (0.001116052 sec)
+  pulse_ready        = 0.374 ms (0.000373792 sec)
+  pulse_apply        = 0.540 ms (0.000540359 sec)
+  pulse_total        = 0.914 ms (0.000914152 sec)
+  mti                = 0.144 ms (0.000143559 sec)
+  mtd                = 0.218 ms (0.000218407 sec)
+  doppler_total      = 0.362 ms (0.000361966 sec)
+  cfar               = 0.349 ms (0.000349348 sec)
+  total              = 2.870 ms (0.002869622 sec)
+  algo_only          = 1.625 ms (0.001625466 sec)
+  detections         = 13.00
