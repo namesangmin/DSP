@@ -49,36 +49,4 @@ int load_complex_bin_single(const char *path, int rows, int cols, ComplexMatrix 
 #define CMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])
 #define RMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])
 
-/* 기존 선언들은 그대로 두고, 아래만 추가 */
-
-typedef struct {
-    double i;
-    double q;
-} RawIQSample;
-
-typedef struct {
-    int fd;
-    size_t map_len;
-    void *mapped;
-
-    const unsigned char *data_base;   /* OFFSET 이후 실제 IQ 데이터 시작 주소 */
-    int num_pulses;
-    int num_fast_time_samples;
-    size_t pulse_bytes;
-    size_t header_offset;
-} DatMmapLoader;
-
-/* mmap으로 파일 열기 */
-int dat_mmap_open(const char *path,
-                  int num_pulses,
-                  int num_fast_time_samples,
-                  size_t header_offset,
-                  DatMmapLoader *ctx);
-
-/* pulse_idx 번째 pulse 시작 주소 얻기 */
-const RawIQSample *dat_mmap_get_pulse(const DatMmapLoader *ctx, int pulse_idx);
-
-/* 닫기 */
-void dat_mmap_close(DatMmapLoader *ctx);
-
 #endif
