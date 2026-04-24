@@ -5,7 +5,6 @@
 #include <stdatomic.h>
 #include "common.h"
 #include "loader.h"
-#include "loader_fread.h"
 
 #define NUM_BUFFERS 3
 

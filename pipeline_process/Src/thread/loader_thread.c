@@ -4,7 +4,7 @@
 #include "core_set.h"
 #include "timer.h" 
 #include "loader_thread.h"
-#include "loader_fread.h" // 고속 로드 함수 헤더 추가
+#include "loader.h" // 고속 로드 함수 헤더 추가
 
 void *loader_thread_main(void *arg)
 {

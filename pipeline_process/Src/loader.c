@@ -4,11 +4,12 @@
 #include <ctype.h>
 #include <complex.h>
 #include <sys/stat.h>
-
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
 #include <errno.h>
+
+// mmap 사용할 때
+// #include <fcntl.h>
+// #include <unistd.h>
+// #include <sys/mman.h>
 
 #include "loader.h"
 
