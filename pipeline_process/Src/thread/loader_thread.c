@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-#include "common.h"
-#include "queue.h"
 #include "core_set.h"
 #include "timer.h" 
 #include "loader_thread.h"
