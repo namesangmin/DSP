@@ -7,7 +7,7 @@
 #include <math.h>
 #include <complex.h>
 
-#include "pulse_mmap.h"
+#include "pulse_compress_thread.h"
 #include "pulse.h"
 
 #ifndef M_PI

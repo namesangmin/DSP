@@ -50,7 +50,7 @@
 #include "cfar.h"
 #include "writer.h"
 
-#include "loader_mmap.h"
+#include "loader_fread.h"
 #include "pulse_mmap.h"
 
 #include "common.h"
@@ -82,6 +82,9 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
     pthread_t th_loader, th_even, th_odd, th_post;
+    
+    ComplexMatrix my_matrix;
+
     double t0, t1;
 
     memset(&file, 0, sizeof(file));
@@ -113,10 +116,13 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
         pulse_compress_ctx_destroy(&wk_even.ctx);
         pulse_compress_ctx_destroy(&wk_odd.ctx);
+        
         pulse_queue_destroy(&even_q);
         pulse_queue_destroy(&odd_q);
+        
         free_complex_matrix(&file.pc);
-        dat_mmap_close(&file.mm);
+        //dat_mmap_close(&file.mm);
+        
         pthread_cond_destroy(&file.post_cv);
         pthread_mutex_destroy(&file.post_mtx);
         return -1;
@@ -125,22 +131,24 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pulse_timing->filter_ready_ms = t1 - t0;
 
     t0 = now_ms();
-    if (dat_mmap_open(dat_path,
-                      meta->num_pulses,
-                      meta->num_fast_time_samples,
-                      232,
-                      &file.mm) != 0) {
+    if (load_complex_bin_all_fread(
+        dat_path, 
+        meta->num_pulses, 
+        meta->num_fast_time_samples,
+        232,
+        &my_matrix) != 0) {
         pthread_cond_destroy(&file.post_cv);
         pthread_mutex_destroy(&file.post_mtx);
         return -1;
     }
+
     t1 = now_ms();
     *load_ms = t1 - t0;
 
     if (alloc_complex_matrix(meta->num_fast_time_samples,
                              meta->num_pulses,
                              &file.pc) != 0) {
-        dat_mmap_close(&file.mm);
+        //dat_mmap_close(&file.mm);
         pthread_cond_destroy(&file.post_cv);
         pthread_mutex_destroy(&file.post_mtx);
         return -1;
@@ -149,8 +157,11 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     if (pulse_queue_init(&even_q, 64) != 0 || pulse_queue_init(&odd_q, 64) != 0) {
         pulse_queue_destroy(&even_q);
         pulse_queue_destroy(&odd_q);
+
         free_complex_matrix(&file.pc);
-        dat_mmap_close(&file.mm);
+
+        //dat_mmap_close(&file.mm);
+
         pthread_cond_destroy(&file.post_cv);
         pthread_mutex_destroy(&file.post_mtx);
         return -1;

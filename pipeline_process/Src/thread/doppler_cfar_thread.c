@@ -1,8 +1,6 @@
 #include <stddef.h>
 
-#include "common.h"
-#include "core_set.h"
-#include "thread_func.h"
+#include "doppler_cfar_thread.h"
 #include "timer.h"
 
 void *post_thread_main(void *arg)
