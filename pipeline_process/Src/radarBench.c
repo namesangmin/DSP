@@ -272,20 +272,9 @@ static long read_cpu_ticks(void) {
     return (long)(utime + stime);
 }
 
-static int ends_with(const char *s, const char *suffix) {
-    size_t ls, lt;
-    if (!s || !suffix) return 0;
-    ls = strlen(s);
-    lt = strlen(suffix);
-    if (ls < lt) return 0;
-    return strcmp(s + ls - lt, suffix) == 0;
-}
-
 static void print_usage(const char *prog) {
     fprintf(stderr,
-        "Usage (File/Dir): %s <metadata.csv> <target_path> <imag_path_or_DUMMY> <version> [runs]\n", prog);
-    
-    fprintf(stderr, "version: matlab, mmap, single\n");
+        "Usage (File/Dir): %s <metadata.csv> <target_path> <imag_path_or_DUMMY> [runs]\n", prog);
 }
 
 static void print_metadata(const RadarMeta *meta) {
@@ -308,7 +297,6 @@ static void print_metadata(const RadarMeta *meta) {
 static void print_average_line(const char *name, double avg_ms) {
     printf("  %-18s = %.3f ms (%.9f sec)\n", name, avg_ms, avg_ms / 1000.0);
 }
-
 
 // --------------------------------------------------------------------------------
 // 단일 파일 처리
@@ -594,8 +582,7 @@ int main(int argc, char **argv) {
     const char *metadata_path = argv[1];
     const char *target_path   = argv[2];
     const char *imag_path     = argv[3];
-    const char *version = argv[4];
-    int runs = (argc >= 6) ? atoi(argv[5]) : 1;
+    int runs = (argc >= 5) ? atoi(argv[4]) : 1;
     if (runs <= 0) runs = 1;
 
     struct stat st;

@@ -33,16 +33,6 @@ void free_real_matrix(RealMatrix *m);
 
 int load_metadata(const char *path, RadarMeta *meta);
 
-int load_complex_csv_pair(const char *real_path,
-                          const char *imag_path,
-                          int rows, int cols,
-                          ComplexMatrix *out);
-
-int load_complex_bin_pair_matlab(const char *real_path,
-                                 const char *imag_path,
-                                 int rows, int cols,
-                                 ComplexMatrix *out);
-
 // dat 파일
 int load_complex_bin_single(const char *path, int rows, int cols, ComplexMatrix *out);
 
