@@ -23,7 +23,7 @@ void *post_thread_main(void *arg)
         a->status = -1;
         return NULL;
     }
-
+    //double doppler_firstTime = now_ms();
     if (doppler_fft_processing_ex(&a->file->pc,
                                   a->meta,
                                   a->meta->num_pulses,
@@ -32,6 +32,7 @@ void *post_thread_main(void *arg)
         a->status = -1;
         return NULL;
     }
+   // a->doppler_timing->timing = now_ms() - doppler_firstTime;
 
     double t0 = now_ms();
 

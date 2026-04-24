@@ -109,7 +109,6 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pthread_cond_init(&file.post_cv, NULL);
 
     t0 = now_ms();
-
     if (pulse_compress_ctx_init(meta, &wk_even.ctx) != 0 ||
         pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
         pulse_compress_ctx_destroy(&wk_even.ctx);
@@ -122,7 +121,6 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         pthread_mutex_destroy(&file.post_mtx);
         return -1;
     }
-
     t1 = now_ms();
     pulse_timing->filter_ready_ms = t1 - t0;
 
@@ -192,23 +190,24 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     post.cpu_id = 3;
     post.status = 0;
 
-    pthread_create(&th_post,   NULL, post_thread_main,   &post);
-    t0 = now_ms();
-
+    
     pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
-
+    
+    //t0 = now_ms();
     pthread_join(th_loader, NULL);
     pthread_join(th_even,   NULL);
     pthread_join(th_odd,    NULL);
-    t1 = now_ms();
-    pulse_timing->compression_ms = t1 - t0;
+    //t1 = now_ms();
+    //pulse_timing->compression_ms = t1 - t0;
+    
 
     if (file.error && !file.post_ready) {
         pipeline_signal_post(&file, 1);
     }
-
+    
+    pthread_create(&th_post,   NULL, post_thread_main,   &post);
     pthread_join(th_post, NULL);
 
     pulse_queue_destroy(&even_q);

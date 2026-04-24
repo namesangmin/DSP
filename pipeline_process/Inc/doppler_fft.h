@@ -6,6 +6,7 @@
 typedef struct {
     double mti_ms;
     double mtd_ms;
+    double timing;
 } DopplerFftTiming;
 
 int doppler_fft_processing_ex(const ComplexMatrix *rxsig_pc, const RadarMeta *meta, int nfft,

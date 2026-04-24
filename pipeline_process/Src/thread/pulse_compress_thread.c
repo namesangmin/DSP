@@ -17,11 +17,13 @@ void *worker_thread_main(void *arg)
 
     int num_range_bins = a->file->pc.rows;
     int num_pulses = a->file->pc.cols;
+    double local_compress_ms = 0.0;  // ← 이 스레드의 압축 누적 시간
 
     while (pulse_queue_pop(a->q, &job)) {
         if (a->file->error) {
             break;
         }
+      double t0 = now_ms();  // ← 압축 시작
 
         // 1. 임시 버퍼(out_buf)에 해당 펄스의 압축 결과를 받아옵니다. (Fast-time 연속)
         if (pulse_compress_one(&a->ctx, job.raw, a->ctx.out_buf) != 0) {
@@ -31,6 +33,7 @@ void *worker_thread_main(void *arg)
             pipeline_signal_post(a->file, 1);
             return NULL;
         }
+        local_compress_ms += now_ms() - t0;  // ← 압축 끝, 누적
 
         // 2. 도플러 FFT를 위해 세로(Column) 방향으로 Stride Write 수행
         // CMAT_AT(pc, r, p) 구조와 완벽히 일치시킵니다.
@@ -45,6 +48,7 @@ void *worker_thread_main(void *arg)
         }
     }
 
+   a->compress_ms = local_compress_ms;  // ← WorkerArgs에 필드 추가 필요
     return NULL;
 }
 

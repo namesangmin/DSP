@@ -78,6 +78,7 @@ typedef struct {
     int cpu_id;
     // [추가] 로더의 순수 작업 시간을 저장할 결과 포인터
     double *out_loader_ms; 
+    double load_time_sum;
 } LoaderArgs;
 
 typedef struct {
@@ -92,6 +93,8 @@ typedef struct {
     // PulseChunkQueue *odd_q;   /* <--- 타입 변경됨 */
     int cpu_id;
     PulseCompressCtx ctx;
+    
+    double compress_ms;  // ← 추가
 } WorkerArgs;
 
 typedef struct {
