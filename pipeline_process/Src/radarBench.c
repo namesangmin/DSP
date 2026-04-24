@@ -203,17 +203,14 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     post.cpu_id = 3;
     post.status = 0;
 
-
     pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
     
-    //t0 = now_ms();
     pthread_join(th_loader, NULL);
     pthread_join(th_even,   NULL);
     pthread_join(th_odd,    NULL);
-    //t1 = now_ms();
-    //pulse_timing->compression_ms = t1 - t0;
+
     // 두 워커의 압축 시간 중 max를 쓰는 게 wall time 관점
     // (병렬로 돌았으니까 실제 경과 시간은 더 오래 걸린 쪽)
     pulse_timing->compression_ms = (wk_even.compress_ms > wk_odd.compress_ms)
@@ -230,7 +227,9 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pulse_queue_destroy(&even_q);
     pulse_queue_destroy(&odd_q);
     free_complex_matrix(&file.pc);
-    dat_mmap_close(&file.mm);
+
+    //dat_mmap_close(&file.mm);
+    
     pthread_cond_destroy(&file.post_cv);
     pthread_mutex_destroy(&file.post_mtx);
 

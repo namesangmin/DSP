@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "pipeline_set.h"
+#include "pulse_compress_thread.h"
 
 typedef struct {
     PulseJob *buf;
@@ -20,7 +21,7 @@ typedef struct {
 typedef struct {
     const RadarMeta *meta;
     int total_pulses;
-    PipelineFile *file;
+    PipelinePool *file;
     PulseQueue *q;
     PulseQueue *even_q;
     PulseQueue *odd_q;
