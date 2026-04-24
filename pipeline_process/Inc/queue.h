@@ -4,6 +4,7 @@
 #include "common.h"
 #include "pipeline_set.h"
 #include "pulse_compress_thread.h"
+#include "pulse.h"
 
 typedef struct {
     PulseJob *buf;

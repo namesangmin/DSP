@@ -40,4 +40,5 @@ typedef struct {
     int error;
 } PipelinePool; // 이름도 멋지게 Pool로 변경!
 
+int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool *pool);
 #endif

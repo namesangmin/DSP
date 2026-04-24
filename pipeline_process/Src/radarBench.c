@@ -50,11 +50,10 @@
 #include "cfar.h"
 #include "writer.h"
 
-#include "loader_fread.h"
-
 #include "common.h"
 #include "queue.h"
 #include "core_set.h"
+#include "pipeline_set.h"
 
 #include "doppler_cfar_thread.h"
 #include "loader_thread.h"
@@ -229,7 +228,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     free_complex_matrix(&file.pc);
 
     //dat_mmap_close(&file.mm);
-    
+
     pthread_cond_destroy(&file.post_cv);
     pthread_mutex_destroy(&file.post_mtx);
 
