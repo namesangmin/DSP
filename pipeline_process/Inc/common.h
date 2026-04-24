@@ -105,7 +105,7 @@ typedef struct {
     DopplerFftTiming *doppler_timing;
     double *cfar_ms;
     int cpu_id;
-    int status;
+    int status;    
 } PostArgs;
 
 typedef struct {

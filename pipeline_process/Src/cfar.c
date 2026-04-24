@@ -4,7 +4,8 @@
 #include "cfar.h"
 #include "doppler_fft.h"
 
-static int cmp_detection_power_desc(const void *a, const void *b) {
+static int cmp_detection_power_desc(const void *a, const void *b) 
+{
     const Detection *da = (const Detection *)a;
     const Detection *db = (const Detection *)b;
     if (da->power > db->power) return -1;
@@ -12,7 +13,8 @@ static int cmp_detection_power_desc(const void *a, const void *b) {
     return 0;
 }
 
-void free_detection_list(DetectionList *list) {
+void free_detection_list(DetectionList *list)
+ {
     if (!list) return;
     free(list->items);
     list->items = NULL;
@@ -20,7 +22,8 @@ void free_detection_list(DetectionList *list) {
 }
 
 static double rect_sum(const double *ii, int cols,
-                       int r1, int c1, int r2, int c2) {
+                       int r1, int c1, int r2, int c2) 
+                       {
     int stride = cols + 1;
     int rr1 = r1;
     int cc1 = c1;
@@ -33,13 +36,15 @@ static double rect_sum(const double *ii, int cols,
          + ii[(size_t)rr1 * (size_t)stride + (size_t)cc1];
 }
 
-static double get_range_from_bin_matlab(int range_idx_1based, double fs_hz) {
+static double get_range_from_bin_matlab(int range_idx_1based, double fs_hz) 
+{
     const double c = 299792458.0;
     return ((double)(range_idx_1based - 1)) * c / (2.0 * fs_hz);
 }
 
 static double get_velocity_from_bin_matlab(int doppler_idx_1based, int nfft,
-                                           double prf_hz, double fc_hz) {
+                                           double prf_hz, double fc_hz) 
+                                           {
     const double c = 299792458.0;
     double lambda = c / fc_hz;
     double fd = ((double)(doppler_idx_1based - 1) - floor((double)nfft / 2.0))
@@ -52,7 +57,8 @@ int cfar_detect(const ComplexMatrix *doppler_map,
                 int numTrainR, int numTrainD,
                 int numGuardR, int numGuardD,
                 int rankIdx, double scale,
-                DetectionList *out) {
+                DetectionList *out) 
+{
     int numRange = doppler_map->rows;
     int numDoppler = doppler_map->cols;
     int winR = numTrainR + numGuardR;

@@ -6,7 +6,7 @@
 #include "queue.h"
 #include "core_set.h"
 #include "thread_func.h"
-
+#include "timer.h"
 #if 1
 void *worker_thread_main(void *arg)
 {
@@ -46,6 +46,8 @@ void *worker_thread_main(void *arg)
         if (done == a->total_pulses) {
             pipeline_signal_post(a->file, 0);
         }
+        //local_compress_ms += now_ms() - t0;  // ← 압축 끝, 누적
+
     }
 
    a->compress_ms = local_compress_ms;  // ← WorkerArgs에 필드 추가 필요

@@ -201,7 +201,11 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pthread_join(th_odd,    NULL);
     //t1 = now_ms();
     //pulse_timing->compression_ms = t1 - t0;
-    
+    // 두 워커의 압축 시간 중 max를 쓰는 게 wall time 관점
+    // (병렬로 돌았으니까 실제 경과 시간은 더 오래 걸린 쪽)
+    pulse_timing->compression_ms = (wk_even.compress_ms > wk_odd.compress_ms)
+                                    ? wk_even.compress_ms
+                                    : wk_odd.compress_ms;
 
     if (file.error && !file.post_ready) {
         pipeline_signal_post(&file, 1);

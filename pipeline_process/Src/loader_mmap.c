@@ -64,7 +64,7 @@ int dat_mmap_open(const char *path,
     }
 
     ctx->map_len = (size_t)st.st_size;
-    ctx->mapped = mmap(NULL, ctx->map_len, PROT_READ, MAP_PRIVATE | MAP_POPULATE, ctx->fd, 0);
+    ctx->mapped = mmap(NULL, ctx->map_len, PROT_READ, MAP_PRIVATE, ctx->fd, 0); // MAP_PRIVATE | MAP_POPULATE
     if (ctx->mapped == MAP_FAILED) {
         perror("mmap");
         close(ctx->fd);

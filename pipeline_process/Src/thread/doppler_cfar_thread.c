@@ -34,6 +34,8 @@ void *post_thread_main(void *arg)
     }
    // a->doppler_timing->timing = now_ms() - doppler_firstTime;
 
+
+   // cfar 시간 측정
     double t0 = now_ms();
 
     int numTrainR = 4;
