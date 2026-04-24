@@ -51,12 +51,14 @@
 #include "writer.h"
 
 #include "loader_fread.h"
-#include "pulse_mmap.h"
 
 #include "common.h"
 #include "queue.h"
 #include "core_set.h"
-#include "thread_func.h"
+
+#include "doppler_cfar_thread.h"
+#include "loader_thread.h"
+#include "pulse_compress_thread.h"
 
 
 /* mmap + 4-thread pipeline:
@@ -65,6 +67,8 @@
    core2 = odd pulse compression
    core3 = Doppler + CFAR
 */
+
+// init
 static int run_mmap_pipeline_single_file(const char *dat_path,
                                          const RadarMeta *meta,
                                          double *load_ms,
@@ -160,8 +164,6 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
 
         free_complex_matrix(&file.pc);
 
-        //dat_mmap_close(&file.mm);
-
         pthread_cond_destroy(&file.post_cv);
         pthread_mutex_destroy(&file.post_mtx);
         return -1;
@@ -201,7 +203,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     post.cpu_id = 3;
     post.status = 0;
 
-    
+
     pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
