@@ -200,9 +200,8 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     // ld.cpu_id = 0;
     // ld.out_loader_ms = &loader_pure_work_ms; // 주소 전달
 
-    pthread_create(&th_post,   NULL, post_thread_main,   &post);
-
     t0 = now_ms();
+    pthread_create(&th_post,   NULL, post_thread_main,   &post);
     pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
