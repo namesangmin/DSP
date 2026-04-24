@@ -356,99 +356,16 @@ int process_single_file(const char *metadata_path,
             config_printed = 1;
         }
 
-        /* ---------- 입력 경로 선택 ---------- */
-        if (ends_with(real_path, ".bin") &&
-            ends_with(imag_path, ".bin") &&
-            ends_with(version, "matlab")) {
-
-            t0 = now_ms();
-            if (load_complex_bin_pair_matlab(real_path,
-                                             imag_path,
-                                             meta.num_fast_time_samples,
-                                             meta.num_pulses,
-                                             &rx) != 0) {
-                return 1;
-            }
-            load_ms = now_ms() - t0;
-            use_rx_path = 1;
-        }
-        else if (ends_with(real_path, ".dat") && ends_with(version, "single")) {
-
-            t0 = now_ms();
-            if (load_complex_bin_single(real_path,
-                                        meta.num_pulses,
-                                        meta.num_fast_time_samples,
-                                        &rx) != 0) {
-                return 1;
-            }
-            load_ms = now_ms() - t0;
-            use_rx_path = 1;
-        }
-        else if (ends_with(real_path, ".dat") && ends_with(version, "mmap")) {
-
-            if (run_mmap_pipeline_single_file(real_path,
+        if (run_mmap_pipeline_single_file(real_path,
                                               &meta,
                                               &load_ms,
                                               &pulse_timing,
                                               &doppler,
                                               &doppler_timing,
                                               &cfar_ms,
-                                              &det) != 0) {
-                return 1;
-            }
-
-        }
-        else {
-            t0 = now_ms();
-            if (load_complex_csv_pair(real_path,
-                                      imag_path,
-                                      meta.num_fast_time_samples,
-                                      meta.num_pulses,
-                                      &rx) != 0) {
-                return 1;
-            }
-            load_ms = now_ms() - t0;
-            use_rx_path = 1;
-        }
-
-        /* ---------- 일반 경로: rx -> pc -> doppler -> cfar ---------- */
-        if (use_rx_path) {
-            if (pulse_compression_ex(&rx, &meta, &pc, &pulse_timing) != 0) {
-                free_complex_matrix(&rx);
-                return 1;
-            }
-
-            if (doppler_fft_processing_ex(&pc,
-                                          &meta,
-                                          meta.num_pulses,
-                                          &doppler,
-                                          &doppler_timing) != 0) {
-                free_complex_matrix(&rx);
-                free_complex_matrix(&pc);
-                return 1;
-            }
-
-            t0 = now_ms();
-            int numTrainR = 4, numTrainD = 4, numGuardR = 1, numGuardD = 1;
-            int totalWindowCells = (2 * (numTrainR + numGuardR) + 1) * (2 * (numTrainD + numGuardD) + 1);
-            int guardAndCUTCells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
-            int rankIdx = ((totalWindowCells - guardAndCUTCells) + 1) / 2;
-
-            if (cfar_detect(&doppler,
-                            &meta,
-                            numTrainR,
-                            numTrainD,
-                            numGuardR,
-                            numGuardD,
-                            rankIdx,
-                            9.0,
-                            &det) != 0) {
-                free_complex_matrix(&rx);
-                free_complex_matrix(&pc);
-                free_complex_matrix(&doppler);
-                return 1;
-            }
-            cfar_ms = now_ms() - t0;
+                                              &det) != 0) 
+        {
+            return 1;
         }
 
         /* ---------- timing 정리 ---------- */
@@ -581,42 +498,17 @@ void process_directory(const char *dir_path, const char *metadata_path, const ch
         Detection best_det;
         int processed = 0;
 
-        if (ends_with(version, "single") || ends_with(version, "mmap")) {
-            snprintf(filepath, sizeof(filepath), "%s/%s", dir_path, filename);
-            struct stat st;
+        snprintf(filepath, sizeof(filepath), "%s/%s", dir_path, filename);
+        struct stat st;
 
-            if (stat(filepath, &st) == 0 && S_ISREG(st.st_mode)) {
-                printf("\n=========================================================\n");
-                printf("[FILE %d] Processing Integrated DAT: %s\n", valid_files + 1, filename);
-                printf("=========================================================\n");
-                // [수정됨] 매개변수 맨 끝에 &total_acc 전달
-                process_single_file(metadata_path, filepath, "DUMMY", version, runs, &best_det, &total_acc);
-                processed = 1;
-            }
-        } 
-        else if (strstr(filename, "real") != NULL &&
-                   (ends_with(filename, ".csv") || ends_with(filename, ".bin"))) {
-
-            char real_file[1024], imag_file[1024], imag_name[512];
-            snprintf(real_file, sizeof(real_file), "%s/%s", dir_path, filename);
-
-            char *real_ptr = strstr(filename, "real");
-            strncpy(imag_name, filename, (size_t)(real_ptr - filename));
-            imag_name[real_ptr - filename] = '\0';
-            strcat(imag_name, "imag");
-            strcat(imag_name, real_ptr + 4);
-
-            snprintf(imag_file, sizeof(imag_file), "%s/%s", dir_path, imag_name);
-
-            struct stat st;
-            if (stat(real_file, &st) == 0 && S_ISREG(st.st_mode)) {
-                printf("\n=========================================================\n");
-                printf("[FILE %d] Processing Paired Data: \n  Real: %s\n  Imag: %s\n", valid_files + 1, filename, imag_name);
-                printf("=========================================================\n");
-                // [수정됨] 매개변수 맨 끝에 &total_acc 전달
-                process_single_file(metadata_path, real_file, imag_file, version, runs, &best_det, &total_acc);
-                processed = 1;
-            }
+        if (stat(filepath, &st) == 0 && S_ISREG(st.st_mode)) {
+            printf("\n=========================================================\n");
+            printf("[FILE %d] Processing Integrated DAT: %s\n", valid_files + 1, filename);
+            printf("=========================================================\n");
+          
+            // [수정됨] 매개변수 맨 끝에 &total_acc 전달
+            process_single_file(metadata_path, filepath, "DUMMY", version, runs, &best_det, &total_acc);
+            processed = 1;
         }
 
         if (processed) {

@@ -7,6 +7,8 @@
 #include "loader.h"
 #include "loader_fread.h"
 
+#define NUM_BUFFERS 3
+
 // 1. 버퍼 상태 플래그 정의
 typedef enum {
     BUF_FREE = 0,       // 비어 있음 (압축 코어가 쓸 수 있음)
@@ -14,8 +16,6 @@ typedef enum {
     BUF_READY = 2,      // 압축 완료! (도플러가 읽어갈 수 있음)
     BUF_PROCESSING = 3  // 도플러/CFAR 코어가 읽고 연산 중
 } BufferState;
-
-#define NUM_BUFFERS 3
 
 // 2. 개별 버퍼 구조체 (배열 + 상태 + 완료카운트)
 typedef struct {
@@ -41,6 +41,7 @@ typedef struct {
     int error;
 } PipelinePool; // 이름도 멋지게 Pool로 변경!
 
+/*
 typedef struct {
     ComplexMatrix raw_data; // [수정] mmap 구조체 대신, fread로 읽어온 전체 데이터를 담을 공간!
     ComplexMatrix pc;       // 펄스 압축 결과
@@ -53,7 +54,7 @@ typedef struct {
     int post_ready;
     int error;
 } PipelineFile;
-
 void pipeline_signal_post(PipelineFile *file, int error_flag);
+*/
 
 #endif
