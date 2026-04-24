@@ -165,6 +165,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     ld.odd_q = &odd_q;
     ld.cpu_id = 0;
 
+    //짝수 큐
     wk_even.meta = meta;
     wk_even.total_pulses = meta->num_pulses;
     wk_even.file = &file;
