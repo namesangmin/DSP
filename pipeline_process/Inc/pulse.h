@@ -8,10 +8,26 @@ typedef struct {
     double compression_ms;
 } PulseTiming;
 
-int make_pulse_compression_filter(const RadarMeta *meta, int use_window, ComplexMatrix *h);
-int apply_pulse_compression_fft(const ComplexMatrix *x, const ComplexMatrix *h, ComplexMatrix *y, int *mf_delay);
+typedef struct {
+    ComplexMatrix h;
+    int input_len;
+    int filter_len;
+    int conv_len;
+    int nfft;
+    int mf_delay;
+    
+    double complex *out_buf;
+    double complex *H;
+    double complex *X;
+    double complex *Y;
+} PulseCompressCtx;
 
-int pulse_compression_ex(const ComplexMatrix *x, const RadarMeta *meta, ComplexMatrix *y, PulseTiming *timing);
-int pulse_compression(const ComplexMatrix *x, const RadarMeta *meta, ComplexMatrix *y);
+
+int make_pulse_compression_filter(const RadarMeta *meta, int use_window, ComplexMatrix *h);
+int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx);
+void pulse_compress_ctx_destroy(PulseCompressCtx *ctx);
+int pulse_compress_one(PulseCompressCtx *ctx,
+                       const RawIQSample *raw_pulse,
+                       double complex *out_range_bins);
 
 #endif

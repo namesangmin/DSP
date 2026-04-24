@@ -6,8 +6,6 @@
 #include "loader_thread.h"
 #include "loader_fread.h" // 고속 로드 함수 헤더 추가
 
-// ★ pipeline_signal_post 함수는 새로운 락-프리 구조에 의해 완전히 삭제되었습니다! ★
-
 void *loader_thread_main(void *arg)
 {
     LoaderArgs *a = (LoaderArgs *)arg;
@@ -44,7 +42,6 @@ void *loader_thread_main(void *arg)
     for (int pulse_idx = 0; pulse_idx < a->meta->num_pulses; ++pulse_idx) {
         PulseJob job;
         job.pulse_idx = pulse_idx;
-        // job.raw 포인터는 구조체에서 삭제했으므로 더 이상 넘기지 않습니다!
 
         // 짝수면 짝수 큐에, 홀수면 홀수 큐에 푸시
         PulseQueue *target_q = ((pulse_idx & 1) == 0) ? a->even_q : a->odd_q;

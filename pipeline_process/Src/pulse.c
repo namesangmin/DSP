@@ -3,64 +3,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <complex.h>
-#include "pulse.h"
-#include "timer.h"
+
+#include "pulse_compress_thread.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-static int next_power_of_two(int n) {
-    int p = 1;
-    while (p < n) p <<= 1;
-    return p;
-}
-
-static void bit_reverse_permute(double complex *x, int n) {
-    int i, j, bit;
-    for (i = 1, j = 0; i < n; ++i) {
-        bit = n >> 1;
-        while (j & bit) {
-            j ^= bit;
-            bit >>= 1;
-        }
-        j ^= bit;
-        if (i < j) {
-            double complex tmp = x[i];
-            x[i] = x[j];
-            x[j] = tmp;
-        }
-    }
-}
-
-static void fft_inplace(double complex *x, int n, int inverse) {
-    int len, i, j;
-    bit_reverse_permute(x, n);
-
-    for (len = 2; len <= n; len <<= 1) {
-        double angle = (inverse ? 2.0 : -2.0) * M_PI / (double)len;
-        double complex wlen = cos(angle) + I * sin(angle);
-
-        for (i = 0; i < n; i += len) {
-            double complex w = 1.0 + I * 0.0;
-            for (j = 0; j < len / 2; ++j) {
-                double complex u = x[i + j];
-                double complex v = x[i + j + len / 2] * w;
-                x[i + j] = u + v;
-                x[i + j + len / 2] = u - v;
-                w *= wlen;
-            }
-        }
-    }
-
-    if (inverse) {
-        for (i = 0; i < n; ++i) {
-            x[i] /= (double)n;
-        }
-    }
-}
 
 static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) {
     int n;
@@ -170,87 +121,155 @@ int make_pulse_compression_filter(const RadarMeta *meta, int use_window, Complex
     return 0;
 }
 
-int apply_pulse_compression_fft(const ComplexMatrix *x, const ComplexMatrix *h, ComplexMatrix *y, int *mf_delay) {
-    int rows = x->rows;
-    int cols = x->cols;
-    int L = h->rows;
-    int conv_len = rows + L - 1;
-    int nfft = next_power_of_two(conv_len);
+static int next_power_of_two_local(int n)
+{
+    int p = 1;
+    while (p < n) p <<= 1;
+    return p;
+}
 
-    double complex *H = NULL;
-    double complex *X = NULL;
-    double complex *Y = NULL;
+static void bit_reverse_permute_local(double complex *x, int n)
+{
+    int i, j, bit;
 
-    if (alloc_complex_matrix(rows, cols, y) != 0) return -1;
+    for (i = 1, j = 0; i < n; ++i) {
+        bit = n >> 1;
+        while (j & bit) {
+            j ^= bit;
+            bit >>= 1;
+        }
+        j ^= bit;
 
-    H = (double complex *)calloc((size_t)nfft, sizeof(double complex));
-    X = (double complex *)calloc((size_t)nfft, sizeof(double complex));
-    Y = (double complex *)calloc((size_t)nfft, sizeof(double complex));
-    if (!H || !X || !Y) {
-        free(H);
-        free(X);
-        free(Y);
-        free_complex_matrix(y);
-        return -1;
+        if (i < j) {
+            double complex tmp = x[i];
+            x[i] = x[j];
+            x[j] = tmp;
+        }
     }
+}
 
-    for (int i = 0; i < L; ++i) H[i] = CMAT_AT(h, i, 0);
-    fft_inplace(H, nfft, 0);
+static void fft_inplace_local(double complex *x, int n, int inverse)
+{
+    int len, i, j;
 
-    if (mf_delay) *mf_delay = L - 1;
+    bit_reverse_permute_local(x, n);
 
-    for (int c = 0; c < cols; ++c) {
-        for (int i = 0; i < nfft; ++i) X[i] = 0.0 + I * 0.0;
-        for (int r = 0; r < rows; ++r) X[r] = CMAT_AT(x, r, c);
+    for (len = 2; len <= n; len <<= 1) {
+        double angle = (inverse ? 2.0 : -2.0) * M_PI / (double)len;
+        double complex wlen = cos(angle) + I * sin(angle);
 
-        fft_inplace(X, nfft, 0);
+        for (i = 0; i < n; i += len) {
+            double complex w = 1.0 + I * 0.0;
 
-        for (int i = 0; i < nfft; ++i) Y[i] = X[i] * H[i];
+            for (j = 0; j < len / 2; ++j) {
+                double complex u = x[i + j];
+                double complex v = x[i + j + len / 2] * w;
 
-        fft_inplace(Y, nfft, 1);
+                x[i + j] = u + v;
+                x[i + j + len / 2] = u - v;
 
-        for (int r = 0; r < rows; ++r) {
-            int src = r + (L - 1);
-            if (src < conv_len) {
-                CMAT_AT(y, r, c) = Y[src];
-            } else {
-                CMAT_AT(y, r, c) = 0.0 + I * 0.0;
+                w *= wlen;
             }
         }
     }
 
-    free(H);
-    free(X);
-    free(Y);
+    if (inverse) {
+        for (i = 0; i < n; ++i) {
+            x[i] /= (double)n;
+        }
+    }
+}
+
+int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
+{
+    if (!meta || !ctx) {
+        return -1;
+    }
+
+    memset(ctx, 0, sizeof(*ctx));
+    ctx->input_len = meta->num_fast_time_samples;
+
+    if (make_pulse_compression_filter(meta, 1, &ctx->h) != 0) {
+        return -1;
+    }
+
+    ctx->filter_len = ctx->h.rows;
+    ctx->conv_len   = ctx->input_len + ctx->filter_len - 1;
+    ctx->nfft       = next_power_of_two_local(ctx->conv_len);
+    ctx->mf_delay   = ctx->filter_len - 1;
+
+    ctx->H = (double complex *)calloc((size_t)ctx->nfft, sizeof(double complex));
+    ctx->X = (double complex *)calloc((size_t)ctx->nfft, sizeof(double complex));
+    ctx->Y = (double complex *)calloc((size_t)ctx->nfft, sizeof(double complex));
+    
+    // [추가된 부분] 임시 출력 버퍼 할당
+    ctx->out_buf = (double complex *)calloc((size_t)ctx->input_len, sizeof(double complex));
+
+    // 할당 실패 검증 로직에도 out_buf 추가
+    if (!ctx->H || !ctx->X || !ctx->Y || !ctx->out_buf) {
+        pulse_compress_ctx_destroy(ctx);
+        return -1;
+    }       
+
+    for (int i = 0; i < ctx->filter_len; ++i) {
+        ctx->H[i] = CMAT_AT(&ctx->h, i, 0);
+    }
+
+    fft_inplace_local(ctx->H, ctx->nfft, 0);
+
     return 0;
 }
 
-int pulse_compression_ex(const ComplexMatrix *x, const RadarMeta *meta, ComplexMatrix *y, PulseTiming *timing) {
-    ComplexMatrix h = {0};
-    int mf_delay = 0;
-    int ret;
-    double t0, t1;
-
-    if (timing) {
-        timing->filter_ready_ms = 0.0;
-        timing->compression_ms = 0.0;
+void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
+{
+    if (!ctx) {
+        return;
     }
 
-    t0 = now_ms();
-    ret = make_pulse_compression_filter(meta, 1, &h);
-    t1 = now_ms();
-    if (timing) timing->filter_ready_ms = t1 - t0;
-    if (ret != 0) return ret;
+    free(ctx->H);
+    free(ctx->X);
+    free(ctx->Y);
+    free(ctx->out_buf);
 
-    t0 = now_ms();
-    ret = apply_pulse_compression_fft(x, &h, y, &mf_delay);
-    t1 = now_ms();
-    if (timing) timing->compression_ms = t1 - t0;
+    free_complex_matrix(&ctx->h);
 
-    free_complex_matrix(&h);
-    return ret;
+    memset(ctx, 0, sizeof(*ctx));
 }
 
-int pulse_compression(const ComplexMatrix *x, const RadarMeta *meta, ComplexMatrix *y) {
-    return pulse_compression_ex(x, meta, y, NULL);
+int pulse_compress_one(PulseCompressCtx *ctx,
+                       const RawIQSample *raw_pulse,
+                       double complex *out_range_bins)
+{
+    if (!ctx || !raw_pulse || !out_range_bins) {
+        return -1;
+    }
+
+    if (ctx->input_len <= 0 || ctx->nfft <= 0 ||
+        !ctx->H || !ctx->X || !ctx->Y) {
+        fprintf(stderr, "pulse_compress_one: ctx not initialized\n");
+        return -1;
+    }
+
+    for (int i = 0; i < ctx->nfft; ++i) {
+        ctx->X[i] = 0.0 + I * 0.0;
+    }
+
+    for (int i = 0; i < ctx->input_len; ++i) {
+        ctx->X[i] = raw_pulse[i].i + raw_pulse[i].q * I;
+    }
+
+    fft_inplace_local(ctx->X, ctx->nfft, 0);
+
+    for (int i = 0; i < ctx->nfft; ++i) {
+        ctx->Y[i] = ctx->X[i] * ctx->H[i];
+    }
+
+    fft_inplace_local(ctx->Y, ctx->nfft, 1);
+
+    for (int r = 0; r < ctx->input_len; ++r) {
+        int src = r + ctx->mf_delay;
+        out_range_bins[r] = (src < ctx->conv_len) ? ctx->Y[src] : (0.0 + I * 0.0);
+    }
+
+    return 0;
 }
