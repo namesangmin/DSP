@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -O2 -Wall -std=gnu99 -I./Inc -I./Inc/thread -I./Inc/queue -pthread
+ARMPL_DIR = /opt/arm/armpl/armpl_26.01_gcc
+CFLAGS = -O2 -Wall -std=gnu99 -I./Inc -I./Inc/thread -I./Inc/queue -pthread -I$(ARMPL_DIR)/include -fopenmp
 LDFLAGS = -pthread
 LDLIBS = -lm -lfftw3
 

@@ -22,14 +22,7 @@ compressed[file_idx][pulse_idx][range_bin]
 그래야 1번/2번이 처리 완료 순서가 뒤섞여도
 3번 코어가 정렬된 dwell 데이터를 그대로 쓴다.
 
-C. FFTW plan은 코어별로 따로
-1번 코어 전용 plan/in/out
-2번 코어 전용 plan/in/out
-
-이렇게 가야 합니다.
-공유하면 꼬일 수 있다.
-
-D. 3번 코어는 “512 pulse 완료” 신호를 받아야 함
+C. 3번 코어는 “512 pulse 완료” 신호를 받아야 함
 
 파일마다 완료 카운터가 필요하다.
 
