@@ -11,6 +11,7 @@
 #include "queue_pulse.h"
 
 #include "pulse_compress_thread.h"
+#include "cfar.h"
 
 typedef struct {
     const RadarMeta *meta;
@@ -18,6 +19,7 @@ typedef struct {
     ComplexMatrix *doppler;
     DetectionList *det;
     DopplerFftTiming *doppler_timing;
+    CfarWorkspace * cfar_ws;
     double *cfar_ms;
     int cpu_id;
     int status;    

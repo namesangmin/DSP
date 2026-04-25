@@ -70,7 +70,8 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                          ComplexMatrix *doppler,
                                          DopplerFftTiming *doppler_timing,
                                          double *cfar_ms,
-                                         DetectionList *det)
+                                         DetectionList *det,
+                                         CfarWorkspace *cfar_ws)
 {
     PipelinePool pool;
     PulseQueue even_q, odd_q;
@@ -120,6 +121,13 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     
     if (pulse_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulse_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
         cleanup_pipeline_pool(&pool);
+        return -1;
+    }
+
+    if(init_cfar_workspace(cfar_ws, meta->num_fast_time_samples, meta->num_pulses) != 0){
+        cleanup_pipeline_pool(&pool);
+        pulse_queue_destroy(&even_q);
+        pulse_queue_destroy(&odd_q);
         return -1;
     }
 
@@ -173,12 +181,12 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     post.doppler = doppler;
     post.det = det;
     post.doppler_timing = doppler_timing;
-    post.cfar_ms = cfar_ms;
+    post.cfar_ws = cfar_ws;
     post.cpu_id = 3;
     post.status = 0;
 // 3번 코어 (포스트) 에게 주소 전달 (Pop 용도)
     post.post_q = &post_q;
-
+    post.cfar_ms = cfar_ms;
 
     pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
@@ -202,10 +210,11 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     cleanup_pipeline_pool(&pool);
     pulse_queue_destroy(&even_q);
     pulse_queue_destroy(&odd_q);
-    post_queue_destroy(&post_q);
+    post_queue_destroy(&post_q);    
     pulse_compress_ctx_destroy(&wk_even.ctx);
     pulse_compress_ctx_destroy(&wk_odd.ctx);
-
+    cleanup_cfar_workspace(cfar_ws);
+    
     if (failed) {
         fprintf(stderr, "Pipeline error detected!\n");
         return -1;
@@ -293,6 +302,7 @@ int process_single_file(const char *metadata_path,
         DetectionList det = {0};
         PulseTiming pulse_timing = {0};
         DopplerFftTiming doppler_timing = {0};
+        CfarWorkspace cfar_ws = {0};
 
         double total_t0 = now_ms();
         double load_ms = 0.0;
@@ -315,7 +325,8 @@ int process_single_file(const char *metadata_path,
                                               &doppler,
                                               &doppler_timing,
                                               &cfar_ms,
-                                              &det) != 0) 
+                                              &det,
+                                              &cfar_ws) != 0) 
         {
             return 1;
         }

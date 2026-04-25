@@ -55,12 +55,31 @@ void *post_thread_main(void *arg)
         int guardAndCUTCells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
         int rankIdx = ((totalWindowCells - guardAndCUTCells) + 1) / 2;
 
-        if (cfar_detect(&a->pool->doppler_maps[idx].data,
-                        a->meta,
-                        numTrainR, numTrainD, 
-                        numGuardR, numGuardD,
-                        rankIdx, 8.0, a->det) != 0) {
-            fprintf(stderr, "post: cfar_detect failed: buffer_idx=%d\n", job.buffer_idx);
+        int cfar_ret = cfar_detect(&a->pool->doppler_maps[idx].data,
+                           a->meta,
+                           numTrainR, numTrainD,
+                           numGuardR, numGuardD,
+                           rankIdx, 8.0,
+                           a->cfar_ws,
+                           a->det);
+
+        if (cfar_ret != 0) {
+            fprintf(stderr,
+                    "post: cfar_detect failed: ret=%d buffer_idx=%d "
+                    "dop_rows=%d dop_cols=%d ws_range=%d ws_dop=%d "
+                    "powerMap=%p ii=%p detBuf=%p detCapacity=%d\n",
+                    cfar_ret,
+                    idx,
+                    a->pool->doppler_maps[idx].data.rows,
+                    a->pool->doppler_maps[idx].data.cols,
+                    a->cfar_ws ? a->cfar_ws->numRange : -1,
+                    a->cfar_ws ? a->cfar_ws->numDoppler : -1,
+                    a->cfar_ws ? (void *)a->cfar_ws->powerMap : NULL,
+                    a->cfar_ws ? (void *)a->cfar_ws->ii : NULL,
+                    a->cfar_ws ? (void *)a->cfar_ws->detBuf : NULL,
+                    a->cfar_ws ? a->cfar_ws->detCapacity : -1);
+
+            a->status = -2;
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
         }
