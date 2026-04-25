@@ -125,13 +125,21 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     
     if (pulse_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulse_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
         // 예외처리
+        cleanup_pipeline_pool(&pool);
         return -1;
     }
-    
-    if (alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses, &file.pc) != 0) {
-        return -1;
+
+    // 3. 큐에 번호표(인덱스) 미리 다 뿌려두기
+    for (int pulse_idx = 0; pulse_idx < meta->num_pulses; ++pulse_idx) {
+        PulseJob job;
+        job.pulse_idx = pulse_idx;
+        if (pulse_idx % 2 == 0) pulse_queue_push(&even_q, job);
+        else                    pulse_queue_push(&odd_q, job);
     }
+    pulse_queue_close(&even_q);
+    pulse_queue_close(&odd_q);
     *load_ms = now_ms() - t0;
+
 
     // matched filter 생성
     t0 = now_ms();

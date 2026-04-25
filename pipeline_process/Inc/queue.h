@@ -20,6 +20,6 @@ int pulse_queue_init(PulseQueue *q, int cap);
 void pulse_queue_destroy(PulseQueue *q);
 int pulse_queue_push(PulseQueue *q, PulseJob job);
 int pulse_queue_pop(PulseQueue *q, PulseJob *job);
-// void pulse_queue_close(PulseQueue *q);
+void pulse_queue_close(PulseQueue *q);
 
 #endif
