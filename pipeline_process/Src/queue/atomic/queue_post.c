@@ -1,56 +1,58 @@
 #include "queue_post.h"
 
 int post_queue_init(PostQueue *q, int cap) {
-    q->buf = (PostJob *)calloc(cap, sizeof(PostJob));
+    memset(q, 0, sizeof(*q));
+    // 락-프리 큐는 꽉 찬 상태와 빈 상태를 구분하기 위해 1칸을 비워둡니다.
+    // 따라서 요청받은 cap보다 1칸 더 크게 할당합니다.
+    q->cap = cap + 1; 
+    q->buf = (PostJob *)calloc((size_t)q->cap, sizeof(PostJob));
     if (!q->buf) return -1;
-    
-    q->cap = cap;
+
     atomic_init(&q->head, 0);
     atomic_init(&q->tail, 0);
     atomic_init(&q->closed, 0);
-    
-    return 0; // 성공
+    return 0;
 }
 
 void post_queue_destroy(PostQueue *q) {
-    if (q->buf) {
-        free(q->buf);
-        q->buf = NULL;
+    if (!q) return;
+    free(q->buf);
+    memset(q, 0, sizeof(*q));
+}
+
+int post_queue_push(PostQueue *q, PostJob job) {
+    int tail = atomic_load_explicit(&q->tail, memory_order_relaxed);
+    int next_tail = (tail + 1) % q->cap;
+
+    // 꽉 찼으면 빈 자리가 날 때까지 대기 (Pure Spin-wait)
+    while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
+        if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
     }
+
+    if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
+
+    q->buf[tail] = job;
+    atomic_store_explicit(&q->tail, next_tail, memory_order_release);
+    return  0;
+}
+
+int post_queue_pop(PostQueue *q, PostJob *job) {
+    int head = atomic_load_explicit(&q->head, memory_order_relaxed);
+
+    // 비어있으면 데이터가 들어올 때까지 대기 (Pure Spin-wait)
+    while (head == atomic_load_explicit(&q->tail, memory_order_acquire)) {
+        if (atomic_load_explicit(&q->closed, memory_order_acquire)) {
+            // 닫혔고, 남은 데이터도 확인
+            if (head == atomic_load_explicit(&q->tail, memory_order_acquire)) return 0;
+            break; // 닫혔지만 뺄 데이터가 남아있으면 루프 탈출
+        }
+    }
+
+    *job = q->buf[head];
+    atomic_store_explicit(&q->head, (head + 1) % q->cap, memory_order_release);
+    return 1;
 }
 
 void post_queue_close(PostQueue *q) {
-    atomic_store(&q->closed, 1);
-}
-
-// 1 성공, 0 실패
-int post_queue_push(PostQueue *q, PostJob job) {
-    int current_tail = atomic_load(&q->tail);
-    int next_tail = (current_tail + 1) % q->cap;
-
-    // 큐가 꽉 찼는지 확인
-    if (next_tail == atomic_load(&q->head)) {
-        return 0; 
-    }
-
-    q->buf[current_tail] = job;
-    atomic_store(&q->tail, next_tail); // 꼬리 이동
-
-    return 1;
-}
-
-// 1 성공, 0 실패
-int post_queue_pop(PostQueue *q, PostJob *job) {
-    int current_head = atomic_load(&q->head);
-
-    // 큐가 비어있는지 확인
-    if (current_head == atomic_load(&q->tail)) {
-        if (atomic_load(&q->closed)) return 0; // 문 닫힘
-        return 0; // 비어있음
-    }
-
-    *job = q->buf[current_head];
-    atomic_store(&q->head, (current_head + 1) % q->cap); // 머리 이동
-
-    return 1;
+    atomic_store_explicit(&q->closed, 1, memory_order_release);
 }

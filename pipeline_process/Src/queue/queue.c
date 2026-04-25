@@ -1,7 +1,7 @@
 
+#if 0
 #include "queue.h"
 
-#if 0
 int pulse_queue_init(PulseQueue *q, int cap)
 {
     memset(q, 0, sizeof(*q));

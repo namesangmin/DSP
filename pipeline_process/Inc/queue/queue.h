@@ -1,3 +1,4 @@
+#if 0
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
@@ -10,7 +11,6 @@
 //#include "pipeline_set.h"
 //#include "pulse.h"
 
-#if 0
 typedef struct {
     PulseJob *buf;
     int cap;

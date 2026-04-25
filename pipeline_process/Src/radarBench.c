@@ -51,7 +51,6 @@
 #include "writer.h"
 
 #include "common.h"
-#include "queue.h"
 
 #include "queue_post.h"
 #include "queue_pulse.h"
@@ -83,6 +82,8 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
 {
     PipelinePool pool;
     PulseQueue even_q, odd_q;
+    PostQueue post_q;
+
     LoaderArgs ld;
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
@@ -93,7 +94,8 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     // 큐 선언
     memset(&even_q, 0, sizeof(even_q));
     memset(&odd_q, 0, sizeof(odd_q));
-    
+    memset(&post_q, 0, sizeof(post_q));
+
     // 파일 로더 
     memset(&ld, 0, sizeof(ld));
     
@@ -124,8 +126,14 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     }
     
     if (pulse_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulse_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
-        // 예외처리
         cleanup_pipeline_pool(&pool);
+        return -1;
+    }
+
+    if(post_queue_init(&post_q, NUM_BUFFERS) != 0){
+        cleanup_pipeline_pool(&pool);
+        pulse_queue_destroy(&even_q);
+        pulse_queue_destroy(&odd_q);
         return -1;
     }
 
@@ -197,12 +205,10 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pthread_create(&th_post, NULL, post_thread_main, &post);
     pthread_join(th_post, NULL);
 
-
-    // pool 해제 있어야 함
     cleanup_pipeline_pool(&pool);
     pulse_queue_destroy(&even_q);
     pulse_queue_destroy(&odd_q);
-
+    post_queue_destroy(&post_q);
 
     // run_mmap_pipeline_single_file 함수 하단 수정
     if (atomic_load(&pool.error) != 0 || post.status != 0) {

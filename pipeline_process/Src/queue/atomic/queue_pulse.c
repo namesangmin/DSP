@@ -1,10 +1,10 @@
 #include "queue_pulse.h"
+// #include <unistd.h> <-- usleep을 쓸 거면 이게 필요하지만, 우린 안 쓸 겁니다.
+#include <sched.h>     // usleep 대신 CPU를 똑똑하게 양보할 때 씀
 
-#if 1
 int pulse_queue_init(PulseQueue *q, int cap) {
     memset(q, 0, sizeof(*q));
     // 락-프리 큐는 꽉 찬 상태와 빈 상태를 구분하기 위해 1칸을 비워둡니다.
-    // 따라서 요청받은 cap보다 1칸 더 크게 할당합니다.
     q->cap = cap + 1; 
     q->buf = (PulseJob *)calloc((size_t)q->cap, sizeof(PulseJob));
     if (!q->buf) return -1;
@@ -25,10 +25,13 @@ int pulse_queue_push(PulseQueue *q, PulseJob job) {
     int tail = atomic_load_explicit(&q->tail, memory_order_relaxed);
     int next_tail = (tail + 1) % q->cap;
 
-    // 꽉 찼으면 빈 자리가 날 때까지 대기 (Spin-wait)
+    // 꽉 찼으면 빈 자리가 날 때까지 대기 (Pure Spin-wait)
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
-        usleep(1); // CPU 과부하 방지
+        
+        // usleep(1) 삭제! 대신 아래처럼 깡으로 돌거나 yield를 씁니다.
+        // 아무것도 안 적으면 CPU 100% 점유하며 최고 속도 반응
+        // sched_yield(); // 만약 다른 스레드가 급하면 양보 (선택 사항)
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
@@ -41,14 +44,12 @@ int pulse_queue_push(PulseQueue *q, PulseJob job) {
 int pulse_queue_pop(PulseQueue *q, PulseJob *job) {
     int head = atomic_load_explicit(&q->head, memory_order_relaxed);
 
-    // 비어있으면 데이터가 들어올 때까지 대기 (Spin-wait)
+    // 비어있으면 데이터가 들어올 때까지 대기 (Pure Spin-wait)
     while (head == atomic_load_explicit(&q->tail, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) {
-            // 닫혔고, 남은 데이터도 확인
             if (head == atomic_load_explicit(&q->tail, memory_order_acquire)) return 0;
-            break; // 닫혔지만 뺄 데이터가 남아있으면 루프 탈출
+            break; 
         }
-        usleep(1); // CPU 과부하 방지
     }
 
     *job = q->buf[head];
@@ -59,5 +60,3 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job) {
 void pulse_queue_close(PulseQueue *q) {
     atomic_store_explicit(&q->closed, 1, memory_order_release);
 }
-
-#endif

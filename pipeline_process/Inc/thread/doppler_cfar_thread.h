@@ -1,9 +1,11 @@
 #ifndef __DOPPLER_CFAR_THREAD_H__
 #define __DOPPLER_CFAR_THREAD_H__
 
-#include "common.h"
 #include "pipeline_set.h"
+#include "common.h"
 #include "doppler_fft.h"
+#include "queue_post.h"
+#include "queue_pulse.h"
 #include "pulse_compress_thread.h"
 
 typedef struct {
