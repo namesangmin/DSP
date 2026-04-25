@@ -240,7 +240,31 @@ int pulse_compress_one(PulseCompressCtx *ctx,
                        const double complex *raw_pulse,
                        double complex *out_range_bins)
 {
+    if (!ctx) {
+    fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
+    return -1;
+    }
+
+    if (!raw_pulse) {
+        fprintf(stderr, "pulse_compress_one: raw_pulse is NULL\n");
+        return -1;
+    }
+
+    if (!out_range_bins) {
+        fprintf(stderr, "pulse_compress_one: out_range_bins is NULL\n");
+        fprintf(stderr,
+                "ctx debug: input_len=%d nfft=%d H=%p X=%p Y=%p out_buf=%p\n",
+                ctx->input_len,
+                ctx->nfft,
+                (void *)ctx->H,
+                (void *)ctx->X,
+                (void *)ctx->Y,
+                (void *)ctx->out_buf);
+        return -1;
+    }
+
     if (!ctx || !raw_pulse || !out_range_bins) {
+        fprintf(stderr, "pulse_compress_one: Invalid input parameters\n");
         return -1;
     }
 

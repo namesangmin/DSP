@@ -53,14 +53,6 @@ void free_complex_matrix(ComplexMatrix *m) {
     m->cols = 0;
 }
 
-// void free_real_matrix(RealMatrix *m) {
-//     if (!m) return;
-//     free(m->data);
-//     m->data = NULL;
-//     m->rows = 0;
-//     m->cols = 0;
-// }
-
 int load_metadata(const char *path, RadarMeta *meta) {
     FILE *fp;
     char line[512];

@@ -2,12 +2,6 @@
 #define PIPELINE_TYPES_H
 
 #include <pthread.h>
-#include "cfar.h"
-typedef struct {
-    char filename[256];
-    int detected;
-    Detection det;
-} TrackPoint;
 
 typedef struct {
     double load_ms;

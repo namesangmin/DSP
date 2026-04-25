@@ -16,6 +16,7 @@ static int cmp_detection_power_desc(const void *a, const void *b)
 void free_detection_list(DetectionList *list)
  {
     if (!list) return;
+
     free(list->items);
     list->items = NULL;
     list->count = 0;
@@ -36,19 +37,15 @@ static double rect_sum(const double *ii, int cols,
          + ii[(size_t)rr1 * (size_t)stride + (size_t)cc1];
 }
 
-static double get_range_from_bin_matlab(int range_idx_1based, double fs_hz) 
-{
+double get_range_from_bin(int range_bin, double fs_hz) {
     const double c = 299792458.0;
-    return ((double)(range_idx_1based - 1)) * c / (2.0 * fs_hz);
+    return ((double)range_bin) * c / (2.0 * fs_hz);
 }
 
-static double get_velocity_from_bin_matlab(int doppler_idx_1based, int nfft,
-                                           double prf_hz, double fc_hz) 
-                                           {
+double get_velocity_from_bin(int doppler_bin, int nfft, double prf_hz, double fc_hz) {
     const double c = 299792458.0;
     double lambda = c / fc_hz;
-    double fd = ((double)(doppler_idx_1based - 1) - floor((double)nfft / 2.0))
-              * (prf_hz / (double)nfft);
+    double fd = ((double)doppler_bin - (double)(nfft / 2)) * (prf_hz / (double)nfft);
     return fd * lambda / 2.0;
 }
 
@@ -61,23 +58,29 @@ int cfar_detect(const ComplexMatrix *doppler_map,
 {
     int numRange = doppler_map->rows;
     int numDoppler = doppler_map->cols;
+    
     int winR = numTrainR + numGuardR;
     int winD = numTrainD + numGuardD;
+    
     int ii_rows = numRange + 1;
     int ii_cols = numDoppler + 1;
+
     double *powerMap = NULL;
     double *ii = NULL;
     Detection *detBuf = NULL;
     int detCount = 0;
 
     (void)rankIdx; /* CA-CFAR keeps average-based thresholding */
+    
+    free_detection_list(out);
 
     out->count = 0;
     out->items = NULL;
-
+    // 1001 x 512
     powerMap = (double *)calloc((size_t)numRange * (size_t)numDoppler, sizeof(double));
     ii = (double *)calloc((size_t)ii_rows * (size_t)ii_cols, sizeof(double));
     detBuf = (Detection *)calloc((size_t)numRange * (size_t)numDoppler, sizeof(Detection));
+    
     if (!powerMap || !ii || !detBuf) {
         free(powerMap);
         free(ii);
@@ -85,25 +88,25 @@ int cfar_detect(const ComplexMatrix *doppler_map,
         return -1;
     }
 
-    for (int r = 0; r < numRange; ++r) {
-        for (int d = 0; d < numDoppler; ++d) {
+    for (int r = 0; r < numRange; r++) {
+        for (int d = 0; d < numDoppler; d++) {
             double complex v = CMAT_AT(doppler_map, r, d);
             powerMap[(size_t)r * (size_t)numDoppler + (size_t)d] =
                 creal(v) * creal(v) + cimag(v) * cimag(v);
         }
     }
 
-    for (int r = 1; r <= numRange; ++r) {
+    for (int r = 1; r <= numRange; r++) {
         double row_sum = 0.0;
-        for (int d = 1; d <= numDoppler; ++d) {
+        for (int d = 1; d <= numDoppler; d++) {
             row_sum += powerMap[(size_t)(r - 1) * (size_t)numDoppler + (size_t)(d - 1)];
             ii[(size_t)r * (size_t)ii_cols + (size_t)d] =
                 ii[(size_t)(r - 1) * (size_t)ii_cols + (size_t)d] + row_sum;
         }
     }
 
-    for (int r = winR; r < numRange - winR; ++r) {
-        for (int d = winD; d < numDoppler - winD; ++d) {
+    for (int r = winR; r < numRange - winR; r++) {
+        for (int d = winD; d < numDoppler - winD; d++) {
             int outer_r1 = r - winR;
             int outer_r2 = r + winR;
             int outer_d1 = d - winD;
@@ -128,12 +131,12 @@ int cfar_detect(const ComplexMatrix *doppler_map,
 
             if (cut > threshold) {
                 Detection det;
-                det.range_bin = r + 1;      /* MATLAB style output */
-                det.doppler_bin = d + 1;    /* MATLAB style output */
+                det.range_bin = r; 
+                det.doppler_bin = d;
                 det.power = cut;
                 det.threshold = threshold;
-                det.range_m = get_range_from_bin_matlab(det.range_bin, meta->fs_hz);
-                det.velocity_mps = get_velocity_from_bin_matlab(det.doppler_bin,
+                det.range_m = get_range_from_bin(det.range_bin, meta->fs_hz);
+                det.velocity_mps = get_velocity_from_bin(det.doppler_bin,
                                                                 numDoppler,
                                                                 meta->prf_hz,
                                                                 meta->fc_hz);
@@ -150,7 +153,10 @@ int cfar_detect(const ComplexMatrix *doppler_map,
             free(detBuf);
             return -1;
         }
-        for (int i = 0; i < detCount; ++i) out->items[i] = detBuf[i];
+        for (int i = 0; i < detCount; i++) {
+            out->items[i] = detBuf[i];
+        }
+        
         out->count = detCount;
         qsort(out->items, (size_t)out->count, sizeof(Detection), cmp_detection_power_desc);
     }

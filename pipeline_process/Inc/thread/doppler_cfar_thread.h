@@ -3,9 +3,13 @@
 
 #include "pipeline_set.h"
 #include "common.h"
+
 #include "doppler_fft.h"
+#include "cfar.h"
+
 #include "queue_post.h"
 #include "queue_pulse.h"
+
 #include "pulse_compress_thread.h"
 
 typedef struct {

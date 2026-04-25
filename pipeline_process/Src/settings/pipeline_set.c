@@ -10,8 +10,8 @@ int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool
         atomic_init(&pool->rd_maps[i].state, BUF_FREE);
         atomic_init(&pool->rd_maps[i].done_count, 0);
 
-        alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses, &pool->det_maps[i].data);
-        atomic_init(&pool->det_maps[i].state, BUF_FREE);
+        alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses, &pool->doppler_maps[i].data);
+        atomic_init(&pool->doppler_maps[i].state, BUF_FREE);
     }
 
     atomic_init(&pool->current_write_idx, 0); // 0번 버퍼부터 시작
@@ -28,6 +28,6 @@ void cleanup_pipeline_pool(PipelinePool *pool) {
     // 2. 3중 버퍼(Triple Buffer)에 할당했던 작업용 메모리 싹 다 해제
     for (int i = 0; i < NUM_BUFFERS; i++) {
         free_complex_matrix(&pool->rd_maps[i].data);
-        free_complex_matrix(&pool->det_maps[i].data);
+        free_complex_matrix(&pool->doppler_maps[i].data);
     }
 }

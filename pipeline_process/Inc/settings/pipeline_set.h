@@ -26,14 +26,14 @@ typedef struct {
 typedef struct {
     ComplexMatrix data;
     atomic_int state;
-} DetectionBuffer;
+} DopplerBuffer;
 
 // 3. 메인 파이프라인 관리자
 typedef struct {
     ComplexMatrix raw_data; // 파일에서 딱 한 번 읽을 원본 (1개)
 
     RdMapBuffer rd_maps[NUM_BUFFERS];      // 3중 버퍼
-    DetectionBuffer det_maps[NUM_BUFFERS]; // 3중 버퍼
+    DopplerBuffer doppler_maps[NUM_BUFFERS]; // 3중 버퍼
 
     atomic_int current_write_idx; // 짝/홀 코어가 현재 채우고 있는 인덱스 (0, 1, 2)
     atomic_int error;             // 에러 플래그 (0 정상, 1 에러)

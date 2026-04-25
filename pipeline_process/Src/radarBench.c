@@ -80,7 +80,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
     
-    pthread_t th_even, th_odd, th_post; // th_loader
+    pthread_t th_even, th_odd, th_post, th_loader;
     
     double t0;
 
@@ -153,6 +153,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pulse_timing->filter_ready_ms = now_ms() - t0;
 
     /* loader */
+    ld.dat_path = dat_path;
     ld.meta = meta;
     ld.pool = &pool; // raw data 사용
     ld.even_q = &even_q;
@@ -185,7 +186,9 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     post.status = 0;
 // 3번 코어 (포스트) 에게 주소 전달 (Pop 용도)
     post.post_q = &post_q;
-    //pthread_create(&th_loader, NULL, loader_thread_main, &ld);
+
+
+    pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
     pthread_create(&th_post, NULL, post_thread_main, &post);

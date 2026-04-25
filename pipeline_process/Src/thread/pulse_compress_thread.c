@@ -29,7 +29,21 @@ void *worker_thread_main(void *arg)
         double t0 = now_ms();
 
         double complex *pulse_raw_ptr = &a->pool->raw_data.data[job.pulse_idx * num_range_bins];
-
+    fprintf(stderr,
+            "worker debug: cpu=%d pulse_idx=%d raw_data=%p rows=%d cols=%d "
+            "pulse_raw_ptr=%p out_buf=%p X=%p Y=%p H=%p input_len=%d nfft=%d\n",
+            a->cpu_id,
+            job.pulse_idx,
+            (void *)a->pool->raw_data.data,
+            a->pool->raw_data.rows,
+            a->pool->raw_data.cols,
+            (void *)pulse_raw_ptr,
+            (void *)a->ctx.out_buf,
+            (void *)a->ctx.X,
+            (void *)a->ctx.Y,
+            (void *)a->ctx.H,
+            a->ctx.input_len,
+            a->ctx.nfft);
         if (pulse_compress_one(&a->ctx, pulse_raw_ptr, a->ctx.out_buf) != 0) {
             fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d\n", job.pulse_idx);
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);

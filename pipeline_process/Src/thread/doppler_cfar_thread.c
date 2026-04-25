@@ -31,10 +31,9 @@ void *post_thread_main(void *arg)
         
         // 입력: 1, 2번 코어가 막 완성해준 rd_maps[idx].data
         // 출력: a->doppler (3번 코어 혼자 순차적으로 돌기 때문에 공용 버퍼 하나만 써도 충돌 안 남)
-        if (doppler_fft_processing_ex(&a->pool->rd_maps[idx].data, 
-                                      a->meta,
+        if (doppler_fft_processing(&a->pool->rd_maps[idx].data, 
                                       a->meta->num_pulses,
-                                      a->doppler, 
+                                      &a->pool->doppler_maps[idx].data,
                                       a->doppler_timing) != 0) {
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
@@ -55,11 +54,11 @@ void *post_thread_main(void *arg)
         int guardAndCUTCells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
         int rankIdx = ((totalWindowCells - guardAndCUTCells) + 1) / 2;
 
-        if (cfar_detect(a->doppler,
+        if (cfar_detect(&a->pool->doppler_maps[idx].data,
                         a->meta,
-                        numTrainR, numTrainD, numGuardR, numGuardD,
-                        rankIdx, 9.0,
-                        a->det) != 0) {
+                        numTrainR, numTrainD, 
+                        numGuardR, numGuardD,
+                        rankIdx, 8.0, a->det) != 0) {
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
         }

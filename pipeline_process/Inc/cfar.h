@@ -13,6 +13,12 @@ typedef struct {
 } Detection;
 
 typedef struct {
+    char filename[256];
+    int detected;
+    Detection det;
+} TrackPoint;
+
+typedef struct {
     int count;
     Detection *items;
 } DetectionList;
