@@ -1,16 +1,25 @@
-#ifndef DOPPLER_FFT_H
-#define DOPPLER_FFT_H
+#ifndef __DOPPLER_FFT_H__
+#define __DOPPLER_FFT_H__
 
 #include "loader.h"
 
 typedef struct {
     double mti_ms;
     double mtd_ms;
-    double timing;
 } DopplerFftTiming;
 
-int doppler_fft_processing(const ComplexMatrix *rxsig_pc, int nfft,
-                              ComplexMatrix *doppler_map, DopplerFftTiming *timing);
-// int doppler_fft_processing(const ComplexMatrix *rxsig_pc, const RadarMeta *meta, int nfft, ComplexMatrix *doppler_map);
+typedef struct {
+    int pulses;
+    double *hamming_win;
+} DopplerWorkspace;
+
+int init_doppler_workspace(DopplerWorkspace *ws, int pulses);
+void cleanup_doppler_workspace(DopplerWorkspace *ws);
+
+int doppler_fft_processing(const ComplexMatrix *rd_map,
+                           int nfft,
+                           ComplexMatrix *doppler_map,
+                           DopplerFftTiming *timing,
+                           DopplerWorkspace *ws);
 
 #endif

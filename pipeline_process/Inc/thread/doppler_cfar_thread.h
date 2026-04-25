@@ -19,7 +19,9 @@ typedef struct {
     ComplexMatrix *doppler;
     DetectionList *det;
     DopplerFftTiming *doppler_timing;
+    
     CfarWorkspace * cfar_ws;
+    DopplerWorkspace *doppler_ws;
     double *cfar_ms;
     int cpu_id;
     int status;    

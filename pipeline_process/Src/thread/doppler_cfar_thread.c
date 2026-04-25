@@ -31,11 +31,13 @@ void *post_thread_main(void *arg)
         
         // 입력: 1, 2번 코어가 막 완성해준 rd_maps[idx].data
         // 출력: a->doppler (3번 코어 혼자 순차적으로 돌기 때문에 공용 버퍼 하나만 써도 충돌 안 남)
-        if (doppler_fft_processing(&a->pool->rd_maps[idx].data, 
-                                      a->meta->num_pulses,
-                                      &a->pool->doppler_maps[idx].data,
-                                      a->doppler_timing) != 0) {
-            fprintf(stderr, "post: doppler_fft_processing failed: buffer_idx=%d\n", job.buffer_idx);
+        if (doppler_fft_processing(&a->pool->rd_maps[idx].data,
+                                a->meta->num_pulses,
+                                &a->pool->doppler_maps[idx].data,
+                                a->doppler_timing,
+                                a->doppler_ws) != 0) {
+            fprintf(stderr, "post: doppler_fft_processing failed: buffer_idx=%d\n", idx);
+            a->status = -1;
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
         }

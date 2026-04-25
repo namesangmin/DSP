@@ -79,10 +79,9 @@ void free_detection_list(DetectionList *list)
     list->count = 0;
 }
 
-static double rect_sum(const double *ii, int cols,
-                       int r1, int c1, int r2, int c2) 
-                       {
-    int stride = cols;
+static inline double rect_sum(const double *ii, int stride,
+                              int r1, int c1, int r2, int c2)
+{
     int rr1 = r1;
     int cc1 = c1;
     int rr2 = r2 + 1;
@@ -143,46 +142,56 @@ int cfar_detect(const ComplexMatrix *doppler_map,
     double *ii = ws->ii;
     Detection *detBuf = ws->detBuf;
 
-    /*
-     * powerMap은 모든 칸을 새로 채우므로 memset 불필요.
-     */
-    for (int r = 0; r < numRange; ++r) {
-        for (int d = 0; d < numDoppler; ++d) {
-            double complex z = CMAT_AT(doppler_map, r, d);
-            double re = creal(z);
-            double im = cimag(z);
+   /*
+ * ii는 전체 memset 필요 없음.
+ * 0번째 row와 0번째 col만 0이면 됨.
+ */
+memset(ii, 0, (size_t)ws->ii_cols * sizeof(double));
 
-            powerMap[(size_t)r * (size_t)numDoppler + (size_t)d] =
-                re * re + im * im;
-        }
+for (int r = 1; r < ws->ii_rows; ++r) {
+    ii[(size_t)r * (size_t)ws->ii_cols] = 0.0;
+}
+
+/*
+ * powerMap 생성 + integral image 생성 한 번에 처리
+ */
+for (int r = 0; r < numRange; ++r) {
+    double row_sum = 0.0;
+
+    size_t pwr_base = (size_t)r * (size_t)numDoppler;
+    size_t ii_prev  = (size_t)r * (size_t)ws->ii_cols;
+    size_t ii_cur   = (size_t)(r + 1) * (size_t)ws->ii_cols;
+
+    for (int d = 0; d < numDoppler; ++d) {
+        double complex z = CMAT_AT(doppler_map, r, d);
+        double re = creal(z);
+        double im = cimag(z);
+        double pwr = re * re + im * im;
+
+        powerMap[pwr_base + (size_t)d] = pwr;
+
+        row_sum += pwr;
+
+        ii[ii_cur + (size_t)(d + 1)] =
+            ii[ii_prev + (size_t)(d + 1)] + row_sum;
     }
-
-    /*
-     * ii는 0번째 row/col이 0이어야 하므로 초기화 필요.
-     */
-    memset(ii, 0,
-           (size_t)ws->ii_rows *
-           (size_t)ws->ii_cols *
-           sizeof(double));
-
-    for (int r = 1; r <= numRange; ++r) {
-        double row_sum = 0.0;
-
-        for (int d = 1; d <= numDoppler; ++d) {
-            row_sum += powerMap[(size_t)(r - 1) *
-                                (size_t)numDoppler +
-                                (size_t)(d - 1)];
-
-            ii[(size_t)r * (size_t)ws->ii_cols + (size_t)d] =
-                ii[(size_t)(r - 1) * (size_t)ws->ii_cols + (size_t)d] +
-                row_sum;
-        }
-    }
-
+}
     winR = numTrainR + numGuardR;
     winD = numTrainD + numGuardD;
+        
+    int outer_cells = (2 * winR + 1) * (2 * winD + 1);
+    int inner_cells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
+    int training_cells = outer_cells - inner_cells;
+    
+    if (training_cells <= 0) {
+    return -1;
+    }
+    double scale_over_training = scale / (double)training_cells;
+
 
     for (int r = winR; r < numRange - winR; ++r) {
+        size_t pwr_base = (size_t)r * (size_t)numDoppler;
+
         for (int d = winD; d < numDoppler - winD; ++d) {
             int outer_r1 = r - winR;
             int outer_r2 = r + winR;
@@ -202,26 +211,10 @@ int cfar_detect(const ComplexMatrix *doppler_map,
                                         guard_r1, guard_d1,
                                         guard_r2, guard_d2);
 
-            int outer_cells =
-                (outer_r2 - outer_r1 + 1) *
-                (outer_d2 - outer_d1 + 1);
-
-            int inner_cells =
-                (guard_r2 - guard_r1 + 1) *
-                (guard_d2 - guard_d1 + 1);
-
-            int training_cells = outer_cells - inner_cells;
-
-            if (training_cells <= 0) {
-                continue;
-            }
-
             double noise_sum = outer_sum - inner_sum;
-            double noise_avg = noise_sum / (double)training_cells;
-            double threshold = scale * noise_avg;
+            double threshold = noise_sum * scale_over_training;
 
-            double cut_power =
-                powerMap[(size_t)r * (size_t)numDoppler + (size_t)d];
+            double cut_power = powerMap[pwr_base + (size_t)d];
 
             if (cut_power > threshold) {
                 if (detCount >= ws->detCapacity) {
@@ -232,10 +225,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
                 det.range_bin = r;
                 det.doppler_bin = d;
                 det.range_m = get_range_from_bin(r, meta->fs_hz);
-                det.velocity_mps = get_velocity_from_bin(d,
-                                                                numDoppler,
-                                                                meta->prf_hz,
-                                                                meta->fc_hz);
+                det.velocity_mps = get_velocity_from_bin(d, numDoppler, meta->prf_hz, meta->fc_hz);
                 det.power = cut_power;
                 det.threshold = threshold;
 

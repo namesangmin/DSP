@@ -20,6 +20,7 @@ cfar_detect()
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
+#include <string.h>
 #include "doppler_fft.h"
 #include "timer.h"
 
@@ -27,6 +28,52 @@ cfar_detect()
 #define M_PI 3.14159265358979323846
 #endif
 
+static void make_hamming_window(int N, double *w)
+{
+    if (!w || N <= 0) {
+        return;
+    }
+
+    if (N == 1) {
+        w[0] = 1.0;
+        return;
+    }
+
+    for (int n = 0; n < N; ++n) {
+        w[n] = 0.54 - 0.46 * cos((2.0 * M_PI * (double)n) / (double)(N - 1));
+    }
+}
+
+int init_doppler_workspace(DopplerWorkspace *ws, int pulses)
+{
+    if (!ws || pulses <= 0) {
+        return -1;
+    }
+
+    memset(ws, 0, sizeof(*ws));
+
+    ws->pulses = pulses;
+    ws->hamming_win = (double *)malloc((size_t)pulses * sizeof(double));
+
+    if (!ws->hamming_win) {
+        memset(ws, 0, sizeof(*ws));
+        return -1;
+    }
+
+    make_hamming_window(pulses, ws->hamming_win);
+
+    return 0;
+}
+
+void cleanup_doppler_workspace(DopplerWorkspace *ws)
+{
+    if (!ws) {
+        return;
+    }
+
+    free(ws->hamming_win);
+    memset(ws, 0, sizeof(*ws));
+}
 static double hamming_value(int n, int N)
 {
     if (N <= 1) {
@@ -138,13 +185,18 @@ static int apply_mti(const ComplexMatrix *x, int order, ComplexMatrix *y)
 
 static int apply_mtd(ComplexMatrix *doppler_map,
                      int pulses,
-                     int nfft)
+                     int nfft,
+                     DopplerWorkspace *ws)
 {
-    if (!doppler_map || !doppler_map->data) {
+    if (!doppler_map || !doppler_map->data || !ws || !ws->hamming_win) {
         return -1;
     }
 
-    if (nfft <= 0 || nfft < pulses) {
+    if (pulses <= 0 || nfft <= 0 || nfft < pulses) {
+        return -1;
+    }
+
+    if (ws->pulses != pulses) {
         return -1;
     }
 
@@ -153,6 +205,7 @@ static int apply_mtd(ComplexMatrix *doppler_map,
     }
 
     int rows = doppler_map->rows;
+    double *win = ws->hamming_win;
 
     for (int r = 0; r < rows; ++r) {
         double complex *row = &CMAT_AT(doppler_map, r, 0);
@@ -162,7 +215,7 @@ static int apply_mtd(ComplexMatrix *doppler_map,
         }
 
         for (int p = 0; p < pulses; ++p) {
-            row[p] *= hamming_value(p, pulses);
+            row[p] *= win[p];
         }
 
         fft_inplace(row, nfft);
@@ -172,20 +225,18 @@ static int apply_mtd(ComplexMatrix *doppler_map,
     return 0;
 }
 
-int doppler_fft_processing(const ComplexMatrix *rxsig_pc,
-                              int nfft,
-                              ComplexMatrix *doppler_map,
-                              DopplerFftTiming *timing)
+int doppler_fft_processing(const ComplexMatrix *rd_map,
+                           int nfft,
+                           ComplexMatrix *doppler_map,
+                           DopplerFftTiming *timing,
+                           DopplerWorkspace *ws)
 {
-    if (!rxsig_pc || !rxsig_pc->data || !doppler_map || !doppler_map->data) {
+  if (!rd_map || !rd_map->data || !doppler_map || !doppler_map->data || !timing || !ws) {
         return -1;
     }
 
-    int pulses = rxsig_pc->cols;
-
-    if (nfft <= 0) {
-        nfft = pulses;
-    }
+    int rows = rd_map->rows;
+    int pulses = rd_map->cols;
 
     if (!is_power_of_two(nfft)) {
         return -1;
@@ -195,7 +246,7 @@ int doppler_fft_processing(const ComplexMatrix *rxsig_pc,
         return -1;
     }
 
-    if (doppler_map->rows < rxsig_pc->rows || doppler_map->cols < nfft) {
+    if (doppler_map->rows != rows || doppler_map->cols < nfft) {
         return -1;
     }
 
@@ -211,7 +262,7 @@ int doppler_fft_processing(const ComplexMatrix *rxsig_pc,
      * rxsig_pc == rd_map
      * doppler_map == MTI 결과 저장 위치
      */
-    if (apply_mti(rxsig_pc, 1, doppler_map) != 0) {
+    if (apply_mti(rd_map, 1, doppler_map) != 0) {
         return -1;
     }
 
@@ -226,7 +277,7 @@ int doppler_fft_processing(const ComplexMatrix *rxsig_pc,
      * doppler_map에 이미 MTI 결과가 들어 있음.
      * 여기서 window + FFT + fftshift를 doppler_map에 바로 수행.
      */
-    if (apply_mtd(doppler_map, pulses, nfft) != 0) {
+    if (apply_mtd(doppler_map, pulses, nfft, ws) != 0) {
         return -1;
     }
 
