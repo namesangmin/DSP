@@ -17,6 +17,8 @@ typedef struct {
     double *cfar_ms;
     int cpu_id;
     int status;    
+    
+    PostQueue *post_q;
 } PostArgs;
 
 void *post_thread_main(void *arg);

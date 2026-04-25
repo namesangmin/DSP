@@ -15,8 +15,7 @@ int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool
     }
 
     atomic_init(&pool->current_write_idx, 0); // 0번 버퍼부터 시작
-    pool->error = 0;
-
+    atomic_init(&pool->error, 0); // 에러 플래그 초기화
     return 0;
 }
 

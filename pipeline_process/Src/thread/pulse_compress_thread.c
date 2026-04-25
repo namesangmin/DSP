@@ -51,7 +51,7 @@ void *worker_thread_main(void *arg)
         int done = atomic_fetch_add_explicit(&a->pool->rd_maps[curr_idx].done_count, 1, memory_order_release) + 1;
         
         // 내가 이 버퍼(curr_idx)의 마지막 512번째 펄스를 처리한 놈이라면?
-        if (done == a->total_pulses) {
+        if (done == a->meta->num_pulses) {
             PostJob p_job = { .buffer_idx = curr_idx }; // 현재 완성한 식판 번호를 담음
             
             // 3번 코어(포스트)에게 번호표 전달

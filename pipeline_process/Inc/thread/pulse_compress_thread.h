@@ -13,7 +13,7 @@ typedef struct {
 
     PipelinePool *pool;
     PulseQueue *q;
-    
+    PostQueue *post_q;
     PulseCompressCtx ctx;
 } WorkerArgs;
 

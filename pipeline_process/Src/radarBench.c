@@ -87,6 +87,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     LoaderArgs ld;
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
+    
     pthread_t th_even, th_odd, th_post; // th_loader
     
     double t0;
@@ -171,11 +172,15 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     wk_even.pool = &pool; // rd map 만들기 위해 짝수 펄스 index에 결고 넣음
     wk_even.q = &even_q;
     wk_even.cpu_id = 1;
+// 1, 2번 코어 (워커) 에게 주소 전달 (Push 용도)
+    wk_even.post_q = &post_q;
 
     wk_odd.meta = meta;
     wk_odd.pool = &pool;
     wk_odd.q = &odd_q;
     wk_odd.cpu_id = 2;
+// 1, 2번 코어 (워커) 에게 주소 전달 (Push 용도)
+    wk_odd.post_q = &post_q;
 
     /* post worker */
     post.meta = meta;
@@ -186,11 +191,13 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     post.cfar_ms = cfar_ms;
     post.cpu_id = 3;
     post.status = 0;
-
+// 3번 코어 (포스트) 에게 주소 전달 (Pop 용도)
+    post.post_q = &post_q;
     //pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
-    
+    pthread_create(&th_post, NULL, post_thread_main, &post);
+
     //pthread_join(th_loader, NULL);
     pthread_join(th_even,   NULL);
     pthread_join(th_odd,    NULL);
@@ -201,8 +208,8 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                     ? wk_even.compress_ms
                                     : wk_odd.compress_ms;
 
-    
-    pthread_create(&th_post, NULL, post_thread_main, &post);
+    post_queue_close(&post_q);
+    //pthread_create(&th_post, NULL, post_thread_main, &post);
     pthread_join(th_post, NULL);
 
     cleanup_pipeline_pool(&pool);
@@ -218,16 +225,19 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         return -1;
     }
     
-    // run_mmap_pipeline_single_file 하단
-    int completed = atomic_load(&pool.total_done_count);
-
-    if (completed != meta->num_pulses) {
-        fprintf(stderr, "Processing Incomplete: got=%d expected=%d\n",
-                completed, meta->num_pulses);
-        // 에러 처리 및 해제
-        return -1;
+    // 워커나 포스트 스레드 내부에서 문제가 생겨 error 플래그를 1로 올렸다면?
+    if (atomic_load(&pool.error)) {
+        fprintf(stderr, "Pipeline processing failed due to an internal thread error.\n");
+        
+        // 에러가 났으니 큐랑 메모리 박살내고 비정상 종료(-1)
+        cleanup_pipeline_pool(&pool);
+        pulse_queue_destroy(&even_q);
+        pulse_queue_destroy(&odd_q);
+        post_queue_destroy(&post_q);
+        return -1; 
     }
-
+    
+    // 여기까지 무사히 왔다면 파이프라인 완벽하게 정상 종료된 것!
     return 0;
 }
 
