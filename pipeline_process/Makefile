@@ -1,7 +1,7 @@
 CC = gcc
 
 # Include 경로에 settings 폴더도 추가해 줍니다. (queue 폴더가 없어졌다면 -I./Inc/queue는 빼도 무방합니다)
-CFLAGS = -O2 -Wall -std=gnu99 -I./Inc -I./Inc/thread -I./Inc/settings -pthread
+CFLAGS = -O2 -Wall -std=gnu99 -I./Inc -I./Inc/thread -I./Inc/settings -I./Inc/queue -pthread
 LDFLAGS = -pthread
 LDLIBS = -lm -lfftw3
 
@@ -11,7 +11,6 @@ OBJS = \
     Src/init.o \
     Src/loader.o \
     Src/pulse.o \
-    Src/queue.o \
     Src/doppler_fft.o \
     Src/cfar.o \
     Src/writer.o \
@@ -19,7 +18,9 @@ OBJS = \
     Src/settings/pipeline_set.o \
     Src/thread/loader_thread.o \
     Src/thread/pulse_compress_thread.o \
-    Src/thread/doppler_cfar_thread.o
+    Src/thread/doppler_cfar_thread.o \
+    Src/queue.o \
+    Src/queue_atomic.o
 
 TARGET = radarBench
 
@@ -33,4 +34,4 @@ Src/%.o: Src/%.c
 
 # settings 폴더 내부의 .o 파일도 지워지도록 추가
 clean:
-	rm -f Src/*.o Src/thread/*.o Src/settings/*.o $(TARGET)
+	rm -f Src/*.o Src/thread/*.o Src/queue/*.o Src/settings/*.o $(TARGET)

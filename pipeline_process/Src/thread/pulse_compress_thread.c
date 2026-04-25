@@ -27,9 +27,9 @@ void *worker_thread_main(void *arg)
         // 1. 임시 버퍼(out_buf)에 해당 펄스의 압축 결과를 받아옵니다. (Fast-time 연속)
         if (pulse_compress_one(&a->ctx, job.raw, a->ctx.out_buf) != 0) {
             fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d\n", job.pulse_idx);
-            pulse_queue_close(a->even_q);
-            pulse_queue_close(a->odd_q);
-            pipeline_signal_post(a->file, 1);
+            // pulse_queue_close(a->even_q);
+            // pulse_queue_close(a->odd_q);
+            // pipeline_signal_post(a->file, 1);
             return NULL;
         }
         local_compress_ms += now_ms() - t0;  // ← 압축 끝, 누적
@@ -43,7 +43,7 @@ void *worker_thread_main(void *arg)
 
         int done = atomic_fetch_add(&a->file->done_count, 1) + 1;
         if (done == a->total_pulses) {
-            pipeline_signal_post(a->file, 0);
+            //pipeline_signal_post(a->file, 0);
         }
         //local_compress_ms += now_ms() - t0;  // ← 압축 끝, 누적
 

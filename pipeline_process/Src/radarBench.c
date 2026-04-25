@@ -52,6 +52,7 @@
 
 #include "common.h"
 #include "queue.h"
+#include "queue_atomic.h"
 #include "core_set.h"
 #include "pipeline_set.h"
 
@@ -78,7 +79,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                          DetectionList *det)
 {
     PipelinePool pool;
-    PulseQueue even_q, odd_q;
+    PulseQueueA even_q, odd_q;
     LoaderArgs ld;
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
@@ -116,32 +117,32 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     doppler_timing->mti_ms = 0.0;
     doppler_timing->mtd_ms = 0.0;
 
-    // init
+    // load 시간 측정
     t0 = now_ms();
     if(init_pipeline_pool(dat_path, meta, &pool)){
         fprintf(stderr, "Failed to initialize pipeline pool\n");
         return -1;
     }
     
-    if (pulse_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulse_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
+    if (pulseA_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulseA_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
         // 예외처리
         cleanup_pipeline_pool(&pool);
         return -1;
     }
 
-    // 3. 큐에 번호표(인덱스) 미리 다 뿌려두기
+    // 큐에 번호표(인덱스) 미리 다 뿌려두기
     for (int pulse_idx = 0; pulse_idx < meta->num_pulses; ++pulse_idx) {
         PulseJob job;
         job.pulse_idx = pulse_idx;
-        if (pulse_idx % 2 == 0) pulse_queue_push(&even_q, job);
-        else                    pulse_queue_push(&odd_q, job);
+        if (pulse_idx % 2 == 0) pulseA_queue_push(&even_q, job);
+        else                    pulseA_queue_push(&odd_q, job);
     }
-    pulse_queue_close(&even_q);
-    pulse_queue_close(&odd_q);
+    pulseA_queue_close(&even_q);
+    pulseA_queue_close(&odd_q);
     *load_ms = now_ms() - t0;
 
 
-    // matched filter 생성
+    // matched filter 생성 + 시간 측정
     t0 = now_ms();
     if (pulse_compress_ctx_init(meta, &wk_even.ctx) != 0 || pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
         pulse_compress_ctx_destroy(&wk_even.ctx);
@@ -150,9 +151,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         // pool 해제 있어야 함
         return -1;
     }
-    t1 = now_ms();
-    pulse_timing->filter_ready_ms = t1 - t0;
-
+    pulse_timing->filter_ready_ms = now_ms() - t0;
 
     /* loader */
     ld.meta = meta;
