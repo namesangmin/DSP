@@ -25,30 +25,33 @@ void *worker_thread_main(void *arg)
         if (atomic_load_explicit(&a->pool->error, memory_order_relaxed)) {
             break;
         }
-
+        // fprintf(stderr, "worker cpu=%d pop pulse_idx=%d\n",
+        //             a->cpu_id, job.pulse_idx);
         double t0 = now_ms();
 
         double complex *pulse_raw_ptr = &a->pool->raw_data.data[job.pulse_idx * num_range_bins];
-    fprintf(stderr,
-            "worker debug: cpu=%d pulse_idx=%d raw_data=%p rows=%d cols=%d "
-            "pulse_raw_ptr=%p out_buf=%p X=%p Y=%p H=%p input_len=%d nfft=%d\n",
-            a->cpu_id,
-            job.pulse_idx,
-            (void *)a->pool->raw_data.data,
-            a->pool->raw_data.rows,
-            a->pool->raw_data.cols,
-            (void *)pulse_raw_ptr,
-            (void *)a->ctx.out_buf,
-            (void *)a->ctx.X,
-            (void *)a->ctx.Y,
-            (void *)a->ctx.H,
-            a->ctx.input_len,
-            a->ctx.nfft);
+    // fprintf(stderr,
+    //         "worker debug: cpu=%d pulse_idx=%d raw_data=%p rows=%d cols=%d "
+    //         "pulse_raw_ptr=%p out_buf=%p X=%p Y=%p H=%p input_len=%d nfft=%d\n",
+    //         a->cpu_id,
+    //         job.pulse_idx,
+    //         (void *)a->pool->raw_data.data,
+    //         a->pool->raw_data.rows,
+    //         a->pool->raw_data.cols,
+    //         (void *)pulse_raw_ptr,
+    //         (void *)a->ctx.out_buf,
+    //         (void *)a->ctx.X,
+    //         (void *)a->ctx.Y,
+    //         (void *)a->ctx.H,
+    //         a->ctx.input_len,
+    //         a->ctx.nfft);
         if (pulse_compress_one(&a->ctx, pulse_raw_ptr, a->ctx.out_buf) != 0) {
             fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d\n", job.pulse_idx);
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             return NULL;
         }
+        // fprintf(stderr, "worker cpu=%d compressed pulse_idx=%d\n",
+        // a->cpu_id, job.pulse_idx);
         local_compress_ms += now_ms() - t0;
 
         // [핵심]: 쓰레기 하드코딩 삭제. 
@@ -69,12 +72,14 @@ void *worker_thread_main(void *arg)
             PostJob p_job = { .buffer_idx = curr_idx }; // 현재 완성한 식판 번호를 담음
             
             // 3번 코어(포스트)에게 번호표 전달
-            while (!post_queue_push(a->post_q, p_job)) {
-                // 3중 버퍼이므로 꽉 찰 일은 거의 없지만, 실시간 안전장치로 유지
+            if (post_queue_push(a->post_q, p_job) != 0) {
+                fprintf(stderr, "post_queue_push failed: buffer_idx=%d\n", curr_idx);
+                atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
+                return NULL;
             }
         }
     }
-
+//fprintf(stderr, "worker cpu=%d exit\n", a->cpu_id);
     a->compress_ms = local_compress_ms;
     return NULL;
 }

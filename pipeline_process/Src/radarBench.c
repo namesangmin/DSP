@@ -111,7 +111,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     doppler_timing->mti_ms = 0.0;
     doppler_timing->mtd_ms = 0.0;
 
-    // load 시간 측정
+    // load 시간 측정 + 밑에서 파일 읽고 로드한 시간 더함
     t0 = now_ms();
     if(init_pipeline_pool(dat_path, meta, &pool)){
         fprintf(stderr, "Failed to initialize pipeline pool\n");
@@ -129,16 +129,6 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         pulse_queue_destroy(&odd_q);
         return -1;
     }
-
-    // 큐에 번호표(인덱스) 미리 다 뿌려두기
-    for (int pulse_idx = 0; pulse_idx < meta->num_pulses; ++pulse_idx) {
-        PulseJob job;
-        job.pulse_idx = pulse_idx;
-        if (pulse_idx % 2 == 0) pulse_queue_push(&even_q, job);
-        else                    pulse_queue_push(&odd_q, job);
-    }
-    pulse_queue_close(&even_q);
-    pulse_queue_close(&odd_q);
     *load_ms = now_ms() - t0;
 
     // matched filter 생성 + 시간 측정
@@ -159,6 +149,8 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     ld.even_q = &even_q;
     ld.odd_q = &odd_q;
     ld.cpu_id = 0;
+    ld.out_loader_ms = load_ms;
+
 
     //짝수 큐 // 
     wk_even.meta = meta;
@@ -193,10 +185,9 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
     pthread_create(&th_post, NULL, post_thread_main, &post);
 
-    //pthread_join(th_loader, NULL);
+    pthread_join(th_loader, NULL);    
     pthread_join(th_even,   NULL);
     pthread_join(th_odd,    NULL);
-
     // 두 워커의 압축 시간 중 max를 쓰는 게 wall time 관점
     // (병렬로 돌았으니까 실제 경과 시간은 더 오래 걸린 쪽)
     pulse_timing->compression_ms = (wk_even.compress_ms > wk_odd.compress_ms)
@@ -204,32 +195,20 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                     : wk_odd.compress_ms;
 
     post_queue_close(&post_q);
-    //pthread_create(&th_post, NULL, post_thread_main, &post);
     pthread_join(th_post, NULL);
+
+  int failed = (atomic_load(&pool.error) != 0 || post.status != 0);
 
     cleanup_pipeline_pool(&pool);
     pulse_queue_destroy(&even_q);
     pulse_queue_destroy(&odd_q);
     post_queue_destroy(&post_q);
+    pulse_compress_ctx_destroy(&wk_even.ctx);
+    pulse_compress_ctx_destroy(&wk_odd.ctx);
 
-    // run_mmap_pipeline_single_file 함수 하단 수정
-    if (atomic_load(&pool.error) != 0 || post.status != 0) {
+    if (failed) {
         fprintf(stderr, "Pipeline error detected!\n");
-        cleanup_pipeline_pool(&pool);
-        // 여기에 cleanup_pipeline_pool(&pool) 호출 잊지 마세요!
         return -1;
-    }
-    
-    // 워커나 포스트 스레드 내부에서 문제가 생겨 error 플래그를 1로 올렸다면?
-    if (atomic_load(&pool.error)) {
-        fprintf(stderr, "Pipeline processing failed due to an internal thread error.\n");
-        
-        // 에러가 났으니 큐랑 메모리 박살내고 비정상 종료(-1)
-        cleanup_pipeline_pool(&pool);
-        pulse_queue_destroy(&even_q);
-        pulse_queue_destroy(&odd_q);
-        post_queue_destroy(&post_q);
-        return -1; 
     }
     
     // 여기까지 무사히 왔다면 파이프라인 완벽하게 정상 종료된 것!

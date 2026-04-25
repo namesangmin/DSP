@@ -2,7 +2,7 @@
 #include "core_set.h"
 #include "doppler_cfar_thread.h"
 #include "timer.h"
-
+#include <stdio.h>
 void *post_thread_main(void *arg)
 {
     PostArgs *a = (PostArgs *)arg;
@@ -23,7 +23,7 @@ void *post_thread_main(void *arg)
 
         // 워커(1, 2번)가 완성해둔 0, 1, 2번 식판 중 하나의 번호
         int idx = job.buffer_idx;
-
+//fprintf(stderr, "post: got buffer_idx=%d\n", job.buffer_idx);
         // =========================================================
         // 1. 도플러 처리
         // =========================================================
@@ -35,6 +35,7 @@ void *post_thread_main(void *arg)
                                       a->meta->num_pulses,
                                       &a->pool->doppler_maps[idx].data,
                                       a->doppler_timing) != 0) {
+            fprintf(stderr, "post: doppler_fft_processing failed: buffer_idx=%d\n", job.buffer_idx);
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
         }
@@ -59,6 +60,7 @@ void *post_thread_main(void *arg)
                         numTrainR, numTrainD, 
                         numGuardR, numGuardD,
                         rankIdx, 8.0, a->det) != 0) {
+            fprintf(stderr, "post: cfar_detect failed: buffer_idx=%d\n", job.buffer_idx);
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
         }
