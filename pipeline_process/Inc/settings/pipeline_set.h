@@ -24,7 +24,7 @@ typedef struct {
 } RdMapBuffer;
 
 typedef struct {
-    RealMatrix data;
+    ComplexMatrix data;
     atomic_int state;
 } DetectionBuffer;
 
