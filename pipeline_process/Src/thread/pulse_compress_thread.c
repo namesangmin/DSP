@@ -14,8 +14,8 @@ void *worker_thread_main(void *arg)
 
     pin_thread_to_cpu(a->cpu_id);
     
-    int num_range_bins = a->pool->raw_data.rows;
-    int num_pulses = a->pool->raw_data.cols;
+    int num_pulses = a->meta->num_pulses;                    // 512
+    int num_range_bins = a->meta->num_fast_time_samples;      // 1001
     double local_compress_ms = 0.0;
 
     PulseQueue *my_q = a->q;
@@ -29,22 +29,8 @@ void *worker_thread_main(void *arg)
         //             a->cpu_id, job.pulse_idx);
         double t0 = now_ms();
 
-        double complex *pulse_raw_ptr = &a->pool->raw_data.data[job.pulse_idx * num_range_bins];
-    // fprintf(stderr,
-    //         "worker debug: cpu=%d pulse_idx=%d raw_data=%p rows=%d cols=%d "
-    //         "pulse_raw_ptr=%p out_buf=%p X=%p Y=%p H=%p input_len=%d nfft=%d\n",
-    //         a->cpu_id,
-    //         job.pulse_idx,
-    //         (void *)a->pool->raw_data.data,
-    //         a->pool->raw_data.rows,
-    //         a->pool->raw_data.cols,
-    //         (void *)pulse_raw_ptr,
-    //         (void *)a->ctx.out_buf,
-    //         (void *)a->ctx.X,
-    //         (void *)a->ctx.Y,
-    //         (void *)a->ctx.H,
-    //         a->ctx.input_len,
-    //         a->ctx.nfft);
+        const double complex *pulse_raw_ptr = &CMAT_AT(&a->pool->raw_data, job.pulse_idx, 0);
+
         if (pulse_compress_one(&a->ctx, pulse_raw_ptr, a->ctx.out_buf) != 0) {
             fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d\n", job.pulse_idx);
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
@@ -60,8 +46,7 @@ void *worker_thread_main(void *arg)
 
         // 결과 저장 (세로 방향)
         for (int r = 0; r < num_range_bins; ++r) {
-            size_t idx = (size_t)r * (size_t)num_pulses + (size_t)job.pulse_idx;
-            a->pool->rd_maps[curr_idx].data.data[idx] = a->ctx.out_buf[r];
+            CMAT_AT(&a->pool->rd_maps[curr_idx].data, r, job.pulse_idx) = a->ctx.out_buf[r];
         }
 
         // 해당 인덱스(curr_idx)의 카운터를 올림
