@@ -27,7 +27,6 @@ int make_pulse_compression_filter(const RadarMeta *meta, int use_window, Complex
 int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx);
 void pulse_compress_ctx_destroy(PulseCompressCtx *ctx);
 int pulse_compress_one(PulseCompressCtx *ctx,
-                       const RawIQSample *raw_pulse,
+                       const double complex *raw_pulse,
                        double complex *out_range_bins);
-
 #endif

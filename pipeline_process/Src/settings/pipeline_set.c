@@ -28,6 +28,6 @@ void cleanup_pipeline_pool(PipelinePool *pool) {
     // 2. 3중 버퍼(Triple Buffer)에 할당했던 작업용 메모리 싹 다 해제
     for (int i = 0; i < NUM_BUFFERS; i++) {
         free_complex_matrix(&pool->rd_maps[i].data);
-        free_real_matrix(&pool->det_maps[i].data);
+        free_complex_matrix(&pool->det_maps[i].data);
     }
 }

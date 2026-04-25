@@ -20,11 +20,11 @@ typedef struct {
     double complex *data;
 } ComplexMatrix;
 
-typedef struct {
-    int rows;
-    int cols;
-    double *data;
-} RealMatrix;
+// typedef struct {
+//     int rows;
+//     int cols;
+//     double *data;
+// } RealMatrix;
 
 typedef struct {
     double i;
@@ -32,9 +32,9 @@ typedef struct {
 } RawIQSample;
 
 int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m);
-int alloc_real_matrix(int rows, int cols, RealMatrix *m);
+//int alloc_real_matrix(int rows, int cols, RealMatrix *m);
 void free_complex_matrix(ComplexMatrix *m);
-void free_real_matrix(RealMatrix *m);
+//void free_real_matrix(RealMatrix *m);
 
 int load_metadata(const char *path, RadarMeta *meta);
 

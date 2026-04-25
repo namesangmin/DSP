@@ -36,14 +36,14 @@ int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m) {
     return (m->data != NULL) ? 0 : -1;
 }
 
-int alloc_real_matrix(int rows, int cols, RealMatrix *m) {
-    if (!m || rows <= 0 || cols <= 0) return -1;
+// int alloc_real_matrix(int rows, int cols, RealMatrix *m) {
+//     if (!m || rows <= 0 || cols <= 0) return -1;
 
-    m->rows = rows;
-    m->cols = cols;
-    m->data = (double *)calloc((size_t)rows * (size_t)cols, sizeof(double));
-    return (m->data != NULL) ? 0 : -1;
-}
+//     m->rows = rows;
+//     m->cols = cols;
+//     m->data = (double *)calloc((size_t)rows * (size_t)cols, sizeof(double));
+//     return (m->data != NULL) ? 0 : -1;
+// }
 
 void free_complex_matrix(ComplexMatrix *m) {
     if (!m) return;
@@ -53,13 +53,13 @@ void free_complex_matrix(ComplexMatrix *m) {
     m->cols = 0;
 }
 
-void free_real_matrix(RealMatrix *m) {
-    if (!m) return;
-    free(m->data);
-    m->data = NULL;
-    m->rows = 0;
-    m->cols = 0;
-}
+// void free_real_matrix(RealMatrix *m) {
+//     if (!m) return;
+//     free(m->data);
+//     m->data = NULL;
+//     m->rows = 0;
+//     m->cols = 0;
+// }
 
 int load_metadata(const char *path, RadarMeta *meta) {
     FILE *fp;

@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+//#define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
@@ -237,7 +237,7 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
 }
 
 int pulse_compress_one(PulseCompressCtx *ctx,
-                       const RawIQSample *raw_pulse,
+                       const double complex *raw_pulse,
                        double complex *out_range_bins)
 {
     if (!ctx || !raw_pulse || !out_range_bins) {
@@ -255,7 +255,7 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     }
 
     for (int i = 0; i < ctx->input_len; ++i) {
-        ctx->X[i] = raw_pulse[i].i + raw_pulse[i].q * I;
+        ctx->X[i] = raw_pulse[i];
     }
 
     fft_inplace_local(ctx->X, ctx->nfft, 0);

@@ -25,7 +25,7 @@
 *
 */
 
-#define _GNU_SOURCE
+//#define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,14 +61,6 @@
 #include "doppler_cfar_thread.h"
 #include "loader_thread.h"
 #include "pulse_compress_thread.h"
-
-
-/* mmap + 4-thread pipeline:
-   core0 = loader
-   core1 = even pulse compression
-   core2 = odd pulse compression
-   core3 = Doppler + CFAR
-*/
 
 // init
 static int run_mmap_pipeline_single_file(const char *dat_path,
