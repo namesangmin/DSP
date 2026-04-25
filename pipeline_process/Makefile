@@ -1,14 +1,20 @@
 CC = gcc
 
 # Include 경로에 settings 폴더도 추가해 줍니다. (queue 폴더가 없어졌다면 -I./Inc/queue는 빼도 무방합니다)
-CFLAGS = -O2 -Wall -std=gnu99 -I./Inc -I./Inc/thread -I./Inc/settings -I./Inc/queue -pthread
+CFLAGS = -O2 -Wall -std=gnu99 \
+    -I./Inc \
+    -I./Inc/thread \
+    -I./Inc/settings \
+    -I./Inc/queue \
+    -I./Inc/queue/atomic \
+    -pthread
+
 LDFLAGS = -pthread
 LDLIBS = -lm -lfftw3
 
 # 사진의 Src 폴더 구조에 완벽하게 맞춘 목적 파일(Object file) 목록
 OBJS = \
     Src/radarBench.o \
-    Src/init.o \
     Src/loader.o \
     Src/pulse.o \
     Src/doppler_fft.o \
@@ -19,8 +25,9 @@ OBJS = \
     Src/thread/loader_thread.o \
     Src/thread/pulse_compress_thread.o \
     Src/thread/doppler_cfar_thread.o \
-    Src/queue.o \
-    Src/queue_atomic.o
+    Src/queue/queue.o \
+    Src/queue/queue_post.o \
+    Src/queue/queue_pulse.o
 
 TARGET = radarBench
 

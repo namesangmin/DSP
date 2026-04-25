@@ -1,3 +1,4 @@
+#include <string.h>
 #include "pipeline_set.h"
 
 int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool *pool) {

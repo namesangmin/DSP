@@ -1,26 +1,22 @@
 #ifndef __PULSE_COMPRESS_THREAD_H__
 #define __PULSE_COMPRESS_THREAD_H__
 
-#include <complex.h>
-#include "loader.h"
-#include "common.h"
-#include "queue.h"
+// #include "loader.h"
+// #include "common.h"
 
-typedef struct {
-    int pulse_idx;
-} PulseJob;
+#include "queue_pulse.h"
+#include "pipeline_set.h"
+#include "pulse.h"
 
 typedef struct {
     const RadarMeta *meta;
-    int total_pulses;
+    int cpu_id;
+    double compress_ms; 
+
     PipelinePool *pool;
     PulseQueue *q;
-    PulseQueue *even_q;
-    PulseQueue *odd_q;
-    int cpu_id;
-    PulseCompressCtx ctx;
     
-    double compress_ms; 
+    PulseCompressCtx ctx;
 } WorkerArgs;
 
 void *worker_thread_main(void *arg);

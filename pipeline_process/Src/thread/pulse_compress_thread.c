@@ -14,8 +14,8 @@ void *worker_thread_main(void *arg)
 
     pin_thread_to_cpu(a->cpu_id);
 
-    int num_range_bins = a->file->pc.rows;
-    int num_pulses = a->file->pc.cols;
+    int num_range_bins = a->pool->raw_data.rows;
+    int num_pulses = a->pool->raw_data.cols;
     double local_compress_ms = 0.0;  // ← 이 스레드의 압축 누적 시간
 
     while (pulse_queue_pop(a->q, &job)) {

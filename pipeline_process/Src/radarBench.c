@@ -52,6 +52,10 @@
 
 #include "common.h"
 #include "queue.h"
+
+#include "queue_post.h"
+#include "queue_pulse.h"
+
 #include "core_set.h"
 #include "pipeline_set.h"
 
@@ -84,11 +88,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     PostArgs post;
     pthread_t th_even, th_odd, th_post; // th_loader
     
-    ComplexMatrix my_matrix;
-
-    double t0, t1;
-    // 메모리
-    memset(&pool, 0, sizeof(pool));
+    double t0;
 
     // 큐 선언
     memset(&even_q, 0, sizeof(even_q));
@@ -140,7 +140,6 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     pulse_queue_close(&odd_q);
     *load_ms = now_ms() - t0;
 
-
     // matched filter 생성 + 시간 측정
     t0 = now_ms();
     if (pulse_compress_ctx_init(meta, &wk_even.ctx) != 0 || pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
@@ -161,19 +160,13 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
 
     //짝수 큐 // 
     wk_even.meta = meta;
-    wk_even.total_pulses = meta->num_pulses;
     wk_even.pool = &pool; // rd map 만들기 위해 짝수 펄스 index에 결고 넣음
     wk_even.q = &even_q;
-    wk_even.even_q = &even_q;
-    wk_even.odd_q = &odd_q;
     wk_even.cpu_id = 1;
 
     wk_odd.meta = meta;
-    wk_odd.total_pulses = meta->num_pulses;
     wk_odd.pool = &pool;
     wk_odd.q = &odd_q;
-    wk_odd.even_q = &even_q;
-    wk_odd.odd_q = &odd_q;
     wk_odd.cpu_id = 2;
 
     /* post worker */
@@ -214,6 +207,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     // run_mmap_pipeline_single_file 함수 하단 수정
     if (atomic_load(&pool.error) != 0 || post.status != 0) {
         fprintf(stderr, "Pipeline error detected!\n");
+        cleanup_pipeline_pool(&pool);
         // 여기에 cleanup_pipeline_pool(&pool) 호출 잊지 마세요!
         return -1;
     }
@@ -289,7 +283,6 @@ static void print_average_line(const char *name, double avg_ms) {
 int process_single_file(const char *metadata_path,
                         const char *real_path,
                         const char *imag_path,
-                        const char *version,
                         int runs,
                         Detection *out_best,
                         Accumulator *global_acc) 
@@ -312,14 +305,11 @@ int process_single_file(const char *metadata_path,
         DopplerFftTiming doppler_timing = {0};
 
         double total_t0 = now_ms();
-        double t0;
         double load_ms = 0.0;
         double pulse_total_ms = 0.0;
         double doppler_total_ms = 0.0;
         double cfar_ms = 0.0;
         double total_ms = 0.0;
-
-        int use_rx_path = 0;
 
         if (load_metadata(metadata_path, &meta) != 0) return 1;
 
@@ -440,7 +430,7 @@ int process_single_file(const char *metadata_path,
 // --------------------------------------------------------------------------------
 // 폴더 순회 및 궤적 요약
 // --------------------------------------------------------------------------------
-void process_directory(const char *dir_path, const char *metadata_path, const char *version, int runs) {
+void process_directory(const char *dir_path, const char *metadata_path, int runs) {
     struct dirent **namelist;
 
     // [추가됨] 전체 디렉토리에 대한 결과를 누적할 구조체
@@ -479,7 +469,7 @@ void process_directory(const char *dir_path, const char *metadata_path, const ch
             printf("=========================================================\n");
           
             // [수정됨] 매개변수 맨 끝에 &total_acc 전달
-            process_single_file(metadata_path, filepath, "DUMMY", version, runs, &best_det, &total_acc);
+            process_single_file(metadata_path, filepath, "DUMMY", runs, &best_det, &total_acc);
             processed = 1;
         }
 
@@ -577,11 +567,11 @@ int main(int argc, char **argv) {
 
     if (S_ISDIR(st.st_mode)) {
         printf("Target is a DIRECTORY. Batch sequential processing initiated...\n");
-        process_directory(target_path, metadata_path, version, runs);
+        process_directory(target_path, metadata_path, runs);
     } else if (S_ISREG(st.st_mode)) {
         printf("Target is a FILE.\n");
         // [수정됨] 단일 파일 모드에서는 global_acc 에 NULL 전달
-        process_single_file(metadata_path, target_path, imag_path, version, runs, NULL, NULL);
+        process_single_file(metadata_path, target_path, imag_path, runs, NULL, NULL);
     }
 
     return 0;

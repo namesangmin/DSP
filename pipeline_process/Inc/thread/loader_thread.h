@@ -4,7 +4,7 @@
 #include "common.h"
 #include "core_set.h"
 #include "pipeline_set.h" 
-#include "queue.h"
+#include "queue_pulse.h"
 #include "pulse_compress_thread.h"
 
 typedef struct {

@@ -10,12 +10,12 @@ void *post_thread_main(void *arg)
     pin_thread_to_cpu(a->cpu_id);
     a->status = 0;
 
-    pthread_mutex_lock(&a->file->post_mtx);
+    //pthread_mutex_lock(&a->file->post_mtx);
     while (!a->file->post_ready) {
-        pthread_cond_wait(&a->file->post_cv, &a->file->post_mtx);
+        //pthread_cond_wait(&a->file->post_cv, &a->file->post_mtx);
     }
     int error_flag = a->file->error;
-    pthread_mutex_unlock(&a->file->post_mtx);
+    //pthread_mutex_unlock(&a->file->post_mtx);
 
     if (error_flag) {
         a->status = -1;
