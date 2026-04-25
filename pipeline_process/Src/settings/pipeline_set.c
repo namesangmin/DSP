@@ -18,3 +18,16 @@ int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool
 
     return 0;
 }
+
+void cleanup_pipeline_pool(PipelinePool *pool) {
+    if (!pool) return;
+
+    // 1. 가장 먼저 읽어왔던 8MB짜리 원본 데이터 해제
+    free_complex_matrix(&pool->raw_data);
+
+    // 2. 3중 버퍼(Triple Buffer)에 할당했던 작업용 메모리 싹 다 해제
+    for (int i = 0; i < NUM_BUFFERS; i++) {
+        free_complex_matrix(&pool->rd_maps[i].data);
+        free_real_matrix(&pool->det_maps[i].data);
+    }
+}

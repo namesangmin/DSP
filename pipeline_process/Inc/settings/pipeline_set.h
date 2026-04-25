@@ -36,9 +36,10 @@ typedef struct {
     DetectionBuffer det_maps[NUM_BUFFERS]; // 3중 버퍼
 
     atomic_int current_write_idx; // 짝/홀 코어가 현재 채우고 있는 인덱스 (0, 1, 2)
-    
+    atomic_int total_done_count; // 파일 전체 처리량 체크용
     int error;
 } PipelinePool; // 이름도 멋지게 Pool로 변경!
 
 int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool *pool);
+void cleanup_pipeline_pool(PipelinePool *pool);
 #endif

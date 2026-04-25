@@ -52,7 +52,6 @@
 
 #include "common.h"
 #include "queue.h"
-#include "queue_atomic.h"
 #include "core_set.h"
 #include "pipeline_set.h"
 
@@ -79,11 +78,11 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                          DetectionList *det)
 {
     PipelinePool pool;
-    PulseQueueA even_q, odd_q;
+    PulseQueue even_q, odd_q;
     LoaderArgs ld;
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
-    pthread_t th_loader, th_even, th_odd, th_post;
+    pthread_t th_even, th_odd, th_post; // th_loader
     
     ComplexMatrix my_matrix;
 
@@ -124,7 +123,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         return -1;
     }
     
-    if (pulseA_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulseA_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
+    if (pulse_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulse_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
         // 예외처리
         cleanup_pipeline_pool(&pool);
         return -1;
@@ -134,11 +133,11 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     for (int pulse_idx = 0; pulse_idx < meta->num_pulses; ++pulse_idx) {
         PulseJob job;
         job.pulse_idx = pulse_idx;
-        if (pulse_idx % 2 == 0) pulseA_queue_push(&even_q, job);
-        else                    pulseA_queue_push(&odd_q, job);
+        if (pulse_idx % 2 == 0) pulse_queue_push(&even_q, job);
+        else                    pulse_queue_push(&odd_q, job);
     }
-    pulseA_queue_close(&even_q);
-    pulseA_queue_close(&odd_q);
+    pulse_queue_close(&even_q);
+    pulse_queue_close(&odd_q);
     *load_ms = now_ms() - t0;
 
 
@@ -187,11 +186,11 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     post.cpu_id = 3;
     post.status = 0;
 
-    pthread_create(&th_loader, NULL, loader_thread_main, &ld);
+    //pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
     
-    pthread_join(th_loader, NULL);
+    //pthread_join(th_loader, NULL);
     pthread_join(th_even,   NULL);
     pthread_join(th_odd,    NULL);
 
@@ -207,18 +206,25 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
 
 
     // pool 해제 있어야 함
-
+    cleanup_pipeline_pool(&pool);
     pulse_queue_destroy(&even_q);
     pulse_queue_destroy(&odd_q);
 
 
-    if (file.error || post.status != 0) {
+    // run_mmap_pipeline_single_file 함수 하단 수정
+    if (atomic_load(&pool.error) != 0 || post.status != 0) {
+        fprintf(stderr, "Pipeline error detected!\n");
+        // 여기에 cleanup_pipeline_pool(&pool) 호출 잊지 마세요!
         return -1;
     }
+    
+    // run_mmap_pipeline_single_file 하단
+    int completed = atomic_load(&pool.total_done_count);
 
-    if (atomic_load(&file.done_count) != meta->num_pulses) {
-        fprintf(stderr, "done_count mismatch: got=%d expected=%d\n",
-                atomic_load(&file.done_count), meta->num_pulses);
+    if (completed != meta->num_pulses) {
+        fprintf(stderr, "Processing Incomplete: got=%d expected=%d\n",
+                completed, meta->num_pulses);
+        // 에러 처리 및 해제
         return -1;
     }
 
