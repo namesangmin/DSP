@@ -77,10 +77,8 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                          double *cfar_ms,
                                          DetectionList *det)
 {
-    PipelineFile file;
+    PipelinePool pool;
     PulseQueue even_q, odd_q;
-    //PulseChunkQueue even_q, odd_q;
-
     LoaderArgs ld;
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
@@ -89,13 +87,21 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     ComplexMatrix my_matrix;
 
     double t0, t1;
+    // 메모리
+    memset(&pool, 0, sizeof(pool));
 
-    memset(&file, 0, sizeof(file));
+    // 큐 선언
     memset(&even_q, 0, sizeof(even_q));
     memset(&odd_q, 0, sizeof(odd_q));
+    
+    // 파일 로더 
     memset(&ld, 0, sizeof(ld));
+    
+    // 코어 2개에 넣을거?
     memset(&wk_even, 0, sizeof(wk_even));
     memset(&wk_odd, 0, sizeof(wk_odd));
+    
+    // 도플러, cfar
     memset(&post, 0, sizeof(post));
 
     if (!dat_path || !meta || !load_ms || !pulse_timing ||
@@ -110,75 +116,47 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     doppler_timing->mti_ms = 0.0;
     doppler_timing->mtd_ms = 0.0;
 
-    atomic_init(&file.done_count, 0);
-    pthread_mutex_init(&file.post_mtx, NULL);
-    pthread_cond_init(&file.post_cv, NULL);
-
+    // init
     t0 = now_ms();
-    if (pulse_compress_ctx_init(meta, &wk_even.ctx) != 0 ||
-        pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
+    if(init_pipeline_pool(dat_path, meta, &pool)){
+        fprintf(stderr, "Failed to initialize pipeline pool\n");
+        return -1;
+    }
+    
+    if (pulse_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulse_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
+        // 예외처리
+        return -1;
+    }
+    
+    if (alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses, &file.pc) != 0) {
+        return -1;
+    }
+    *load_ms = now_ms() - t0;
+
+    // matched filter 생성
+    t0 = now_ms();
+    if (pulse_compress_ctx_init(meta, &wk_even.ctx) != 0 || pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
         pulse_compress_ctx_destroy(&wk_even.ctx);
         pulse_compress_ctx_destroy(&wk_odd.ctx);
         
-        pulse_queue_destroy(&even_q);
-        pulse_queue_destroy(&odd_q);
-        
-        free_complex_matrix(&file.pc);
-        //dat_mmap_close(&file.mm);
-        
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
+        // pool 해제 있어야 함
         return -1;
     }
     t1 = now_ms();
     pulse_timing->filter_ready_ms = t1 - t0;
 
-    t0 = now_ms();
-    if (load_complex_bin_all_fread(
-        dat_path, 
-        meta->num_pulses, 
-        meta->num_fast_time_samples,
-        232,
-        &my_matrix) != 0) {
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
-        return -1;
-    }
-
-    t1 = now_ms();
-    *load_ms = t1 - t0;
-
-    if (alloc_complex_matrix(meta->num_fast_time_samples,
-                             meta->num_pulses,
-                             &file.pc) != 0) {
-        //dat_mmap_close(&file.mm);
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
-        return -1;
-    }
-
-    if (pulse_queue_init(&even_q, 64) != 0 || pulse_queue_init(&odd_q, 64) != 0) {
-        pulse_queue_destroy(&even_q);
-        pulse_queue_destroy(&odd_q);
-
-        free_complex_matrix(&file.pc);
-
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
-        return -1;
-    }
 
     /* loader */
     ld.meta = meta;
-    ld.file = &file;
+    ld.pool = &pool; // raw data 사용
     ld.even_q = &even_q;
     ld.odd_q = &odd_q;
     ld.cpu_id = 0;
 
-    //짝수 큐
+    //짝수 큐 // 
     wk_even.meta = meta;
     wk_even.total_pulses = meta->num_pulses;
-    wk_even.file = &file;
+    wk_even.pool = &pool; // rd map 만들기 위해 짝수 펄스 index에 결고 넣음
     wk_even.q = &even_q;
     wk_even.even_q = &even_q;
     wk_even.odd_q = &odd_q;
@@ -186,7 +164,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
 
     wk_odd.meta = meta;
     wk_odd.total_pulses = meta->num_pulses;
-    wk_odd.file = &file;
+    wk_odd.pool = &pool;
     wk_odd.q = &odd_q;
     wk_odd.even_q = &even_q;
     wk_odd.odd_q = &odd_q;
@@ -194,7 +172,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
 
     /* post worker */
     post.meta = meta;
-    post.file = &file;
+    post.pool = &pool; // 도플러, cfar
     post.doppler = doppler;
     post.det = det;
     post.doppler_timing = doppler_timing;
@@ -216,21 +194,16 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                     ? wk_even.compress_ms
                                     : wk_odd.compress_ms;
 
-    if (file.error && !file.post_ready) {
-        pipeline_signal_post(&file, 1);
-    }
     
-    pthread_create(&th_post,   NULL, post_thread_main,   &post);
+    pthread_create(&th_post, NULL, post_thread_main, &post);
     pthread_join(th_post, NULL);
+
+
+    // pool 해제 있어야 함
 
     pulse_queue_destroy(&even_q);
     pulse_queue_destroy(&odd_q);
-    free_complex_matrix(&file.pc);
 
-    //dat_mmap_close(&file.mm);
-
-    pthread_cond_destroy(&file.post_cv);
-    pthread_mutex_destroy(&file.post_mtx);
 
     if (file.error || post.status != 0) {
         return -1;

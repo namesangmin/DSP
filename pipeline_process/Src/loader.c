@@ -100,11 +100,6 @@ int load_metadata(const char *path, RadarMeta *meta) {
         else if (strcmp(key, "SweepBandwidth_Hz") == 0) meta->sweep_bandwidth_hz = atof(val);
         else if (strcmp(key, "NumPulses") == 0) meta->num_pulses = atoi(val);
         else if (strcmp(key, "NumFastTimeSamples") == 0) meta->num_fast_time_samples = atoi(val);
-
-        /* 필요하면 아래도 구조체에 추가해서 받을 수 있음
-        else if (strcmp(key, "MaxUnambiguousRange_m") == 0) meta->max_unambiguous_range_m = atof(val);
-        else if (strcmp(key, "Lambda_m") == 0) meta->lambda_m = atof(val);
-        */
     }
 
     fclose(fp);
@@ -202,10 +197,88 @@ int load_complex_bin_all_fread(const char *path,
             out->data[(size_t)c * (size_t)num_pulses + (size_t)r] = 
                 pulse_buffer[c].i + pulse_buffer[c].q * _Complex_I;
         }
-    }
+    } 
 
     free(pulse_buffer);
     fclose(fp);
     
     return 0;
 }
+
+#if 0
+int load_complex_bin_single(const char *path, int rows, int cols, ComplexMatrix *out) {
+    FILE *fp = NULL;
+    struct stat st;
+    const long header_size = 232;
+    const size_t total_elements = (size_t)rows * (size_t)cols;
+    const size_t expected_size = (size_t)header_size + total_elements * sizeof(double) * 2;
+
+    if (!path || !out || rows <= 0 || cols <= 0) {
+        fprintf(stderr, "load_complex_bin_single: invalid args rows=%d cols=%d\n", rows, cols);
+        return -1;
+    }
+
+    if (alloc_complex_matrix(cols, rows, out) != 0) {
+        fprintf(stderr, "load_complex_bin_single: alloc failed rows=%d cols=%d\n", rows, cols);
+        return -2;
+    }
+
+    if (stat(path, &st) != 0) {
+        perror("stat");
+        free_complex_matrix(out);
+        return -3;
+    }
+
+    fprintf(stderr, "file size=%lld expected=%zu\n",
+            (long long)st.st_size, expected_size);
+
+    if ((size_t)st.st_size != expected_size) {
+        fprintf(stderr,
+                "load_complex_bin_single: file size mismatch "
+                "(actual=%lld, expected=%zu)\n",
+                (long long)st.st_size, expected_size);
+        free_complex_matrix(out);
+        return -4;
+    }
+
+    fp = fopen(path, "rb");
+    if (!fp) {
+        perror("fopen");
+        free_complex_matrix(out);
+        return -5;
+    }
+
+    if (fseek(fp, header_size, SEEK_SET) != 0) {
+        perror("fseek");
+        fclose(fp);
+        free_complex_matrix(out);
+        return -6;
+    }
+
+    /* row = pulse, col = fast-time sample */
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            double i_val, q_val;
+
+            char a = fread(&i_val, sizeof(double), 1, fp);
+            char b = fread(&q_val, sizeof(double), 1, fp);
+
+            if (a != 1 ||
+                b != 1) {
+                fprintf(stderr,
+                        "fread failed at row=%d col=%d pos=%ld\n",
+                        r, c, ftell(fp));
+                fclose(fp);
+                free_complex_matrix(out);
+                return -7;
+            }
+
+            out->data[(size_t)c * (size_t)rows + (size_t)r] =
+                i_val + q_val * _Complex_I;
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
+#endif

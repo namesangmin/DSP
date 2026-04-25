@@ -8,7 +8,7 @@
 
 typedef struct {
     const RadarMeta *meta;
-    PipelineFile *file;
+    PipelinePool *pool;
     ComplexMatrix *doppler;
     DetectionList *det;
     DopplerFftTiming *doppler_timing;

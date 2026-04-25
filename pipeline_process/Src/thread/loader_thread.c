@@ -18,16 +18,12 @@ void *loader_thread_main(void *arg)
     // =================================================================
     // 1. 파일 전체를 메모리(pool->raw_data)로 단 한 번에 고속 로드!
     // =================================================================
-    if (load_complex_bin_all_fread(a->dat_path, 
-                                   a->meta->num_pulses, 
-                                   a->meta->num_fast_time_samples, 
-                                   232, 
-                                   &a->pool->raw_data) != 0) {
+    if (load_complex_bin_all_fread(a->dat_path, a->meta->num_pulses, a->meta->num_fast_time_samples, 232, &a->pool->raw_data) != 0) {
         fprintf(stderr, "loader_thread: file load failed\n");
         // 에러 발생 시 알람시계 대신 원자적 변수로 에러 상태 표시
         atomic_store(&a->pool->error, 1);
-        pulse_queue_close(a->even_q);
-        pulse_queue_close(a->odd_q);
+        // pulse_queue_close(a->even_q);
+        // pulse_queue_close(a->odd_q);
         return NULL;
     }
 
@@ -48,15 +44,15 @@ void *loader_thread_main(void *arg)
         
         if (pulse_queue_push(target_q, job) != 0) {
             atomic_store(&a->pool->error, 1);
-            pulse_queue_close(a->even_q);
-            pulse_queue_close(a->odd_q);
+            // pulse_queue_close(a->even_q);
+            // pulse_queue_close(a->odd_q);
             return NULL;
         }
     }
 
     // 3. 작업 할당 끝 (워커 스레드들에게 더 이상 일거리가 없음을 알림)
-    pulse_queue_close(a->even_q);
-    pulse_queue_close(a->odd_q);
+    // pulse_queue_close(a->even_q);
+    // pulse_queue_close(a->odd_q);
     
     return NULL;
 }
