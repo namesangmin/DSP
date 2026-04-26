@@ -2,10 +2,9 @@
 #include <complex.h>
 #include <stddef.h>
 
-#include "common.h"
-#include "queue.h"
+#include "pulse_compress_thread.h"
 #include "core_set.h"
-#include "thread_func.h"
+#include "timer.h"
 
 #if 1
 void *worker_thread_main(void *arg)
@@ -14,85 +13,60 @@ void *worker_thread_main(void *arg)
     PulseJob job;
 
     pin_thread_to_cpu(a->cpu_id);
+    
+    int num_pulses = a->meta->num_pulses;                    // 512
+    int num_range_bins = a->meta->num_fast_time_samples;      // 1001
+    double local_compress_ms = 0.0;
 
-    int num_range_bins = a->file->pc.rows;
-    int num_pulses = a->file->pc.cols;
+    PulseQueue *my_q = a->q;
 
-    while (pulse_queue_pop(a->q, &job)) {
-        if (a->file->error) {
+    while (pulse_queue_pop(my_q, &job)) {
+        // 가장 가벼운 relaxed 모드로 에러 체크
+        if (atomic_load_explicit(&a->pool->error, memory_order_relaxed)) {
             break;
         }
+        // fprintf(stderr, "worker cpu=%d pop pulse_idx=%d\n",
+        //             a->cpu_id, job.pulse_idx);
+        double t0 = now_ms();
 
-        // 1. 임시 버퍼(out_buf)에 해당 펄스의 압축 결과를 받아옵니다. (Fast-time 연속)
-        if (pulse_compress_one(&a->ctx, job.raw, a->ctx.out_buf) != 0) {
+        const double complex *pulse_raw_ptr = &CMAT_AT(&a->pool->raw_data, job.pulse_idx, 0);
+
+        if (pulse_compress_one(&a->ctx, pulse_raw_ptr, a->ctx.out_buf) != 0) {
             fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d\n", job.pulse_idx);
-            pulse_queue_close(a->even_q);
-            pulse_queue_close(a->odd_q);
-            pipeline_signal_post(a->file, 1);
+            atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             return NULL;
         }
+        // fprintf(stderr, "worker cpu=%d compressed pulse_idx=%d\n",
+        // a->cpu_id, job.pulse_idx);
+        local_compress_ms += now_ms() - t0;
 
-        // 2. 도플러 FFT를 위해 세로(Column) 방향으로 Stride Write 수행
-        // CMAT_AT(pc, r, p) 구조와 완벽히 일치시킵니다.
+        // [핵심]: 쓰레기 하드코딩 삭제. 
+        // 0번 코어(로더)가 지금 "몇 번 식판에 담아라"라고 지정한 인덱스를 실시간으로 가져옴.
+        int curr_idx = atomic_load_explicit(&a->pool->current_write_idx, memory_order_acquire); 
+
+        // 결과 저장 (세로 방향)
         for (int r = 0; r < num_range_bins; ++r) {
-            size_t idx = (size_t)r * (size_t)num_pulses + (size_t)job.pulse_idx;
-            a->file->pc.data[idx] = a->ctx.out_buf[r];
+            CMAT_AT(&a->pool->rd_maps[curr_idx].data, r, job.pulse_idx) = a->ctx.out_buf[r];
         }
 
-        int done = atomic_fetch_add(&a->file->done_count, 1) + 1;
-        if (done == a->total_pulses) {
-            pipeline_signal_post(a->file, 0);
-        }
-    }
-
-    return NULL;
-}
-
-#endif
-#if 0
-void *worker_chunk_thread_main(void *arg)
-{
-    WorkerArgs *a = (WorkerArgs *)arg;
-    PulseChunkJob job;
-
-    pin_thread_to_cpu(a->cpu_id);
-
-    int num_range_bins = a->file->pc.rows;
-    int num_pulses = a->file->pc.cols;
-    int fast_time_samples = a->meta->num_fast_time_samples;
-
-    while (pulse_chunk_queue_pop(a->q, &job)) {
-        if (a->file->error) break;
-
-        // 청크 안에 들어있는 펄스 개수만큼 빠르게 내부 루프 처리
-        for (int k = 0; k < job.count; ++k) {
-            int curr_pulse_idx = job.start_idx + k;
+        // 해당 인덱스(curr_idx)의 카운터를 올림
+        int done = atomic_fetch_add_explicit(&a->pool->rd_maps[curr_idx].done_count, 1, memory_order_release) + 1;
+        
+        // 내가 이 버퍼(curr_idx)의 마지막 512번째 펄스를 처리한 놈이라면?
+        if (done == a->meta->num_pulses) {
+            PostJob p_job = { .buffer_idx = curr_idx }; // 현재 완성한 식판 번호를 담음
             
-            // mmap은 연속된 메모리이므로, 포인터를 샘플 길이만큼 더해서 현재 펄스 주소를 계산
-            const RawIQSample *curr_raw = job.raw + (size_t)k * fast_time_samples;
-
-            // 1. 임시 버퍼(out_buf)에 압축 결과 저장 (가로축 연속 기록, 캐시 친화적)
-            if (pulse_compress_one(&a->ctx, curr_raw, a->ctx.out_buf) != 0) {
-                pulse_chunk_queue_close(a->even_q);
-                pulse_chunk_queue_close(a->odd_q);
-                pipeline_signal_post(a->file, 1);
+            // 3번 코어(포스트)에게 번호표 전달
+            if (post_queue_push(a->post_q, p_job) != 0) {
+                fprintf(stderr, "post_queue_push failed: buffer_idx=%d\n", curr_idx);
+                atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
                 return NULL;
             }
-
-            // 2. 전체 행렬(ComplexMatrix)에 도플러 FFT 규격에 맞춰 세로로 삽입 (Stride Write)
-            for (int r = 0; r < num_range_bins; ++r) {
-                size_t idx = (size_t)r * (size_t)num_pulses + (size_t)curr_pulse_idx;
-                a->file->pc.data[idx] = a->ctx.out_buf[r];
-            }
-        }
-
-        // ⚠️ 중요: 청크 크기(job.count)만큼 한 번에 완료 카운트를 올립니다.
-        int done = atomic_fetch_add(&a->file->done_count, job.count) + job.count;
-        if (done == a->total_pulses) {
-            pipeline_signal_post(a->file, 0);
         }
     }
-
+//fprintf(stderr, "worker cpu=%d exit\n", a->cpu_id);
+    a->compress_ms = local_compress_ms;
     return NULL;
 }
+
 #endif

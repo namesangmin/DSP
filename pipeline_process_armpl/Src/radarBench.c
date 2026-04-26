@@ -25,7 +25,7 @@
 *
 */
 
-#define _GNU_SOURCE
+//#define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,21 +50,19 @@
 #include "cfar.h"
 #include "writer.h"
 
-#include "loader_mmap.h"
-#include "pulse_mmap.h"
-
 #include "common.h"
-#include "queue.h"
+
+#include "queue_post.h"
+#include "queue_pulse.h"
+
 #include "core_set.h"
-#include "thread_func.h"
+#include "pipeline_set.h"
 
+#include "doppler_cfar_thread.h"
+#include "loader_thread.h"
+#include "pulse_compress_thread.h"
 
-/* mmap + 4-thread pipeline:
-   core0 = loader
-   core1 = even pulse compression
-   core2 = odd pulse compression
-   core3 = Doppler + CFAR
-*/
+// init
 static int run_mmap_pipeline_single_file(const char *dat_path,
                                          const RadarMeta *meta,
                                          double *load_ms,
@@ -72,24 +70,35 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                          ComplexMatrix *doppler,
                                          DopplerFftTiming *doppler_timing,
                                          double *cfar_ms,
-                                         DetectionList *det)
+                                         DetectionList *det,
+                                         CfarWorkspace *cfar_ws,
+                                         DopplerWorkspace *doppler_ws)
 {
-    PipelineFile file;
+    PipelinePool pool;
     PulseQueue even_q, odd_q;
-    //PulseChunkQueue even_q, odd_q;
+    PostQueue post_q;
 
     LoaderArgs ld;
     WorkerArgs wk_even, wk_odd;
     PostArgs post;
-    pthread_t th_loader, th_even, th_odd, th_post;
-    double t0, t1;
+    
+    pthread_t th_even, th_odd, th_post, th_loader;
+    
+    double t0;
 
-    memset(&file, 0, sizeof(file));
+    // 큐 선언
     memset(&even_q, 0, sizeof(even_q));
     memset(&odd_q, 0, sizeof(odd_q));
+    memset(&post_q, 0, sizeof(post_q));
+
+    // 파일 로더 
     memset(&ld, 0, sizeof(ld));
+    
+    // 코어 2개에 넣을거?
     memset(&wk_even, 0, sizeof(wk_even));
     memset(&wk_odd, 0, sizeof(wk_odd));
+    
+    // 도플러, cfar
     memset(&post, 0, sizeof(post));
 
     if (!dat_path || !meta || !load_ms || !pulse_timing ||
@@ -104,130 +113,126 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     doppler_timing->mti_ms = 0.0;
     doppler_timing->mtd_ms = 0.0;
 
-    atomic_init(&file.done_count, 0);
-    pthread_mutex_init(&file.post_mtx, NULL);
-    pthread_cond_init(&file.post_cv, NULL);
-
+    // load 시간 측정 + 밑에서 파일 읽고 로드한 시간 더함
     t0 = now_ms();
+    if(init_pipeline_pool(dat_path, meta, &pool)){
+        fprintf(stderr, "Failed to initialize pipeline pool\n");
+        return -1;
+    }
+    
+    if (pulse_queue_init(&even_q, (int)(meta->num_pulses / 2) + 1) != 0 || pulse_queue_init(&odd_q, (int)(meta->num_pulses / 2) + 1) != 0) {
+        cleanup_pipeline_pool(&pool);
+        return -1;
+    }
+    
+    if(init_doppler_workspace(doppler_ws, meta->num_pulses) != 0){
+        cleanup_pipeline_pool(&pool);
+        pulse_queue_destroy(&even_q);
+        pulse_queue_destroy(&odd_q);
+        return -1;
+    }
+    if(init_cfar_workspace(cfar_ws, meta->num_fast_time_samples, meta->num_pulses) != 0){
+        cleanup_pipeline_pool(&pool);
+        cleanup_doppler_workspace(doppler_ws);
+        pulse_queue_destroy(&even_q);
+        pulse_queue_destroy(&odd_q);
+        return -1;
+    }
 
-    if (pulse_compress_ctx_init(meta, &wk_even.ctx) != 0 ||
-        pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
+    if(post_queue_init(&post_q, NUM_BUFFERS) != 0){
+        cleanup_pipeline_pool(&pool);
+        cleanup_doppler_workspace(doppler_ws);
+        cleanup_cfar_workspace(cfar_ws);
+
+        pulse_queue_destroy(&even_q);
+        pulse_queue_destroy(&odd_q);
+        return -1;
+    }
+    *load_ms = now_ms() - t0;
+
+    // matched filter 생성 + 시간 측정
+    t0 = now_ms();
+    if (pulse_compress_ctx_init(meta, &wk_even.ctx) != 0 || pulse_compress_ctx_init(meta, &wk_odd.ctx) != 0) {
         pulse_compress_ctx_destroy(&wk_even.ctx);
         pulse_compress_ctx_destroy(&wk_odd.ctx);
-        pulse_queue_destroy(&even_q);
-        pulse_queue_destroy(&odd_q);
-        free_complex_matrix(&file.pc);
-        dat_mmap_close(&file.mm);
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
+        
+        // pool 해제 있어야 함
         return -1;
     }
-
-    t1 = now_ms();
-    pulse_timing->filter_ready_ms = t1 - t0;
-
-    t0 = now_ms();
-    if (dat_mmap_open(dat_path,
-                      meta->num_pulses,
-                      meta->num_fast_time_samples,
-                      232,
-                      &file.mm) != 0) {
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
-        return -1;
-    }
-    t1 = now_ms();
-    *load_ms = t1 - t0;
-
-    if (alloc_complex_matrix(meta->num_fast_time_samples,
-                             meta->num_pulses,
-                             &file.pc) != 0) {
-        dat_mmap_close(&file.mm);
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
-        return -1;
-    }
-
-    if (pulse_queue_init(&even_q, 64) != 0 || pulse_queue_init(&odd_q, 64) != 0) {
-        pulse_queue_destroy(&even_q);
-        pulse_queue_destroy(&odd_q);
-        free_complex_matrix(&file.pc);
-        dat_mmap_close(&file.mm);
-        pthread_cond_destroy(&file.post_cv);
-        pthread_mutex_destroy(&file.post_mtx);
-        return -1;
-    }
+    pulse_timing->filter_ready_ms = now_ms() - t0;
 
     /* loader */
+    ld.dat_path = dat_path;
     ld.meta = meta;
-    ld.file = &file;
+    ld.pool = &pool; // raw data 사용
     ld.even_q = &even_q;
     ld.odd_q = &odd_q;
     ld.cpu_id = 0;
+    ld.out_loader_ms = load_ms;
 
-    //짝수 큐
+
+    //짝수 큐 // 
     wk_even.meta = meta;
-    wk_even.total_pulses = meta->num_pulses;
-    wk_even.file = &file;
+    wk_even.pool = &pool; // rd map 만들기 위해 짝수 펄스 index에 결고 넣음
     wk_even.q = &even_q;
-    wk_even.even_q = &even_q;
-    wk_even.odd_q = &odd_q;
     wk_even.cpu_id = 1;
+// 1, 2번 코어 (워커) 에게 주소 전달 (Push 용도)
+    wk_even.post_q = &post_q;
 
     wk_odd.meta = meta;
-    wk_odd.total_pulses = meta->num_pulses;
-    wk_odd.file = &file;
+    wk_odd.pool = &pool;
     wk_odd.q = &odd_q;
-    wk_odd.even_q = &even_q;
-    wk_odd.odd_q = &odd_q;
     wk_odd.cpu_id = 2;
+// 1, 2번 코어 (워커) 에게 주소 전달 (Push 용도)
+    wk_odd.post_q = &post_q;
 
     /* post worker */
     post.meta = meta;
-    post.file = &file;
+    post.pool = &pool; // 도플러, cfar
     post.doppler = doppler;
     post.det = det;
     post.doppler_timing = doppler_timing;
-    post.cfar_ms = cfar_ms;
     post.cpu_id = 3;
     post.status = 0;
-
-    pthread_create(&th_post,   NULL, post_thread_main,   &post);
-    t0 = now_ms();
+    // 3번 코어 (포스트) 에게 주소 전달 (Pop 용도)
+    post.post_q = &post_q;
+    post.cfar_ms = cfar_ms;
+    post.cfar_ws = cfar_ws;
+    post.doppler_ws = doppler_ws;
 
     pthread_create(&th_loader, NULL, loader_thread_main, &ld);
     pthread_create(&th_even,   NULL, worker_thread_main, &wk_even);
     pthread_create(&th_odd,    NULL, worker_thread_main, &wk_odd);
+    pthread_create(&th_post, NULL, post_thread_main, &post);
 
-    pthread_join(th_loader, NULL);
+    pthread_join(th_loader, NULL);    
     pthread_join(th_even,   NULL);
     pthread_join(th_odd,    NULL);
-    t1 = now_ms();
-    pulse_timing->compression_ms = t1 - t0;
+    // 두 워커의 압축 시간 중 max를 쓰는 게 wall time 관점
+    // (병렬로 돌았으니까 실제 경과 시간은 더 오래 걸린 쪽)
+    pulse_timing->compression_ms = (wk_even.compress_ms > wk_odd.compress_ms)
+                                    ? wk_even.compress_ms
+                                    : wk_odd.compress_ms;
 
-    if (file.error && !file.post_ready) {
-        pipeline_signal_post(&file, 1);
-    }
-
+    post_queue_close(&post_q);
     pthread_join(th_post, NULL);
 
+  int failed = (atomic_load(&pool.error) != 0 || post.status != 0);
+
+    cleanup_pipeline_pool(&pool);
     pulse_queue_destroy(&even_q);
     pulse_queue_destroy(&odd_q);
-    free_complex_matrix(&file.pc);
-    dat_mmap_close(&file.mm);
-    pthread_cond_destroy(&file.post_cv);
-    pthread_mutex_destroy(&file.post_mtx);
-
-    if (file.error || post.status != 0) {
+    post_queue_destroy(&post_q);    
+    pulse_compress_ctx_destroy(&wk_even.ctx);
+    pulse_compress_ctx_destroy(&wk_odd.ctx);
+    cleanup_cfar_workspace(cfar_ws);
+    cleanup_doppler_workspace(doppler_ws);
+    if (failed) {
+        fprintf(stderr, "Pipeline error detected!\n");
         return -1;
     }
-
-    if (atomic_load(&file.done_count) != meta->num_pulses) {
-        fprintf(stderr, "done_count mismatch: got=%d expected=%d\n",
-                atomic_load(&file.done_count), meta->num_pulses);
-        return -1;
-    }
-
+    
+    // 여기까지 무사히 왔다면 파이프라인 완벽하게 정상 종료된 것!
     return 0;
 }
 
@@ -256,20 +261,9 @@ static long read_cpu_ticks(void) {
     return (long)(utime + stime);
 }
 
-static int ends_with(const char *s, const char *suffix) {
-    size_t ls, lt;
-    if (!s || !suffix) return 0;
-    ls = strlen(s);
-    lt = strlen(suffix);
-    if (ls < lt) return 0;
-    return strcmp(s + ls - lt, suffix) == 0;
-}
-
 static void print_usage(const char *prog) {
     fprintf(stderr,
-        "Usage (File/Dir): %s <metadata.csv> <target_path> <imag_path_or_DUMMY> <version> [runs]\n", prog);
-    
-    fprintf(stderr, "version: matlab, mmap, single\n");
+        "Usage (File/Dir): %s <metadata.csv> <target_path> <imag_path_or_DUMMY> [runs]\n", prog);
 }
 
 static void print_metadata(const RadarMeta *meta) {
@@ -293,7 +287,6 @@ static void print_average_line(const char *name, double avg_ms) {
     printf("  %-18s = %.3f ms (%.9f sec)\n", name, avg_ms, avg_ms / 1000.0);
 }
 
-
 // --------------------------------------------------------------------------------
 // 단일 파일 처리
 // [수정됨] Accumulator *global_acc 매개변수 추가
@@ -301,7 +294,6 @@ static void print_average_line(const char *name, double avg_ms) {
 int process_single_file(const char *metadata_path,
                         const char *real_path,
                         const char *imag_path,
-                        const char *version,
                         int runs,
                         Detection *out_best,
                         Accumulator *global_acc) 
@@ -322,16 +314,15 @@ int process_single_file(const char *metadata_path,
         DetectionList det = {0};
         PulseTiming pulse_timing = {0};
         DopplerFftTiming doppler_timing = {0};
+        CfarWorkspace cfar_ws = {0};
+        DopplerWorkspace doppler_ws = {0};
 
         double total_t0 = now_ms();
-        double t0;
         double load_ms = 0.0;
         double pulse_total_ms = 0.0;
         double doppler_total_ms = 0.0;
         double cfar_ms = 0.0;
         double total_ms = 0.0;
-
-        int use_rx_path = 0;
 
         if (load_metadata(metadata_path, &meta) != 0) return 1;
 
@@ -340,99 +331,18 @@ int process_single_file(const char *metadata_path,
             config_printed = 1;
         }
 
-        /* ---------- 입력 경로 선택 ---------- */
-        if (ends_with(real_path, ".bin") &&
-            ends_with(imag_path, ".bin") &&
-            ends_with(version, "matlab")) {
-
-            t0 = now_ms();
-            if (load_complex_bin_pair_matlab(real_path,
-                                             imag_path,
-                                             meta.num_fast_time_samples,
-                                             meta.num_pulses,
-                                             &rx) != 0) {
-                return 1;
-            }
-            load_ms = now_ms() - t0;
-            use_rx_path = 1;
-        }
-        else if (ends_with(real_path, ".dat") && ends_with(version, "single")) {
-
-            t0 = now_ms();
-            if (load_complex_bin_single(real_path,
-                                        meta.num_pulses,
-                                        meta.num_fast_time_samples,
-                                        &rx) != 0) {
-                return 1;
-            }
-            load_ms = now_ms() - t0;
-            use_rx_path = 1;
-        }
-        else if (ends_with(real_path, ".dat") && ends_with(version, "mmap")) {
-
-            if (run_mmap_pipeline_single_file(real_path,
+        if (run_mmap_pipeline_single_file(real_path,
                                               &meta,
                                               &load_ms,
                                               &pulse_timing,
                                               &doppler,
                                               &doppler_timing,
                                               &cfar_ms,
-                                              &det) != 0) {
-                return 1;
-            }
-
-        }
-        else {
-            t0 = now_ms();
-            if (load_complex_csv_pair(real_path,
-                                      imag_path,
-                                      meta.num_fast_time_samples,
-                                      meta.num_pulses,
-                                      &rx) != 0) {
-                return 1;
-            }
-            load_ms = now_ms() - t0;
-            use_rx_path = 1;
-        }
-
-        /* ---------- 일반 경로: rx -> pc -> doppler -> cfar ---------- */
-        if (use_rx_path) {
-            if (pulse_compression_ex(&rx, &meta, &pc, &pulse_timing) != 0) {
-                free_complex_matrix(&rx);
-                return 1;
-            }
-
-            if (doppler_fft_processing_ex(&pc,
-                                          &meta,
-                                          meta.num_pulses,
-                                          &doppler,
-                                          &doppler_timing) != 0) {
-                free_complex_matrix(&rx);
-                free_complex_matrix(&pc);
-                return 1;
-            }
-
-            t0 = now_ms();
-            int numTrainR = 4, numTrainD = 4, numGuardR = 1, numGuardD = 1;
-            int totalWindowCells = (2 * (numTrainR + numGuardR) + 1) * (2 * (numTrainD + numGuardD) + 1);
-            int guardAndCUTCells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
-            int rankIdx = ((totalWindowCells - guardAndCUTCells) + 1) / 2;
-
-            if (cfar_detect(&doppler,
-                            &meta,
-                            numTrainR,
-                            numTrainD,
-                            numGuardR,
-                            numGuardD,
-                            rankIdx,
-                            9.0,
-                            &det) != 0) {
-                free_complex_matrix(&rx);
-                free_complex_matrix(&pc);
-                free_complex_matrix(&doppler);
-                return 1;
-            }
-            cfar_ms = now_ms() - t0;
+                                              &det,
+                                              &cfar_ws,
+                                              &doppler_ws) != 0) 
+        {
+            return 1;
         }
 
         /* ---------- timing 정리 ---------- */
@@ -535,7 +445,7 @@ int process_single_file(const char *metadata_path,
 // --------------------------------------------------------------------------------
 // 폴더 순회 및 궤적 요약
 // --------------------------------------------------------------------------------
-void process_directory(const char *dir_path, const char *metadata_path, const char *version, int runs) {
+void process_directory(const char *dir_path, const char *metadata_path, int runs) {
     struct dirent **namelist;
 
     // [추가됨] 전체 디렉토리에 대한 결과를 누적할 구조체
@@ -565,42 +475,17 @@ void process_directory(const char *dir_path, const char *metadata_path, const ch
         Detection best_det;
         int processed = 0;
 
-        if (ends_with(version, "single") || ends_with(version, "mmap")) {
-            snprintf(filepath, sizeof(filepath), "%s/%s", dir_path, filename);
-            struct stat st;
+        snprintf(filepath, sizeof(filepath), "%s/%s", dir_path, filename);
+        struct stat st;
 
-            if (stat(filepath, &st) == 0 && S_ISREG(st.st_mode)) {
-                printf("\n=========================================================\n");
-                printf("[FILE %d] Processing Integrated DAT: %s\n", valid_files + 1, filename);
-                printf("=========================================================\n");
-                // [수정됨] 매개변수 맨 끝에 &total_acc 전달
-                process_single_file(metadata_path, filepath, "DUMMY", version, runs, &best_det, &total_acc);
-                processed = 1;
-            }
-        } 
-        else if (strstr(filename, "real") != NULL &&
-                   (ends_with(filename, ".csv") || ends_with(filename, ".bin"))) {
-
-            char real_file[1024], imag_file[1024], imag_name[512];
-            snprintf(real_file, sizeof(real_file), "%s/%s", dir_path, filename);
-
-            char *real_ptr = strstr(filename, "real");
-            strncpy(imag_name, filename, (size_t)(real_ptr - filename));
-            imag_name[real_ptr - filename] = '\0';
-            strcat(imag_name, "imag");
-            strcat(imag_name, real_ptr + 4);
-
-            snprintf(imag_file, sizeof(imag_file), "%s/%s", dir_path, imag_name);
-
-            struct stat st;
-            if (stat(real_file, &st) == 0 && S_ISREG(st.st_mode)) {
-                printf("\n=========================================================\n");
-                printf("[FILE %d] Processing Paired Data: \n  Real: %s\n  Imag: %s\n", valid_files + 1, filename, imag_name);
-                printf("=========================================================\n");
-                // [수정됨] 매개변수 맨 끝에 &total_acc 전달
-                process_single_file(metadata_path, real_file, imag_file, version, runs, &best_det, &total_acc);
-                processed = 1;
-            }
+        if (stat(filepath, &st) == 0 && S_ISREG(st.st_mode)) {
+            printf("\n=========================================================\n");
+            printf("[FILE %d] Processing Integrated DAT: %s\n", valid_files + 1, filename);
+            printf("=========================================================\n");
+          
+            // [수정됨] 매개변수 맨 끝에 &total_acc 전달
+            process_single_file(metadata_path, filepath, "DUMMY", runs, &best_det, &total_acc);
+            processed = 1;
         }
 
         if (processed) {
@@ -686,8 +571,7 @@ int main(int argc, char **argv) {
     const char *metadata_path = argv[1];
     const char *target_path   = argv[2];
     const char *imag_path     = argv[3];
-    const char *version = argv[4];
-    int runs = (argc >= 6) ? atoi(argv[5]) : 1;
+    int runs = (argc >= 5) ? atoi(argv[4]) : 1;
     if (runs <= 0) runs = 1;
 
     struct stat st;
@@ -698,11 +582,11 @@ int main(int argc, char **argv) {
 
     if (S_ISDIR(st.st_mode)) {
         printf("Target is a DIRECTORY. Batch sequential processing initiated...\n");
-        process_directory(target_path, metadata_path, version, runs);
+        process_directory(target_path, metadata_path, runs);
     } else if (S_ISREG(st.st_mode)) {
         printf("Target is a FILE.\n");
         // [수정됨] 단일 파일 모드에서는 global_acc 에 NULL 전달
-        process_single_file(metadata_path, target_path, imag_path, version, runs, NULL, NULL);
+        process_single_file(metadata_path, target_path, imag_path, runs, NULL, NULL);
     }
 
     return 0;
