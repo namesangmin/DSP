@@ -198,30 +198,29 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     ctx->nfft       = next_power_of_two_local(ctx->conv_len);
     ctx->mf_delay   = ctx->filter_len - 1;
 
-    ctx->H = (double complex *)fftw_malloc((size_t)ctx->nfft * sizeof(double complex));
-    ctx->X = (double complex *)fftw_malloc((size_t)ctx->nfft * sizeof(double complex));
-    ctx->Y = (double complex *)fftw_malloc((size_t)ctx->nfft * sizeof(double complex));
-    ctx->out_buf = (double complex *)fftw_malloc((size_t)ctx->input_len * sizeof(double complex));
-
+    ctx->H = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    ctx->X = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    ctx->Y = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    ctx->out_buf = (float complex *)fftwf_malloc((size_t)ctx->input_len * sizeof(float complex));
     if (!ctx->H || !ctx->X || !ctx->Y || !ctx->out_buf) {
         pulse_compress_ctx_destroy(ctx);
         return -1;
     }
 
-    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(double complex));
-    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(double complex));
-    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(double complex));
-    memset(ctx->out_buf, 0, (size_t)ctx->input_len * sizeof(double complex));    
+    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(float  complex));
+    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float  complex));
+    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(float  complex));
+    memset(ctx->out_buf, 0, (size_t)ctx->input_len * sizeof(float  complex));    
 
-    ctx->forward_plan = fftw_plan_dft_1d(ctx->nfft,
-                                     (fftw_complex *)ctx->X,
-                                     (fftw_complex *)ctx->X,
-                                     FFTW_FORWARD,
-                                     FFTW_ESTIMATE);
+    ctx->forward_plan = fftwf_plan_dft_1d(ctx->nfft,
+                                        (fftwf_complex *)ctx->X,
+                                        (fftwf_complex *)ctx->X,
+                                        FFTW_FORWARD,
+                                        FFTW_ESTIMATE);
 
-    ctx->inverse_plan = fftw_plan_dft_1d(ctx->nfft,
-                                        (fftw_complex *)ctx->Y,
-                                        (fftw_complex *)ctx->Y,
+    ctx->inverse_plan = fftwf_plan_dft_1d(ctx->nfft,
+                                        (fftwf_complex *)ctx->Y,
+                                        (fftwf_complex *)ctx->Y,
                                         FFTW_BACKWARD,
                                         FFTW_ESTIMATE);
 
@@ -234,19 +233,19 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
         ctx->H[i] = CMAT_AT(&ctx->h, i, 0);
     }
 
-    fftw_plan h_plan = fftw_plan_dft_1d(ctx->nfft,
-                                    (fftw_complex *)ctx->H,
-                                    (fftw_complex *)ctx->H,
-                                    FFTW_FORWARD,
-                                    FFTW_ESTIMATE);
+    fftwf_plan h_plan = fftwf_plan_dft_1d(ctx->nfft,
+                                        (fftwf_complex *)ctx->H,
+                                        (fftwf_complex *)ctx->H,
+                                        FFTW_FORWARD,
+                                        FFTW_ESTIMATE);
 
     if (!h_plan) {
         pulse_compress_ctx_destroy(ctx);
         return -1;
     }
 
-    fftw_execute(h_plan);
-    fftw_destroy_plan(h_plan);
+    fftwf_execute(h_plan);
+    fftwf_destroy_plan(h_plan);
 
     return 0;
 }
@@ -256,19 +255,21 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
     if (!ctx) {
         return;
     }
-    if (ctx->forward_plan) fftw_destroy_plan(ctx->forward_plan);
-    if (ctx->inverse_plan) fftw_destroy_plan(ctx->inverse_plan);
+    if (ctx->forward_plan) fftwf_destroy_plan(ctx->forward_plan);
+    if (ctx->inverse_plan) fftwf_destroy_plan(ctx->inverse_plan);
 
-    if (ctx->H) fftw_free(ctx->H);
-    if (ctx->X) fftw_free(ctx->X);
-    if (ctx->Y) fftw_free(ctx->Y);
-    if (ctx->out_buf) fftw_free(ctx->out_buf);
+    if (ctx->H) fftwf_free(ctx->H);
+    if (ctx->X) fftwf_free(ctx->X);
+    if (ctx->Y) fftwf_free(ctx->Y);
+    if (ctx->out_buf) fftwf_free(ctx->out_buf);
+
+    free_complex_matrix(&ctx->h);
     memset(ctx, 0, sizeof(*ctx));
 }
 
 int pulse_compress_one(PulseCompressCtx *ctx,
-                       const double complex *raw_pulse,
-                       double complex *out_range_bins)
+                       const float complex *raw_pulse,
+                       float complex *out_range_bins)
 {
     if (!ctx) {
         fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
@@ -292,25 +293,25 @@ int pulse_compress_one(PulseCompressCtx *ctx,
         return -1;
     }
 
-    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(double complex));
+    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float complex));
 
     memcpy(ctx->X,
-           raw_pulse,
-           (size_t)ctx->input_len * sizeof(double complex));
+        raw_pulse,
+        (size_t)ctx->input_len * sizeof(float complex));
 
-    fftw_execute(ctx->forward_plan);
+    fftwf_execute(ctx->forward_plan);
 
     for (int i = 0; i < ctx->nfft; ++i) {
         ctx->Y[i] = ctx->X[i] * ctx->H[i];
     }
 
-    fftw_execute(ctx->inverse_plan);
+    fftwf_execute(ctx->inverse_plan);
 
     /*
      * FFTW/ARMPL FFTW interface의 backward FFT는 보통 1/N 정규화를 안 함.
      * 기존 fft_inplace_local inverse가 내부에서 나눴다면 여기서 나눠야 결과가 맞음.
      */
-    double inv_n = 1.0 / (double)ctx->nfft;
+    float inv_n = 1.0f / (float)ctx->nfft;
 
     for (int r = 0; r < ctx->input_len; ++r) {
         int src = r + ctx->mf_delay;

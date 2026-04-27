@@ -32,7 +32,7 @@ int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m) {
 
     m->rows = rows;
     m->cols = cols;
-    m->data = (double complex *)calloc((size_t)rows * (size_t)cols, sizeof(double complex));
+    m->data = (float complex *)calloc((size_t)rows * (size_t)cols, sizeof(float complex));
     return (m->data != NULL) ? 0 : -1;
 }
 
@@ -232,7 +232,7 @@ int load_complex_bin_all_fread(const char *path,
          */
         for (int c = 0; c < num_fast_time_samples; ++c) {
             CMAT_AT(out, p, c) =
-                pulse_buffer[c].i + pulse_buffer[c].q * I;
+                (float)pulse_buffer[c].i + (float)pulse_buffer[c].q * I;
         }
     }
 

@@ -20,20 +20,20 @@ typedef struct {
     int conv_len;
     int nfft;
     int mf_delay;
-    
-    double complex *out_buf;
-    double complex *H;
-    double complex *X;
-    double complex *Y;
-    fftw_plan forward_plan;
-    fftw_plan inverse_plan;
-} PulseCompressCtx;
 
+    float complex *out_buf;
+    float complex *H;
+    float complex *X;
+    float complex *Y;
+
+    fftwf_plan forward_plan;
+    fftwf_plan inverse_plan;
+} PulseCompressCtx;
 
 int make_pulse_compression_filter(const RadarMeta *meta, int use_window, ComplexMatrix *h);
 int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx);
 void pulse_compress_ctx_destroy(PulseCompressCtx *ctx);
 int pulse_compress_one(PulseCompressCtx *ctx,
-                       const double complex *raw_pulse,
-                       double complex *out_range_bins);
+                       const float complex *raw_pulse,
+                       float complex *out_range_bins);
 #endif  

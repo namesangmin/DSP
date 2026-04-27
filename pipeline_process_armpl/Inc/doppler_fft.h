@@ -11,7 +11,7 @@ typedef struct {
 
 typedef struct {
     int pulses;
-    double *hamming_win;
+    float *hamming_win;
 } DopplerWorkspace;
 
 int init_doppler_workspace(DopplerWorkspace *ws, int pulses);

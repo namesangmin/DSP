@@ -28,7 +28,7 @@ cfar_detect()
 #define M_PI 3.14159265358979323846
 #endif
 
-static void make_hamming_window(int N, double *w)
+static void make_hamming_window(int N, float *w)
 {
     if (!w || N <= 0) {
         return;
@@ -40,7 +40,7 @@ static void make_hamming_window(int N, double *w)
     }
 
     for (int n = 0; n < N; ++n) {
-        w[n] = 0.54 - 0.46 * cos((2.0 * M_PI * (double)n) / (double)(N - 1));
+        w[n] = 0.54 - 0.46 * cos((2.0 * M_PI * (float)n) / (float)(N - 1));
     }
 }
 
@@ -53,7 +53,7 @@ int init_doppler_workspace(DopplerWorkspace *ws, int pulses)
     memset(ws, 0, sizeof(*ws));
 
     ws->pulses = pulses;
-    ws->hamming_win = (double *)malloc((size_t)pulses * sizeof(double));
+    ws->hamming_win = (float *)malloc((size_t)pulses * sizeof(float));
 
     if (!ws->hamming_win) {
         memset(ws, 0, sizeof(*ws));
@@ -74,20 +74,20 @@ void cleanup_doppler_workspace(DopplerWorkspace *ws)
     free(ws->hamming_win);
     memset(ws, 0, sizeof(*ws));
 }
-static double hamming_value(int n, int N)
+static float hamming_value(int n, int N)
 {
     if (N <= 1) {
         return 1.0;
     }
 
-    return 0.54 - 0.46 * cos(2.0 * M_PI * (double)n / (double)(N - 1));
+    return 0.54 - 0.46 * cos(2.0 * M_PI * (float)n / (float)(N - 1));
 }
 
 static int is_power_of_two(int n) {
     return (n > 0) && ((n & (n - 1)) == 0);
 }
 
-static void bit_reverse_permute(double complex *x, int n) {
+static void bit_reverse_permute(float complex *x, int n) {
     int i, j, bit;
     for (i = 1, j = 0; i < n; ++i) {
         bit = n >> 1;
@@ -97,27 +97,27 @@ static void bit_reverse_permute(double complex *x, int n) {
         }
         j ^= bit;
         if (i < j) {
-            double complex tmp = x[i];
+            float complex tmp = x[i];
             x[i] = x[j];
             x[j] = tmp;
         }
     }
 }
 
-static void fft_inplace(double complex *x, int n) {
+static void fft_inplace(float complex *x, int n) {
     int len, i, j;
 
     bit_reverse_permute(x, n);
 
     for (len = 2; len <= n; len <<= 1) {
-        double angle = -2.0 * M_PI / (double)len;
-        double complex wlen = cos(angle) + I * sin(angle);
+        float angle = -2.0 * M_PI / (float)len;
+        float complex wlen = cos(angle) + I * sin(angle);
 
         for (i = 0; i < n; i += len) {
-            double complex w = 1.0 + I * 0.0;
+            float complex w = 1.0 + I * 0.0;
             for (j = 0; j < len / 2; ++j) {
-                double complex u = x[i + j];
-                double complex v = x[i + j + len / 2] * w;
+                float complex u = x[i + j];
+                float complex v = x[i + j + len / 2] * w;
                 x[i + j] = u + v;
                 x[i + j + len / 2] = u - v;
                 w *= wlen;
@@ -126,10 +126,10 @@ static void fft_inplace(double complex *x, int n) {
     }
 }
 
-static void fftshift_1d(double complex *x, int n) {
+static void fftshift_1d(float complex *x, int n) {
     int half = n / 2;
     for (int i = 0; i < half; ++i) {
-        double complex tmp = x[i];
+        float complex tmp = x[i];
         x[i] = x[i + half];
         x[i + half] = tmp;
     }
@@ -150,8 +150,8 @@ static int apply_mti(const ComplexMatrix *x, int order, ComplexMatrix *y)
 
     if (order == 1) {
         for (int r = 0; r < rows; r++) {
-            const double complex *in_row = &CMAT_AT(x, r, 0);
-            double complex *out_row = &CMAT_AT(y, r, 0);
+            const float complex *in_row = &CMAT_AT(x, r, 0);
+            float complex *out_row = &CMAT_AT(y, r, 0);
 
             out_row[0] = 0.0 + I * 0.0;
 
@@ -162,8 +162,8 @@ static int apply_mti(const ComplexMatrix *x, int order, ComplexMatrix *y)
     }
     else if (order == 2) {
         for (int r = 0; r < rows; r++) {
-            const double complex *in_row = &CMAT_AT(x, r, 0);
-            double complex *out_row = &CMAT_AT(y, r, 0);
+            const float complex *in_row = &CMAT_AT(x, r, 0);
+            float complex *out_row = &CMAT_AT(y, r, 0);
 
             out_row[0] = 0.0 + I * 0.0;
 
@@ -205,10 +205,10 @@ static int apply_mtd(ComplexMatrix *doppler_map,
     }
 
     int rows = doppler_map->rows;
-    double *win = ws->hamming_win;
+    float *win = ws->hamming_win;
 
     for (int r = 0; r < rows; ++r) {
-        double complex *row = &CMAT_AT(doppler_map, r, 0);
+        float complex *row = &CMAT_AT(doppler_map, r, 0);
 
         for (int p = pulses; p < nfft; ++p) {
             row[p] = 0.0 + I * 0.0;

@@ -29,7 +29,7 @@ void *worker_thread_main(void *arg)
         //             a->cpu_id, job.pulse_idx);
         double t0 = now_ms();
 
-        const double complex *pulse_raw_ptr = &CMAT_AT(&a->pool->raw_data, job.pulse_idx, 0);
+        const float complex *pulse_raw_ptr = &CMAT_AT(&a->pool->raw_data, job.pulse_idx, 0);
 
         if (pulse_compress_one(&a->ctx, pulse_raw_ptr, a->ctx.out_buf) != 0) {
             fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d\n", job.pulse_idx);

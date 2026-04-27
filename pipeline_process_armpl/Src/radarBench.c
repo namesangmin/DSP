@@ -169,7 +169,6 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     ld.cpu_id = 0;
     ld.out_loader_ms = load_ms;
 
-
     //짝수 큐 // 
     wk_even.meta = meta;
     wk_even.pool = &pool; // rd map 만들기 위해 짝수 펄스 index에 결고 넣음

@@ -18,7 +18,7 @@ typedef struct {
 typedef struct {
     int rows;
     int cols;
-    double complex *data;
+    float complex *data;
 } ComplexMatrix;
 
 typedef struct {

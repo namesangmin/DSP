@@ -30,9 +30,8 @@ typedef struct {
 
     int ii_rows;
     int ii_cols;
-
-    double *powerMap;
-    double *ii;
+    float *powerMap;
+    float *ii;
 
     Detection *detBuf;
     int detCapacity;
@@ -44,7 +43,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
                 const RadarMeta *meta,
                 int numTrainR, int numTrainD,
                 int numGuardR, int numGuardD,
-                int rankIdx, double scale,
+                int rankIdx, float scale,
                 CfarWorkspace *ws,
                 DetectionList *out);
 

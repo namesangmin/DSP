@@ -20,16 +20,16 @@ int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler)
     ws->ii_cols = numDoppler + 1;
     ws->detCapacity = numRange * numDoppler;
 
-    ws->powerMap = (double *)malloc((size_t)numRange *
+    ws->powerMap = (float *)malloc((size_t)numRange *
                                     (size_t)numDoppler *
-                                    sizeof(double));
+                                    sizeof(float));
     if (!ws->powerMap) {
         return -1;
     }
 
-    ws->ii = (double *)malloc((size_t)ws->ii_rows *
+    ws->ii = (float *)malloc((size_t)ws->ii_rows *
                               (size_t)ws->ii_cols *
-                              sizeof(double));
+                              sizeof(float));
     if (!ws->ii) {
         free(ws->powerMap);
         memset(ws, 0, sizeof(*ws));
@@ -79,7 +79,7 @@ void free_detection_list(DetectionList *list)
     list->count = 0;
 }
 
-static inline double rect_sum(const double *ii, int stride,
+static inline float rect_sum(const float *ii, int stride,
                               int r1, int c1, int r2, int c2)
 {
     int rr1 = r1;
@@ -93,15 +93,15 @@ static inline double rect_sum(const double *ii, int stride,
          + ii[(size_t)rr1 * (size_t)stride + (size_t)cc1];
 }
 
-double get_range_from_bin(int range_bin, double fs_hz) {
-    const double c = 299792458.0;
-    return ((double)range_bin) * c / (2.0 * fs_hz);
+float get_range_from_bin(int range_bin, double fs_hz) {
+    const float c = 299792458.0;
+    return ((float)range_bin) * c / (2.0 * fs_hz);
 }
 
-double get_velocity_from_bin(int doppler_bin, int nfft, double prf_hz, double fc_hz) {
-    const double c = 299792458.0;
-    double lambda = c / fc_hz;
-    double fd = ((double)doppler_bin - (double)(nfft / 2)) * (prf_hz / (double)nfft);
+float get_velocity_from_bin(int doppler_bin, int nfft, double prf_hz, double fc_hz) {
+    const float c = 299792458.0;
+    float lambda = c / fc_hz;
+    float fd = ((double)doppler_bin - (double)(nfft / 2)) * (prf_hz / (double)nfft);
     return fd * lambda / 2.0;
 }
 
@@ -109,7 +109,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
                 const RadarMeta *meta,
                 int numTrainR, int numTrainD,
                 int numGuardR, int numGuardD,
-                int rankIdx, double scale,
+                int rankIdx, float scale,
                 CfarWorkspace *ws,
                 DetectionList *out)
 {
@@ -138,15 +138,15 @@ int cfar_detect(const ComplexMatrix *doppler_map,
 
     free_detection_list(out);
 
-    double *powerMap = ws->powerMap;
-    double *ii = ws->ii;
+    float *powerMap = ws->powerMap;
+    float *ii = ws->ii;
     Detection *detBuf = ws->detBuf;
 
    /*
  * ii는 전체 memset 필요 없음.
  * 0번째 row와 0번째 col만 0이면 됨.
  */
-memset(ii, 0, (size_t)ws->ii_cols * sizeof(double));
+memset(ii, 0, (size_t)ws->ii_cols * sizeof(float));
 
 for (int r = 1; r < ws->ii_rows; ++r) {
     ii[(size_t)r * (size_t)ws->ii_cols] = 0.0;
@@ -156,17 +156,17 @@ for (int r = 1; r < ws->ii_rows; ++r) {
  * powerMap 생성 + integral image 생성 한 번에 처리
  */
 for (int r = 0; r < numRange; ++r) {
-    double row_sum = 0.0;
+    float row_sum = 0.0;
 
     size_t pwr_base = (size_t)r * (size_t)numDoppler;
     size_t ii_prev  = (size_t)r * (size_t)ws->ii_cols;
     size_t ii_cur   = (size_t)(r + 1) * (size_t)ws->ii_cols;
 
     for (int d = 0; d < numDoppler; ++d) {
-        double complex z = CMAT_AT(doppler_map, r, d);
-        double re = creal(z);
-        double im = cimag(z);
-        double pwr = re * re + im * im;
+        float complex z = CMAT_AT(doppler_map, r, d);
+        float re = creal(z);
+        float im = cimag(z);
+        float pwr = re * re + im * im;
 
         powerMap[pwr_base + (size_t)d] = pwr;
 
@@ -187,7 +187,7 @@ for (int r = 0; r < numRange; ++r) {
     return -1;
     }
 
-    double scale_over_training = scale / (double)training_cells;
+    float scale_over_training = scale / (float)training_cells;
 
     for (int r = winR; r < numRange - winR; ++r) {
         size_t pwr_base = (size_t)r * (size_t)numDoppler;
@@ -203,18 +203,18 @@ for (int r = 0; r < numRange; ++r) {
             int guard_d1 = d - numGuardD;
             int guard_d2 = d + numGuardD;
 
-            double outer_sum = rect_sum(ii, ws->ii_cols,
+            float outer_sum = rect_sum(ii, ws->ii_cols,
                                         outer_r1, outer_d1,
                                         outer_r2, outer_d2);
 
-            double inner_sum = rect_sum(ii, ws->ii_cols,
+            float inner_sum = rect_sum(ii, ws->ii_cols,
                                         guard_r1, guard_d1,
                                         guard_r2, guard_d2);
 
-            double noise_sum = outer_sum - inner_sum;
-            double threshold = noise_sum * scale_over_training;
+            float noise_sum = outer_sum - inner_sum;
+            float threshold = noise_sum * scale_over_training;
 
-            double cut_power = powerMap[pwr_base + (size_t)d];
+            float cut_power = powerMap[pwr_base + (size_t)d];
 
             if (cut_power > threshold) {
                 if (detCount >= ws->detCapacity) {
