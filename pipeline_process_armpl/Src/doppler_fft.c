@@ -49,16 +49,6 @@ void cleanup_doppler_workspace(DopplerWorkspace *ws)
     memset(ws, 0, sizeof(*ws));
 }
 
-static void fftshift_1d(float complex *x, int n)
-{
-    int half = n / 2;
-    for (int i = 0; i < half; ++i) {
-        float complex tmp = x[i];
-        x[i]        = x[i + half];
-        x[i + half] = tmp;
-    }
-}
-
 /* in-place MTI: 뒤에서 앞으로 순회해서 임시 버퍼 없이 처리 */
 static int apply_mti(ComplexMatrix *map, int order)
 {

@@ -27,6 +27,9 @@ int post_queue_push(PostQueue *q, PostJob job) {
     // 꽉 찼으면 빈 자리가 날 때까지 대기 (Pure Spin-wait)
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
+        for (int i = 0; i < 50; i++) {
+            __asm__ __volatile__("yield");
+        }
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
@@ -46,6 +49,10 @@ int post_queue_pop(PostQueue *q, PostJob *job) {
             if (head == atomic_load_explicit(&q->tail, memory_order_acquire)) return 0;
             break; // 닫혔지만 뺄 데이터가 남아있으면 루프 탈출
         }
+        for (int i = 0; i < 50; i++) {
+            __asm__ __volatile__("yield");
+        }
+
     }
 
     *job = q->buf[head];

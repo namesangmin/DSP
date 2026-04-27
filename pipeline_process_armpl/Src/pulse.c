@@ -12,6 +12,10 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+// 경계값 처리를 위한 매크로
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
 int transpose_rd_pulse_range_to_doppler_range_pulse(
     const ComplexMatrix *rd_map,
     ComplexMatrix *doppler_map,
@@ -21,37 +25,37 @@ int transpose_rd_pulse_range_to_doppler_range_pulse(
         return -1;
     }
 
-    int pulses = meta->num_pulses;                 // 512
-    int ranges = meta->num_fast_time_samples;      // 1001
+    int pulses = meta->num_pulses;                 // 512 (행)
+    int ranges = meta->num_fast_time_samples;      // 1001 (열)
 
-    if (rd_map->rows != pulses || rd_map->cols != ranges) {
-        fprintf(stderr,
-                "transpose: rd_map shape mismatch rows=%d cols=%d expected=%dx%d\n",
-                rd_map->rows, rd_map->cols, pulses, ranges);
-        return -1;
+    float complex *src = (float complex *)rd_map->data;
+    float complex *dst = (float complex *)doppler_map->data;
+
+    // 타일 크기 설정 (8, 16, 32 중 성능이 가장 좋은 것을 선택. 보통 16~32)
+    const int TILE = 16; 
+
+    // 타일 단위로 크게 크게 이동 (외부 루프)
+    for (int r = 0; r < pulses; r += TILE) {
+        for (int c = 0; c < ranges; c += TILE) {
+            
+            // 타일이 행렬 바깥으로 나가지 않도록 경계 계산
+            int r_end = MIN(r + TILE, pulses);
+            int c_end = MIN(c + TILE, ranges);
+
+            // 하나의 타일 내부에서 실제로 데이터를 옮기는 작업 (내부 루프)
+            for (int i = r; i < r_end; i++) {
+                for (int j = c; j < c_end; j++) {
+                    // src는 가로(Row-major)로 읽고, dst는 세로(Column-major)로 씁니다.
+                    // 이 작업이 L1 캐시 안에서만 이루어지므로 매우 빠릅니다.
+                    dst[j * pulses + i] = src[i * ranges + j];
+                }
+            }
+        }
     }
-
-    if (doppler_map->rows != ranges || doppler_map->cols != pulses) {
-        fprintf(stderr,
-                "transpose: doppler_map shape mismatch rows=%d cols=%d expected=%dx%d\n",
-                doppler_map->rows, doppler_map->cols, ranges, pulses);
-        return -1;
-    }
-
-    armpl_singlecomplex_t alpha = 1.0f + 0.0f * I;
-
-    comatcopy('R',                 // row-major
-              'T',                 // transpose
-              (armpl_int_t)pulses, // source rows = 512
-              (armpl_int_t)ranges, // source cols = 1001
-              alpha,
-              (const armpl_singlecomplex_t *)rd_map->data,
-              (armpl_int_t)ranges, // lda = source row length = 1001
-              (armpl_singlecomplex_t *)doppler_map->data,
-              (armpl_int_t)pulses);// ldb = dest row length = 512
 
     return 0;
 }
+
 static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) {
     int n;
     double fs = meta->fs_hz;
@@ -292,9 +296,6 @@ int pulse_compress_one(PulseCompressCtx *ctx,
         return -1;
     }
 
-    armpl_int_t n = (armpl_int_t)ctx->input_len;
-    armpl_int_t inc = 1;
-
     memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
 
     memset(ctx->X + ctx->input_len, 0,
@@ -308,6 +309,6 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     }
 
     fftwf_execute(ctx->inverse_plan);
-memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
+    memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
     return 0;
 }
