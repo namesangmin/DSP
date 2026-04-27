@@ -2,7 +2,11 @@
 #define PULSE_H
 
 #include "loader.h"
+#include "common.h"
 
+#include <complex.h>
+#include <stddef.h>
+#include <fftw3.h>
 typedef struct {
     double filter_ready_ms;
     double compression_ms;
@@ -20,6 +24,8 @@ typedef struct {
     double complex *H;
     double complex *X;
     double complex *Y;
+    fftw_plan forward_plan;
+    fftw_plan inverse_plan;
 } PulseCompressCtx;
 
 
@@ -29,4 +35,8 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx);
 int pulse_compress_one(PulseCompressCtx *ctx,
                        const double complex *raw_pulse,
                        double complex *out_range_bins);
+
+// int transpose_rd_map_to_doppler_map(const ComplexMatrix *src,
+//                                     ComplexMatrix *dst,
+//                                     const RadarMeta *meta);
 #endif

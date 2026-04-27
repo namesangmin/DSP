@@ -3,6 +3,7 @@
 
 #include <complex.h>
 #include <stddef.h>
+#include "common.h"
 
 typedef struct {
     double fc_hz;
@@ -19,12 +20,6 @@ typedef struct {
     int cols;
     double complex *data;
 } ComplexMatrix;
-
-// typedef struct {
-//     int rows;
-//     int cols;
-//     double *data;
-// } RealMatrix;
 
 typedef struct {
     double i;
@@ -47,8 +42,5 @@ int load_complex_bin_all_fread(const char *path,
                                int num_fast_time_samples, 
                                size_t header_offset, 
                                ComplexMatrix *out);
-
-#define CMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])
-#define RMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])
 
 #endif

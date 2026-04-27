@@ -29,6 +29,31 @@ void *loader_thread_main(void *arg)
     // =================================================================
     // 2. 데이터가 메모리에 다 올라갔으니, 워커들에게 번호표(인덱스)만 배분
     // =================================================================
+    #if 1
+    int half = a->meta->num_pulses / 2;
+
+    for (int pulse_idx = 0; pulse_idx < a->meta->num_pulses; ++pulse_idx) {
+        PulseJob job;
+        job.pulse_idx = pulse_idx;
+
+        if (pulse_idx < half) {
+            if (pulse_queue_push(a->even_q, job) != 0) {
+                atomic_store(&a->pool->error, 1);
+                pulse_queue_close(a->even_q);
+                pulse_queue_close(a->odd_q);
+                return NULL;
+            }
+        } else {
+            if (pulse_queue_push(a->odd_q, job) != 0) {
+                atomic_store(&a->pool->error, 1);
+                pulse_queue_close(a->even_q);
+                pulse_queue_close(a->odd_q);
+                return NULL;
+            }
+        }
+    }
+    #endif
+    #if 0
    for (int pulse_idx = 0; pulse_idx < a->meta->num_pulses; ++pulse_idx) {
         PulseJob job;
         job.pulse_idx = pulse_idx;
@@ -49,6 +74,7 @@ void *loader_thread_main(void *arg)
             }
         }
     }
+    #endif
 
     // 3. 작업 할당 끝 (워커 스레드들에게 더 이상 일거리가 없음을 알림)
     pulse_queue_close(a->even_q);

@@ -186,8 +186,8 @@ for (int r = 0; r < numRange; ++r) {
     if (training_cells <= 0) {
     return -1;
     }
-    double scale_over_training = scale / (double)training_cells;
 
+    double scale_over_training = scale / (double)training_cells;
 
     for (int r = winR; r < numRange - winR; ++r) {
         size_t pwr_base = (size_t)r * (size_t)numDoppler;

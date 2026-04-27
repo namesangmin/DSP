@@ -2,6 +2,7 @@
 #define CFAR_H
 
 #include "loader.h"
+#include "common.h"
 
 typedef struct {
     int range_bin;
