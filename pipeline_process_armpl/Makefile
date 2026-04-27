@@ -1,18 +1,25 @@
 CC = gcc
 
-# Include 경로에 settings 폴더도 추가해 줍니다. (queue 폴더가 없어졌다면 -I./Inc/queue는 빼도 무방합니다)
+ARMPL_DIR ?= /opt/arm/armpl_26.01_gcc
+
+# Include 경로
 CFLAGS = -O2 -Wall -std=gnu99 -D_GNU_SOURCE \
     -I./Inc \
     -I./Inc/thread \
     -I./Inc/settings \
     -I./Inc/queue \
     -I./Inc/queue/atomic \
+    -I$(ARMPL_DIR)/include \
     -pthread
 
-LDFLAGS = -pthread
-LDLIBS = -lm -lfftw3
+# ARMPL 라이브러리 경로 + 실행 시 so 찾도록 rpath 추가
+LDFLAGS = -pthread \
+    -L$(ARMPL_DIR)/lib \
+    -Wl,-rpath,$(ARMPL_DIR)/lib
 
-# 사진의 Src 폴더 구조에 완벽하게 맞춘 목적 파일(Object file) 목록
+# ARMPL single-thread LP64 사용
+LDLIBS = -larmpl_lp64  -lm -lfftw3
+
 OBJS = \
     Src/radarBench.o \
     Src/loader.o \
@@ -27,7 +34,6 @@ OBJS = \
     Src/thread/doppler_cfar_thread.o \
     Src/queue/atomic/queue_post.o \
     Src/queue/atomic/queue_pulse.o
-    #Src/queue/queue.o \
 
 TARGET = radarBench
 
@@ -39,6 +45,5 @@ $(TARGET): $(OBJS)
 Src/%.o: Src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# settings 폴더 내부의 .o 파일도 지워지도록 추가
 clean:
-	rm -f Src/*.o Src/thread/*.o Src/queue/*.o Src/settings/*.o $(TARGET)
+	rm -f Src/*.o Src/thread/*.o Src/queue/*.o Src/queue/atomic/*.o Src/settings/*.o $(TARGET)

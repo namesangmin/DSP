@@ -17,4 +17,7 @@ typedef struct {
     int detections;
 } Accumulator;
 
+#define CMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])
+#define RMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])
+
 #endif

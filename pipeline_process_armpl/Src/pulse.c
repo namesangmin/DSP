@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
-#include "pulse.h"
+
 #include "pulse_compress_thread.h"
 
 #ifndef M_PI
@@ -198,22 +198,55 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     ctx->nfft       = next_power_of_two_local(ctx->conv_len);
     ctx->mf_delay   = ctx->filter_len - 1;
 
-    ctx->H = (double complex *)calloc((size_t)ctx->nfft, sizeof(double complex));
-    ctx->X = (double complex *)calloc((size_t)ctx->nfft, sizeof(double complex));
-    ctx->Y = (double complex *)calloc((size_t)ctx->nfft, sizeof(double complex));
-    ctx->out_buf = (double complex *)calloc((size_t)ctx->input_len, sizeof(double complex));
+    ctx->H = (double complex *)fftw_malloc((size_t)ctx->nfft * sizeof(double complex));
+    ctx->X = (double complex *)fftw_malloc((size_t)ctx->nfft * sizeof(double complex));
+    ctx->Y = (double complex *)fftw_malloc((size_t)ctx->nfft * sizeof(double complex));
+    ctx->out_buf = (double complex *)fftw_malloc((size_t)ctx->input_len * sizeof(double complex));
 
-    // 할당 실패 검증 로직에도 out_buf 추가
     if (!ctx->H || !ctx->X || !ctx->Y || !ctx->out_buf) {
         pulse_compress_ctx_destroy(ctx);
         return -1;
-    }       
+    }
+
+    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(double complex));
+    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(double complex));
+    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(double complex));
+    memset(ctx->out_buf, 0, (size_t)ctx->input_len * sizeof(double complex));    
+
+    ctx->forward_plan = fftw_plan_dft_1d(ctx->nfft,
+                                     (fftw_complex *)ctx->X,
+                                     (fftw_complex *)ctx->X,
+                                     FFTW_FORWARD,
+                                     FFTW_ESTIMATE);
+
+    ctx->inverse_plan = fftw_plan_dft_1d(ctx->nfft,
+                                        (fftw_complex *)ctx->Y,
+                                        (fftw_complex *)ctx->Y,
+                                        FFTW_BACKWARD,
+                                        FFTW_ESTIMATE);
+
+    if (!ctx->forward_plan || !ctx->inverse_plan) {
+        pulse_compress_ctx_destroy(ctx);
+        return -1;
+    }
 
     for (int i = 0; i < ctx->filter_len; ++i) {
         ctx->H[i] = CMAT_AT(&ctx->h, i, 0);
     }
 
-    fft_inplace_local(ctx->H, ctx->nfft, 0);
+    fftw_plan h_plan = fftw_plan_dft_1d(ctx->nfft,
+                                    (fftw_complex *)ctx->H,
+                                    (fftw_complex *)ctx->H,
+                                    FFTW_FORWARD,
+                                    FFTW_ESTIMATE);
+
+    if (!h_plan) {
+        pulse_compress_ctx_destroy(ctx);
+        return -1;
+    }
+
+    fftw_execute(h_plan);
+    fftw_destroy_plan(h_plan);
 
     return 0;
 }
@@ -223,14 +256,13 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
     if (!ctx) {
         return;
     }
+    if (ctx->forward_plan) fftw_destroy_plan(ctx->forward_plan);
+    if (ctx->inverse_plan) fftw_destroy_plan(ctx->inverse_plan);
 
-    free(ctx->H);
-    free(ctx->X);
-    free(ctx->Y);
-    free(ctx->out_buf);
-
-    free_complex_matrix(&ctx->h);
-
+    if (ctx->H) fftw_free(ctx->H);
+    if (ctx->X) fftw_free(ctx->X);
+    if (ctx->Y) fftw_free(ctx->Y);
+    if (ctx->out_buf) fftw_free(ctx->out_buf);
     memset(ctx, 0, sizeof(*ctx));
 }
 
@@ -239,8 +271,8 @@ int pulse_compress_one(PulseCompressCtx *ctx,
                        double complex *out_range_bins)
 {
     if (!ctx) {
-    fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
-    return -1;
+        fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
+        return -1;
     }
 
     if (!raw_pulse) {
@@ -250,47 +282,43 @@ int pulse_compress_one(PulseCompressCtx *ctx,
 
     if (!out_range_bins) {
         fprintf(stderr, "pulse_compress_one: out_range_bins is NULL\n");
-        fprintf(stderr,
-                "ctx debug: input_len=%d nfft=%d H=%p X=%p Y=%p out_buf=%p\n",
-                ctx->input_len,
-                ctx->nfft,
-                (void *)ctx->H,
-                (void *)ctx->X,
-                (void *)ctx->Y,
-                (void *)ctx->out_buf);
-        return -1;
-    }
-
-    if (!ctx || !raw_pulse || !out_range_bins) {
-        fprintf(stderr, "pulse_compress_one: Invalid input parameters\n");
         return -1;
     }
 
     if (ctx->input_len <= 0 || ctx->nfft <= 0 ||
-        !ctx->H || !ctx->X || !ctx->Y) {
+        !ctx->H || !ctx->X || !ctx->Y ||
+        !ctx->forward_plan || !ctx->inverse_plan) {
         fprintf(stderr, "pulse_compress_one: ctx not initialized\n");
         return -1;
     }
 
-    for (int i = 0; i < ctx->nfft; ++i) {
-        ctx->X[i] = 0.0 + I * 0.0;
-    }
+    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(double complex));
 
-    for (int i = 0; i < ctx->input_len; ++i) {
-        ctx->X[i] = raw_pulse[i];
-    }
+    memcpy(ctx->X,
+           raw_pulse,
+           (size_t)ctx->input_len * sizeof(double complex));
 
-    fft_inplace_local(ctx->X, ctx->nfft, 0);
+    fftw_execute(ctx->forward_plan);
 
     for (int i = 0; i < ctx->nfft; ++i) {
         ctx->Y[i] = ctx->X[i] * ctx->H[i];
     }
 
-    fft_inplace_local(ctx->Y, ctx->nfft, 1);
+    fftw_execute(ctx->inverse_plan);
+
+    /*
+     * FFTW/ARMPL FFTW interface의 backward FFT는 보통 1/N 정규화를 안 함.
+     * 기존 fft_inplace_local inverse가 내부에서 나눴다면 여기서 나눠야 결과가 맞음.
+     */
+    double inv_n = 1.0 / (double)ctx->nfft;
 
     for (int r = 0; r < ctx->input_len; ++r) {
         int src = r + ctx->mf_delay;
-        out_range_bins[r] = (src < ctx->conv_len) ? ctx->Y[src] : (0.0 + I * 0.0);
+
+        out_range_bins[r] =
+            (src < ctx->conv_len)
+            ? ctx->Y[src] * inv_n
+            : (0.0 + I * 0.0);
     }
 
     return 0;

@@ -1,9 +1,12 @@
 #ifndef PULSE_H
 #define PULSE_H
 
-#include "loader.h"
-#include <fftw3.h>
 #include <complex.h>
+#include <stddef.h>
+#include <fftw3.h>
+
+#include "loader.h"
+#include "common.h"
 
 typedef struct {
     double filter_ready_ms;
@@ -22,7 +25,7 @@ typedef struct {
     double complex *H;
     double complex *X;
     double complex *Y;
-    fftw_plan plan_forward;
+    fftw_plan forward_plan;
     fftw_plan inverse_plan;
 } PulseCompressCtx;
 
@@ -33,4 +36,4 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx);
 int pulse_compress_one(PulseCompressCtx *ctx,
                        const double complex *raw_pulse,
                        double complex *out_range_bins);
-#endif
+#endif  

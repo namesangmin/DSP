@@ -124,26 +124,25 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         cleanup_pipeline_pool(&pool);
         return -1;
     }
-    
-    if(init_doppler_workspace(doppler_ws, meta->num_pulses) != 0){
+
+    if(init_cfar_workspace(cfar_ws, meta->num_fast_time_samples, meta->num_pulses) != 0){
         cleanup_pipeline_pool(&pool);
         pulse_queue_destroy(&even_q);
         pulse_queue_destroy(&odd_q);
         return -1;
     }
-    if(init_cfar_workspace(cfar_ws, meta->num_fast_time_samples, meta->num_pulses) != 0){
+
+    if(init_doppler_workspace(doppler_ws, meta->num_pulses) != 0){
         cleanup_pipeline_pool(&pool);
-        cleanup_doppler_workspace(doppler_ws);
         pulse_queue_destroy(&even_q);
         pulse_queue_destroy(&odd_q);
+        cleanup_cfar_workspace(cfar_ws);
         return -1;
     }
 
     if(post_queue_init(&post_q, NUM_BUFFERS) != 0){
         cleanup_pipeline_pool(&pool);
         cleanup_doppler_workspace(doppler_ws);
-        cleanup_cfar_workspace(cfar_ws);
-
         pulse_queue_destroy(&even_q);
         pulse_queue_destroy(&odd_q);
         return -1;

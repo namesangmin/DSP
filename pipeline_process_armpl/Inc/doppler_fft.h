@@ -1,6 +1,7 @@
 #ifndef __DOPPLER_FFT_H__
 #define __DOPPLER_FFT_H__
 
+#include "common.h"
 #include "loader.h"
 
 typedef struct {
