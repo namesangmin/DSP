@@ -6,13 +6,52 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
-
+ #include <blas.h>
 #include "pulse_compress_thread.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+int transpose_rd_pulse_range_to_doppler_range_pulse(
+    const ComplexMatrix *rd_map,
+    ComplexMatrix *doppler_map,
+    const RadarMeta *meta)
+{
+    if (!rd_map || !rd_map->data || !doppler_map || !doppler_map->data || !meta) {
+        return -1;
+    }
 
+    int pulses = meta->num_pulses;                 // 512
+    int ranges = meta->num_fast_time_samples;      // 1001
+
+    if (rd_map->rows != pulses || rd_map->cols != ranges) {
+        fprintf(stderr,
+                "transpose: rd_map shape mismatch rows=%d cols=%d expected=%dx%d\n",
+                rd_map->rows, rd_map->cols, pulses, ranges);
+        return -1;
+    }
+
+    if (doppler_map->rows != ranges || doppler_map->cols != pulses) {
+        fprintf(stderr,
+                "transpose: doppler_map shape mismatch rows=%d cols=%d expected=%dx%d\n",
+                doppler_map->rows, doppler_map->cols, ranges, pulses);
+        return -1;
+    }
+
+    armpl_singlecomplex_t alpha = 1.0f + 0.0f * I;
+
+    comatcopy('R',                 // row-major
+              'T',                 // transpose
+              (armpl_int_t)pulses, // source rows = 512
+              (armpl_int_t)ranges, // source cols = 1001
+              alpha,
+              (const armpl_singlecomplex_t *)rd_map->data,
+              (armpl_int_t)ranges, // lda = source row length = 1001
+              (armpl_singlecomplex_t *)doppler_map->data,
+              (armpl_int_t)pulses);// ldb = dest row length = 512
+
+    return 0;
+}
 static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) {
     int n;
     double fs = meta->fs_hz;
@@ -25,17 +64,24 @@ static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) {
     if (alloc_complex_matrix(N, 1, pls) != 0) return -1;
 
     for (n = 0; n < N; ++n) {
-        double t = (double)n / fs;
-        double phase = M_PI * k * t * t;
+        float t = (float)n / fs;
+        float phase = M_PI * k * t * t;
         CMAT_AT(pls, n, 0) = cos(phase) + I * sin(phase);
     }
     return 0;
 }
+static float safe_acoshf(float x)
+{
+    if (x < 1.0f) {
+        x = 1.0f;
+    }
 
-static int taylor_window(int N, int nbar, double sll_db, double *w) {
-    double A, sp2;
-    double *Fm = NULL;
-    double maxv = 0.0;
+    return logf(x + sqrtf(x * x - 1.0f));
+}
+static int taylor_window(int N, int nbar, float sll_db, float *w) {
+    float A, sp2;
+    float *Fm = NULL;
+    float maxv = 0.0;
 
     if (N <= 0 || !w) return -1;
     if (nbar < 2) {
@@ -43,29 +89,29 @@ static int taylor_window(int N, int nbar, double sll_db, double *w) {
         return 0;
     }
 
-    Fm = (double *)calloc((size_t)nbar, sizeof(double));
+    Fm = (float *)calloc((size_t)nbar, sizeof(float));
     if (!Fm) return -1;
 
-    A = acosh(pow(10.0, sll_db / 20.0)) / M_PI;
-    sp2 = ((double)nbar * (double)nbar) /
-          (A * A + ((double)nbar - 0.5) * ((double)nbar - 0.5));
+    A = safe_acoshf(pow(10.0, sll_db / 20.0)) / M_PI;
+    sp2 = ((float)nbar * (float)nbar) /
+          (A * A + ((float)nbar - 0.5) * ((float)nbar - 0.5));
 
     for (int m = 1; m <= nbar - 1; ++m) {
-        double numer = 1.0;
-        double denom = 1.0;
+        float numer = 1.0;
+        float denom = 1.0;
         for (int n = 1; n <= nbar - 1; ++n) {
             if (n == m) continue;
-            numer *= 1.0 - ((double)(m * m)) /
-                     (sp2 * (A * A + ((double)n - 0.5) * ((double)n - 0.5)));
-            denom *= 1.0 - ((double)(m * m)) / ((double)(n * n));
+            numer *= 1.0 - ((float)(m * m)) /
+                     (sp2 * (A * A + ((float)n - 0.5) * ((float)n - 0.5)));
+            denom *= 1.0 - ((float)(m * m)) / ((float)(n * n));
         }
         Fm[m] = (((m + 1) % 2) ? -1.0 : 1.0);
         Fm[m] *= numer / (2.0 * denom);
     }
 
     for (int n = 0; n < N; ++n) {
-        double xi = ((double)n - ((double)N - 1.0) / 2.0) / (double)N;
-        double sum = 1.0;
+        float xi = ((float)n - ((float)N - 1.0) / 2.0) / (float)N;
+        float sum = 1.0;
         for (int m = 1; m <= nbar - 1; ++m) {
             sum += 2.0 * Fm[m] * cos(2.0 * M_PI * m * xi);
         }
@@ -83,7 +129,7 @@ static int taylor_window(int N, int nbar, double sll_db, double *w) {
 
 int make_pulse_compression_filter(const RadarMeta *meta, int use_window, ComplexMatrix *h) {
     ComplexMatrix pls = {0};
-    double *win = NULL;
+    float *win = NULL;
     int N;
 
     if (make_lfm_pulse(meta, &pls) != 0) return -1;
@@ -95,7 +141,7 @@ int make_pulse_compression_filter(const RadarMeta *meta, int use_window, Complex
     }
 
     if (use_window) {
-        win = (double *)calloc((size_t)N, sizeof(double));
+        win = (float *)calloc((size_t)N, sizeof(float));
         if (!win) {
             free_complex_matrix(&pls);
             free_complex_matrix(h);
@@ -111,7 +157,7 @@ int make_pulse_compression_filter(const RadarMeta *meta, int use_window, Complex
 
     for (int i = 0; i < N; ++i) {
         int src = N - 1 - i;
-        double complex v = CMAT_AT(&pls, src, 0);
+        float complex v = CMAT_AT(&pls, src, 0);
         if (use_window) v *= win[src];
         CMAT_AT(h, i, 0) = conj(v);
     }
@@ -126,58 +172,6 @@ static int next_power_of_two_local(int n)
     int p = 1;
     while (p < n) p <<= 1;
     return p;
-}
-
-static void bit_reverse_permute_local(double complex *x, int n)
-{
-    int i, j, bit;
-
-    for (i = 1, j = 0; i < n; ++i) {
-        bit = n >> 1;
-        while (j & bit) {
-            j ^= bit;
-            bit >>= 1;
-        }
-        j ^= bit;
-
-        if (i < j) {
-            double complex tmp = x[i];
-            x[i] = x[j];
-            x[j] = tmp;
-        }
-    }
-}
-
-static void fft_inplace_local(double complex *x, int n, int inverse)
-{
-    int len, i, j;
-
-    bit_reverse_permute_local(x, n);
-
-    for (len = 2; len <= n; len <<= 1) {
-        double angle = (inverse ? 2.0 : -2.0) * M_PI / (double)len;
-        double complex wlen = cos(angle) + I * sin(angle);
-
-        for (i = 0; i < n; i += len) {
-            double complex w = 1.0 + I * 0.0;
-
-            for (j = 0; j < len / 2; ++j) {
-                double complex u = x[i + j];
-                double complex v = x[i + j + len / 2] * w;
-
-                x[i + j] = u + v;
-                x[i + j + len / 2] = u - v;
-
-                w *= wlen;
-            }
-        }
-    }
-
-    if (inverse) {
-        for (i = 0; i < n; ++i) {
-            x[i] /= (double)n;
-        }
-    }
 }
 
 int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
@@ -293,11 +287,17 @@ int pulse_compress_one(PulseCompressCtx *ctx,
         return -1;
     }
 
-    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float complex));
+    armpl_int_t n = (armpl_int_t)ctx->input_len;
+    armpl_int_t inc = 1;
 
-    memcpy(ctx->X,
-        raw_pulse,
-        (size_t)ctx->input_len * sizeof(float complex));
+    ccopy_(&n,
+        (const armpl_singlecomplex_t *)raw_pulse,
+        &inc,
+        (armpl_singlecomplex_t *)ctx->X,
+        &inc);
+
+    memset(ctx->X + ctx->input_len, 0,
+        (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
 
     fftwf_execute(ctx->forward_plan);
 
@@ -313,14 +313,13 @@ int pulse_compress_one(PulseCompressCtx *ctx,
      */
     float inv_n = 1.0f / (float)ctx->nfft;
 
+    // for (int r = 0; r < ctx->input_len; ++r) {
+    //     int src = r + ctx->mf_delay;
+ 
+    //     out_range_bins[r] = (src < ctx->conv_len) ? ctx->Y[src] * inv_n : (0.0 + I * 0.0);
+    // }
     for (int r = 0; r < ctx->input_len; ++r) {
-        int src = r + ctx->mf_delay;
-
-        out_range_bins[r] =
-            (src < ctx->conv_len)
-            ? ctx->Y[src] * inv_n
-            : (0.0 + I * 0.0);
+        out_range_bins[r] = ctx->Y[r + ctx->mf_delay] * inv_n;
     }
-
     return 0;
 }

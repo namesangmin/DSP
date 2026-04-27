@@ -6,8 +6,10 @@ int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool
 
     // 3중 버퍼 메모리 할당 및 초기화
     for (int i = 0; i < NUM_BUFFERS; i++) {
-        alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses, &pool->rd_maps[i].data);
-        atomic_init(&pool->rd_maps[i].state, BUF_FREE);
+        alloc_complex_matrix(meta->num_pulses,
+                            meta->num_fast_time_samples,
+                            &pool->rd_maps[i].data);
+                             atomic_init(&pool->rd_maps[i].state, BUF_FREE);
         atomic_init(&pool->rd_maps[i].done_count, 0);
 
         alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses, &pool->doppler_maps[i].data);

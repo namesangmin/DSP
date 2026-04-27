@@ -25,9 +25,8 @@ int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft);
 
 void cleanup_doppler_workspace(DopplerWorkspace *ws);
 
-int doppler_fft_processing(const ComplexMatrix *rd_map,
+int doppler_fft_processing(ComplexMatrix *doppler_map,
                            int nfft,
-                           ComplexMatrix *doppler_map,
                            DopplerFftTiming *timing,
                            DopplerWorkspace *ws);
 

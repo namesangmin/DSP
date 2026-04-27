@@ -2,6 +2,7 @@
 #define __PULSE_COMPRESS_THREAD_H__
 
 #include "pipeline_set.h"
+#include "common.h"
 #include "queue_pulse.h"
 #include "queue_post.h"
 #include "pulse.h"

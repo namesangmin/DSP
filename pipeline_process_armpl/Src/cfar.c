@@ -61,15 +61,6 @@ void cleanup_cfar_workspace(CfarWorkspace *ws)
     memset(ws, 0, sizeof(*ws));
 }
 
-static int cmp_detection_power_desc(const void *a, const void *b) 
-{
-    const Detection *da = (const Detection *)a;
-    const Detection *db = (const Detection *)b;
-    if (da->power > db->power) return -1;
-    if (da->power < db->power) return 1;
-    return 0;
-}
-
 void free_detection_list(DetectionList *list)
  {
     if (!list) return;

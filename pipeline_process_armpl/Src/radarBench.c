@@ -481,8 +481,14 @@ void process_directory(const char *dir_path, const char *metadata_path, int runs
             printf("[FILE %d] Processing Integrated DAT: %s\n", valid_files + 1, filename);
             printf("=========================================================\n");
           
-            // [수정됨] 매개변수 맨 끝에 &total_acc 전달
-            process_single_file(metadata_path, filepath, "DUMMY", runs, &best_det, &total_acc);
+            // 첫 번째 파일은 실행은 하되 GLOBAL DIRECTORY AVERAGE 시간 계산에서는 제외한다.
+            // 두 번째 파일부터 total_acc에 누적한다.
+            Accumulator *acc_ptr = NULL;
+            if (valid_files > 0) {
+                acc_ptr = &total_acc;
+            }
+
+            process_single_file(metadata_path, filepath, "DUMMY", runs, &best_det, acc_ptr);
             processed = 1;
         }
 
@@ -535,21 +541,30 @@ void process_directory(const char *dir_path, const char *metadata_path, int runs
         printf("#########################################################\n\n");
 
         // [추가됨] 모든 파일이 처리된 후, 전체 디렉토리의 평균 출력
-        printf("\n\n#########################################################\n");
-        printf("         GLOBAL DIRECTORY AVERAGE (%d Files)        \n", valid_files);
-        printf("#########################################################\n");
-        print_average_line("load",          total_acc.load_ms          / valid_files);
-        print_average_line("pulse_ready",   total_acc.pulse_ready_ms   / valid_files);
-        print_average_line("pulse_apply",   total_acc.pulse_apply_ms   / valid_files);
-        print_average_line("pulse_total",   total_acc.pulse_total_ms   / valid_files);
-        print_average_line("mti",           total_acc.mti_ms           / valid_files);
-        print_average_line("mtd",           total_acc.mtd_ms           / valid_files);
-        print_average_line("doppler_total", total_acc.doppler_total_ms / valid_files);
-        print_average_line("cfar",          total_acc.cfar_ms          / valid_files);
-        print_average_line("total time",    total_acc.total_time_ms    / valid_files);
-        print_average_line("algo_only",     total_acc.algo_only_ms     / valid_files);
-        printf("  %-18s = %.2f\n", "detections", (double)total_acc.detections / valid_files);
-        printf("#########################################################\n\n");
+        // 첫 번째 파일은 warm-up/cold-start 영향 제거를 위해 시간 평균에서 제외한다.
+        int timing_files = valid_files - 1;
+
+        if (timing_files > 0) {
+            printf("\n\n#########################################################\n");
+            printf("         GLOBAL DIRECTORY AVERAGE (%d Files, excluding FILE 1)        \n", timing_files);
+            printf("#########################################################\n");
+            print_average_line("load",          total_acc.load_ms          / timing_files);
+            print_average_line("pulse_ready",   total_acc.pulse_ready_ms   / timing_files);
+            print_average_line("pulse_apply",   total_acc.pulse_apply_ms   / timing_files);
+            print_average_line("pulse_total",   total_acc.pulse_total_ms   / timing_files);
+            print_average_line("mti",           total_acc.mti_ms           / timing_files);
+            print_average_line("mtd",           total_acc.mtd_ms           / timing_files);
+            print_average_line("doppler_total", total_acc.doppler_total_ms / timing_files);
+            print_average_line("cfar",          total_acc.cfar_ms          / timing_files);
+            print_average_line("total time",    total_acc.total_time_ms    / timing_files);
+            print_average_line("algo_only",     total_acc.algo_only_ms     / timing_files);
+            printf("  %-18s = %.2f\n", "detections", (double)total_acc.detections / timing_files);
+            printf("#########################################################\n\n");
+        } else {
+            printf("\n\n#########################################################\n");
+            printf("         GLOBAL DIRECTORY AVERAGE skipped: only one file processed\n");
+            printf("#########################################################\n\n");
+        }
     }
 
     free(history);
