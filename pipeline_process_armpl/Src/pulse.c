@@ -207,10 +207,10 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
         return -1;
     }
 
-    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(float  complex));
-    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float  complex));
-    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(float  complex));
-    memset(ctx->out_buf, 0, (size_t)ctx->input_len * sizeof(float  complex));    
+    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(float complex));
+    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float complex));
+    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(float complex));
+    memset(ctx->out_buf, 0, (size_t)ctx->input_len * sizeof(float complex));    
 
     ctx->forward_plan = fftwf_plan_dft_1d(ctx->nfft,
                                         (fftwf_complex *)ctx->X,

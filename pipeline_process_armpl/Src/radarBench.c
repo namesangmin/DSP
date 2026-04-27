@@ -132,7 +132,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
         return -1;
     }
 
-    if(init_doppler_workspace(doppler_ws, meta->num_pulses) != 0){
+    if(init_doppler_workspace(doppler_ws, meta->num_pulses, meta->num_pulses ) != 0){
         cleanup_pipeline_pool(&pool);
         pulse_queue_destroy(&even_q);
         pulse_queue_destroy(&odd_q);

@@ -25,8 +25,7 @@ void *worker_thread_main(void *arg)
         if (atomic_load_explicit(&a->pool->error, memory_order_relaxed)) {
             break;
         }
-        // fprintf(stderr, "worker cpu=%d pop pulse_idx=%d\n",
-        //             a->cpu_id, job.pulse_idx);
+
         double t0 = now_ms();
 
         const float complex *pulse_raw_ptr = &CMAT_AT(&a->pool->raw_data, job.pulse_idx, 0);
@@ -36,13 +35,7 @@ void *worker_thread_main(void *arg)
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             return NULL;
         }
-        //local_compress_ms += now_ms() - t0;
 
-        // fprintf(stderr, "worker cpu=%d compressed pulse_idx=%d\n",
-        // a->cpu_id, job.pulse_idx);
-
-        // [핵심]: 쓰레기 하드코딩 삭제. 
-        // 0번 코어(로더)가 지금 "몇 번 식판에 담아라"라고 지정한 인덱스를 실시간으로 가져옴.
         int curr_idx = atomic_load_explicit(&a->pool->current_write_idx, memory_order_acquire); 
 
         // 결과 저장 (세로 방향)
@@ -66,7 +59,7 @@ void *worker_thread_main(void *arg)
         }
         local_compress_ms += now_ms() - t0; // 1. 여기서 시간측정 해야 하지 않나? 
     }
-//fprintf(stderr, "worker cpu=%d exit\n", a->cpu_id);
+    
     a->compress_ms = local_compress_ms;
     return NULL;
 }
