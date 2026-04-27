@@ -100,48 +100,48 @@ void cleanup_doppler_workspace(DopplerWorkspace *ws)
     memset(ws, 0, sizeof(*ws));
 }
 
-static int is_power_of_two(int n) {
-    return (n > 0) && ((n & (n - 1)) == 0);
-}
+// static int is_power_of_two(int n) {
+//     return (n > 0) && ((n & (n - 1)) == 0);
+// }
 
-static void bit_reverse_permute(float complex *x, int n) {
-    int i, j, bit;
-    for (i = 1, j = 0; i < n; ++i) {
-        bit = n >> 1;
-        while (j & bit) {
-            j ^= bit;
-            bit >>= 1;
-        }
-        j ^= bit;
-        if (i < j) {
-            float complex tmp = x[i];
-            x[i] = x[j];
-            x[j] = tmp;
-        }
-    }
-}
+// static void bit_reverse_permute(float complex *x, int n) {
+//     int i, j, bit;
+//     for (i = 1, j = 0; i < n; ++i) {
+//         bit = n >> 1;
+//         while (j & bit) {
+//             j ^= bit;
+//             bit >>= 1;
+//         }
+//         j ^= bit;
+//         if (i < j) {
+//             float complex tmp = x[i];
+//             x[i] = x[j];
+//             x[j] = tmp;
+//         }
+//     }
+// }
 
-static void fft_inplace(float complex *x, int n) {
-    int len, i, j;
+// static void fft_inplace(float complex *x, int n) {
+//     int len, i, j;
 
-    bit_reverse_permute(x, n);
+//     bit_reverse_permute(x, n);
 
-    for (len = 2; len <= n; len <<= 1) {
-        float angle = -2.0 * M_PI / (float)len;
-        float complex wlen = cos(angle) + I * sin(angle);
+//     for (len = 2; len <= n; len <<= 1) {
+//         float angle = -2.0 * M_PI / (float)len;
+//         float complex wlen = cos(angle) + I * sin(angle);
 
-        for (i = 0; i < n; i += len) {
-            float complex w = 1.0 + I * 0.0;
-            for (j = 0; j < len / 2; ++j) {
-                float complex u = x[i + j];
-                float complex v = x[i + j + len / 2] * w;
-                x[i + j] = u + v;
-                x[i + j + len / 2] = u - v;
-                w *= wlen;
-            }
-        }
-    }
-}
+//         for (i = 0; i < n; i += len) {
+//             float complex w = 1.0 + I * 0.0;
+//             for (j = 0; j < len / 2; ++j) {
+//                 float complex u = x[i + j];
+//                 float complex v = x[i + j + len / 2] * w;
+//                 x[i + j] = u + v;
+//                 x[i + j + len / 2] = u - v;
+//                 w *= wlen;
+//             }
+//         }
+//     }
+// }
 
 static void fftshift_1d(float complex *x, int n) {
     int half = n / 2;
@@ -290,9 +290,6 @@ int doppler_fft_processing(const ComplexMatrix *rd_map,
                     nfft);
             return -1;
         }
-    // if (doppler_map->rows != rows || doppler_map->cols < nfft) {
-    //     return -1;
-    // }
 
     if (timing) {
         timing->mti_ms = 0.0;
