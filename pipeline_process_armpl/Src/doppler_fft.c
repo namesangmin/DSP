@@ -90,7 +90,6 @@ static int apply_mti(ComplexMatrix *map, int order)
 
     return 0;
 }
-
 static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft,
                      DopplerWorkspace *ws)
 {
@@ -120,20 +119,30 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft,
     for (int r = 0; r < rows; ++r) {
         float complex *row = &CMAT_AT(doppler_map, r, 0);
 
-        for (int p = 0; p < pulses; ++p)
+        // [최적화 3] 복소수 * 실수 곱셈 강제 SIMD 벡터화
+        #pragma GCC ivdep
+        for (int p = 0; p < pulses; ++p) {
             buf[p] = row[p] * win[p];
-        for (int p = pulses; p < nfft; ++p)
-            buf[p] = 0.0f + 0.0f * I;
+        }
+
+        // [최적화 2] Zero-padding을 느린 루프 대신 memset으로 한 방에 처리
+        if (nfft > pulses) {
+            memset(&buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
+        }
 
         fftwf_execute(ws->mtd_plan);
 
-        memcpy(row, buf, (size_t)nfft * sizeof(float complex));
-        fftshift_1d(row, nfft);
+        // [최적화 1] memcpy와 fftshift_1d를 하나로 병합 (메모리 I/O 절반으로 감소)
+        int half = nfft / 2;
+        #pragma GCC ivdep
+        for (int i = 0; i < half; ++i) {
+            row[i] = buf[i + half];       // 뒷부분을 앞부분으로 복사
+            row[i + half] = buf[i];       // 앞부분을 뒷부분으로 복사
+        }
     }
 
     return 0;
 }
-
 /* rd_map 인자 제거 - doppler_map 하나로 in-place 처리 */
 int doppler_fft_processing(ComplexMatrix *doppler_map,
                            int nfft,

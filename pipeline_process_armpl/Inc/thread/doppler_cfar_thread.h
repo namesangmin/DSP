@@ -12,6 +12,7 @@
 
 #include "pulse_compress_thread.h"
 #include "cfar.h"
+#include "pulse.h"
 
 typedef struct {
     const RadarMeta *meta;
@@ -23,6 +24,7 @@ typedef struct {
     CfarWorkspace * cfar_ws;
     DopplerWorkspace *doppler_ws;
     double *cfar_ms;
+    double *transpose_ms;
     int cpu_id;
     int status;    
     

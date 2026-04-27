@@ -241,6 +241,11 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     fftwf_execute(h_plan);
     fftwf_destroy_plan(h_plan);
 
+    // [최적화 1] H에 1/NFFT 미리 곱해두기 (실시간 곱셈 51만번 제거)
+    float inv_n = 1.0f / (float)ctx->nfft;
+    for (int i = 0; i < ctx->nfft; ++i) {
+        ctx->H[i] *= inv_n;
+    }
     return 0;
 }
 
@@ -290,36 +295,19 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     armpl_int_t n = (armpl_int_t)ctx->input_len;
     armpl_int_t inc = 1;
 
-    ccopy_(&n,
-        (const armpl_singlecomplex_t *)raw_pulse,
-        &inc,
-        (armpl_singlecomplex_t *)ctx->X,
-        &inc);
+    memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
 
     memset(ctx->X + ctx->input_len, 0,
         (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
 
     fftwf_execute(ctx->forward_plan);
 
+    #pragma GCC ivdep
     for (int i = 0; i < ctx->nfft; ++i) {
         ctx->Y[i] = ctx->X[i] * ctx->H[i];
     }
 
     fftwf_execute(ctx->inverse_plan);
-
-    /*
-     * FFTW/ARMPL FFTW interface의 backward FFT는 보통 1/N 정규화를 안 함.
-     * 기존 fft_inplace_local inverse가 내부에서 나눴다면 여기서 나눠야 결과가 맞음.
-     */
-    float inv_n = 1.0f / (float)ctx->nfft;
-
-    // for (int r = 0; r < ctx->input_len; ++r) {
-    //     int src = r + ctx->mf_delay;
- 
-    //     out_range_bins[r] = (src < ctx->conv_len) ? ctx->Y[src] * inv_n : (0.0 + I * 0.0);
-    // }
-    for (int r = 0; r < ctx->input_len; ++r) {
-        out_range_bins[r] = ctx->Y[r + ctx->mf_delay] * inv_n;
-    }
+memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
     return 0;
 }

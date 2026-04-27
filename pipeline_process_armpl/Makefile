@@ -1,6 +1,6 @@
 CC = gcc
 
-ARMPL_DIR ?= /opt/arm/armpl_26.01_gcc
+ARMPL_DIR ?= /opt/arm/arm-performance-libraries/
 
 # Include 경로
 CFLAGS = -O2 -Wall -std=gnu99 -D_GNU_SOURCE \

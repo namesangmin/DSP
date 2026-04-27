@@ -28,14 +28,15 @@ typedef struct {
     int numRange;
     int numDoppler;
 
-    int ii_rows;
-    int ii_cols;
     float *powerMap;
-    float *ii;
+    float *col_sum_outer; 
+    float *col_sum_guard; 
 
     Detection *detBuf;
     int detCapacity;
 } CfarWorkspace;
+
+
 int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler);
 void cleanup_cfar_workspace(CfarWorkspace *ws);
 

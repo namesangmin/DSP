@@ -70,6 +70,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
                                          ComplexMatrix *doppler,
                                          DopplerFftTiming *doppler_timing,
                                          double *cfar_ms,
+                                         double *transpose_ms,
                                          DetectionList *det,
                                          CfarWorkspace *cfar_ws,
                                          DopplerWorkspace *doppler_ws)
@@ -102,12 +103,13 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     memset(&post, 0, sizeof(post));
 
     if (!dat_path || !meta || !load_ms || !pulse_timing ||
-        !doppler || !doppler_timing || !cfar_ms || !det) {
+        !doppler || !doppler_timing || !cfar_ms || !transpose_ms || !det) {
         return -1;
     }
 
     *load_ms = 0.0;
     *cfar_ms = 0.0;
+    *transpose_ms = 0.0;
     pulse_timing->filter_ready_ms = 0.0;
     pulse_timing->compression_ms = 0.0;
     doppler_timing->mti_ms = 0.0;
@@ -195,6 +197,7 @@ static int run_mmap_pipeline_single_file(const char *dat_path,
     // 3번 코어 (포스트) 에게 주소 전달 (Pop 용도)
     post.post_q = &post_q;
     post.cfar_ms = cfar_ms;
+    post.transpose_ms = transpose_ms;
     post.cfar_ws = cfar_ws;
     post.doppler_ws = doppler_ws;
 
@@ -302,6 +305,7 @@ int process_single_file(const char *metadata_path,
     double sum_load_ms = 0.0, sum_pulse_ready_ms = 0.0, sum_pulse_apply_ms = 0.0, sum_pulse_total_ms = 0.0;
     double sum_mti_ms = 0.0, sum_mtd_ms = 0.0, sum_doppler_total_ms = 0.0;
     double sum_cfar_ms = 0.0, sum_total_ms = 0.0, sum_detections = 0.0;
+    double sum_transpose_ms = 0.0;
 
     long   ticks_before = read_cpu_ticks();
     double wall_before  = now_ms();
@@ -320,6 +324,7 @@ int process_single_file(const char *metadata_path,
         double pulse_total_ms = 0.0;
         double doppler_total_ms = 0.0;
         double cfar_ms = 0.0;
+        double transpose_ms = 0.0;
         double total_ms = 0.0;
 
         if (load_metadata(metadata_path, &meta) != 0) return 1;
@@ -336,6 +341,7 @@ int process_single_file(const char *metadata_path,
                                               &doppler,
                                               &doppler_timing,
                                               &cfar_ms,
+                                              &transpose_ms,
                                               &det,
                                               &cfar_ws,
                                               &doppler_ws) != 0) 
@@ -359,6 +365,7 @@ int process_single_file(const char *metadata_path,
         sum_mtd_ms           += doppler_timing.mtd_ms;
         sum_doppler_total_ms += doppler_total_ms;
         sum_cfar_ms          += cfar_ms;
+        sum_transpose_ms += transpose_ms;
         sum_total_ms         += total_ms;
         sum_detections       += (double)det.count;
 
@@ -393,8 +400,9 @@ int process_single_file(const char *metadata_path,
         global_acc->mtd_ms           += (sum_mtd_ms / runs);
         global_acc->doppler_total_ms += (sum_doppler_total_ms / runs);
         global_acc->cfar_ms          += (sum_cfar_ms / runs);
+        global_acc->transpose_ms +=(sum_transpose_ms / runs);
         global_acc->total_time_ms    += (sum_total_ms / runs);
-        global_acc->algo_only_ms     += ((sum_pulse_total_ms + sum_doppler_total_ms + sum_cfar_ms) / runs);
+        global_acc->algo_only_ms     += ((sum_pulse_total_ms + sum_doppler_total_ms + sum_cfar_ms + sum_transpose_ms) / runs);
         global_acc->detections       += (sum_detections / runs);
     }
 
@@ -423,12 +431,14 @@ int process_single_file(const char *metadata_path,
     print_average_line("pulse_ready",   sum_pulse_ready_ms   / (double)runs);
     print_average_line("pulse_apply",   sum_pulse_apply_ms   / (double)runs);
     print_average_line("pulse_total",   sum_pulse_total_ms   / (double)runs);
+    print_average_line("transpose",          sum_transpose_ms          / (double)runs);
     print_average_line("mti",           sum_mti_ms           / (double)runs);
     print_average_line("mtd",           sum_mtd_ms           / (double)runs);
     print_average_line("doppler_total", sum_doppler_total_ms / (double)runs);
     print_average_line("cfar",          sum_cfar_ms          / (double)runs);
+
     print_average_line("total time",    sum_total_ms         / (double)runs);
-    print_average_line("algo_only",     (sum_pulse_total_ms + sum_doppler_total_ms + sum_cfar_ms) / (double)runs);
+    print_average_line("algo_only",     (sum_pulse_total_ms + sum_doppler_total_ms + sum_cfar_ms + sum_transpose_ms) / (double)runs);
     printf("  %-18s = %.2f\n", "detections", sum_detections / (double)runs);
 
     printf("\n--- CPU Core Usage (all %d runs) ---\n", runs);
@@ -552,10 +562,12 @@ void process_directory(const char *dir_path, const char *metadata_path, int runs
             print_average_line("pulse_ready",   total_acc.pulse_ready_ms   / timing_files);
             print_average_line("pulse_apply",   total_acc.pulse_apply_ms   / timing_files);
             print_average_line("pulse_total",   total_acc.pulse_total_ms   / timing_files);
+            print_average_line("transpose",          total_acc.transpose_ms          / timing_files);
             print_average_line("mti",           total_acc.mti_ms           / timing_files);
             print_average_line("mtd",           total_acc.mtd_ms           / timing_files);
             print_average_line("doppler_total", total_acc.doppler_total_ms / timing_files);
             print_average_line("cfar",          total_acc.cfar_ms          / timing_files);
+
             print_average_line("total time",    total_acc.total_time_ms    / timing_files);
             print_average_line("algo_only",     total_acc.algo_only_ms     / timing_files);
             printf("  %-18s = %.2f\n", "detections", (double)total_acc.detections / timing_files);

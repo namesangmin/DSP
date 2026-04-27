@@ -12,6 +12,7 @@ typedef struct {
     double mtd_ms;
     double doppler_total_ms;
     double cfar_ms;
+    double transpose_ms;
     double total_time_ms;
     double algo_only_ms;
     int detections;
