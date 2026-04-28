@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <complex.h>
- #include <blas.h>
+#include <blas.h>
 #include "pulse_compress_thread.h"
 
 #ifndef M_PI
@@ -32,7 +32,7 @@ int transpose_rd_pulse_range_to_doppler_range_pulse(
     float complex *dst = (float complex *)doppler_map->data;
 
     // 타일 크기 설정 (8, 16, 32 중 성능이 가장 좋은 것을 선택. 보통 16~32)
-    const int TILE = 16; 
+    const int TILE = 32; 
 
     // 타일 단위로 크게 크게 이동 (외부 루프)
     for (int r = 0; r < pulses; r += TILE) {

@@ -28,19 +28,17 @@ int pulse_queue_push(PulseQueue *q, PulseJob job) {
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
         
-        // usleep(1) 삭제! 대신 아래처럼 깡으로 돌거나 yield를 씁니다.
-        // 아무것도 안 적으면 CPU 100% 점유하며 최고 속도 반응
-        // sched_yield(); // 만약 다른 스레드가 급하면 양보 (선택 사항)
-        for (int i = 0; i < 50; i++) {
-            __asm__ __volatile__("yield"); // ARM CPU에게 힌트를 줌
-        }
+        usleep(1);
+        // for (int i = 0; i < 100; i++) {
+        //     __asm__ __volatile__("yield"); // ARM CPU에게 힌트를 줌
+        // }
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
 
     q->buf[tail] = job;
     atomic_store_explicit(&q->tail, next_tail, memory_order_release);
-    return 0;
+    return 0; 
 }
 
 int pulse_queue_pop(PulseQueue *q, PulseJob *job)
@@ -66,10 +64,10 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) {
             return 0;
         }
-
-        for (int i = 0; i < 50; i++) {
-            __asm__ __volatile__("yield"); // ARM CPU에게 힌트를 줌
-        }
+        usleep(1);
+        // for (int i = 0; i < 100; i++) {
+        //     __asm__ __volatile__("yield"); // ARM CPU에게 힌트를 줌
+        // }
     }
 }
 

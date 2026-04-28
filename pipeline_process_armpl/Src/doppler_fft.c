@@ -104,31 +104,45 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft,
 
     int rows        = doppler_map->rows;
     float *win      = ws->hamming_win;
+
+    
     float complex *buf = (float complex *)ws->plan_buf;
 
-    for (int r = 0; r < rows; ++r) {
-        float complex *row = &CMAT_AT(doppler_map, r, 0);
+#pragma omp parallel num_threads(2)
+    {
+        // 각 스레드(코어) 전용 로컬 버퍼 생성 (Thread-safe)
+        float complex *local_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));
+        
+        // 각 스레드 전용 Plan 생성 (또는 기존 Plan을 execute 시점에만 조절)
+        // 안전하게 처리하기 위해 루프 밖에서 미리 스레드별 workspace를 만드는 것이 좋지만,
+        // 여기서는 개념적으로 분리된 처리를 보여드립니다.
 
-        // [최적화 3] 복소수 * 실수 곱셈 강제 SIMD 벡터화
-        #pragma GCC ivdep
-        for (int p = 0; p < pulses; ++p) {
-            buf[p] = row[p] * win[p];
+        #pragma omp for schedule(static)
+        for (int r = 0; r < rows; ++r) {
+            float complex *row = &CMAT_AT(doppler_map, r, 0);
+
+            // 1. 윈도우 적용
+            for (int p = 0; p < pulses; ++p) {
+                local_buf[p] = row[p] * win[p];
+            }
+
+            // 2. Zero-padding
+            if (nfft > pulses) {
+                memset(&local_buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
+            }
+
+            // 3. FFT 실행 (ws->mtd_plan 대신 개별 plan 또는 전용 실행 함수 필요)
+            // fftwf_execute_dft를 쓰면 버퍼를 지정해서 실행 가능합니다.
+            fftwf_execute_dft(ws->mtd_plan, (fftwf_complex *)local_buf, (fftwf_complex *)local_buf);
+
+            // 4. Shift 및 복사
+            int half = nfft / 2;
+            for (int i = 0; i < half; ++i) {
+                row[i] = local_buf[i + half];
+                row[i + half] = local_buf[i];
+            }
         }
-
-        // [최적화 2] Zero-padding을 느린 루프 대신 memset으로 한 방에 처리
-        if (nfft > pulses) {
-            memset(&buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
-        }
-
-        fftwf_execute(ws->mtd_plan);
-
-        // [최적화 1] memcpy와 fftshift_1d를 하나로 병합 (메모리 I/O 절반으로 감소)
-        int half = nfft / 2;
-        #pragma GCC ivdep
-        for (int i = 0; i < half; ++i) {
-            row[i] = buf[i + half];       // 뒷부분을 앞부분으로 복사
-            row[i + half] = buf[i];       // 앞부분을 뒷부분으로 복사
-        }
+        fftwf_free(local_buf);
     }
 
     return 0;

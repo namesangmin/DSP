@@ -8,7 +8,7 @@ ARMPL_DIR ?= /opt/arm/arm-performance-libraries
 # -ffast-math: 팀원 코드의 핵심. 부동소수점 연산 속도를 극한으로 올림
 # -fcx-limited-range: 복소수 곱셈/나눗셈 시 불필요한 예외 체크를 생략하여 속도 향상
 # -Wdouble-promotion: 실수 연산 중 의도치 않게 double로 형변환되는 곳을 경고 (최적화용)
-CFLAGS = -O3 -ffast-math -fcx-limited-range -Wall -std=gnu99 -D_GNU_SOURCE \
+CFLAGS = -O3 -ffast-math -fcx-limited-range -Wall -std=gnu99 -fopenmp -D_GNU_SOURCE \
     -I./Inc \
     -I./Inc/thread \
     -I./Inc/settings \
@@ -23,7 +23,7 @@ LDFLAGS = -pthread \
     -Wl,-rpath,$(ARMPL_DIR)/lib
 
 # 3. 라이브러리 (순서 중요: 수학 라이브러리와 armpl)
-LDLIBS = -larmpl_lp64 -lfftw3f -lm
+LDLIBS = -larmpl_lp64 -lfftw3f -fopenmp -lm
 
 OBJS = \
     Src/radarBench.o \

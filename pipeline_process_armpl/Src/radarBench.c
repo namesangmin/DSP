@@ -586,7 +586,7 @@ void process_directory(const char *dir_path, const char *metadata_path, int runs
 // MAIN
 // --------------------------------------------------------------------------------
 int main(int argc, char **argv) {
-    pin_to_cpu0();
+    //pin_to_cpu0();
 
     if (argc < 4) {
         print_usage(argv[0]);

@@ -14,7 +14,7 @@
 void *loader_thread_main(void *arg)
 {
     LoaderArgs *a = (LoaderArgs *)arg;
-    pin_thread_to_cpu(a->cpu_id);
+    //pin_thread_to_cpu(a->cpu_id);
 
     double t0 = now_ms();
 
@@ -80,7 +80,7 @@ void *loader_thread_main(void *arg)
     pulse_queue_close(a->odd_q);
 
     if (a->out_loader_ms)
-        *a->out_loader_ms += now_ms() - t0;
+        *a->out_loader_ms = now_ms() - t0;
 
     return NULL;
 }

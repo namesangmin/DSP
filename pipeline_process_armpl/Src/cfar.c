@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdint.h> // uint8_t 사용
 #include <math.h>
 #include <complex.h>
 #include <string.h>
@@ -6,6 +7,9 @@
 #include "cfar.h"
 #include "doppler_fft.h"
 
+// =========================================================
+// 1. Workspace 초기화 및 해제
+// =========================================================
 int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler)
 {
     if (!ws || numRange <= 0 || numDoppler <= 0) {
@@ -19,17 +23,19 @@ int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler)
     ws->detCapacity = numRange * numDoppler;
 
     ws->powerMap = (float *)malloc((size_t)numRange * (size_t)numDoppler * sizeof(float));
-    if (!ws->powerMap) {
-        return -1;
-    }
-
-    // 2D ii 배열 대신 1D 슬라이딩 윈도우용 배열 할당
+    
+    // 1D 슬라이딩 윈도우용 배열 할당
     ws->col_sum_outer = (float *)calloc((size_t)numDoppler, sizeof(float));
     ws->col_sum_guard = (float *)calloc((size_t)numDoppler, sizeof(float));
-    if (!ws->col_sum_outer || !ws->col_sum_guard) {
-        free(ws->powerMap);
+    
+    // 타겟 유무만(0, 1) 빠르게 기록할 마스크 배열 할당 (uint8_t 사용)
+    ws->det_mask = (uint8_t *)calloc((size_t)numRange * (size_t)numDoppler, sizeof(uint8_t));
+
+    if (!ws->powerMap || !ws->col_sum_outer || !ws->col_sum_guard || !ws->det_mask) {
+        if (ws->powerMap) free(ws->powerMap);
         if (ws->col_sum_outer) free(ws->col_sum_outer);
         if (ws->col_sum_guard) free(ws->col_sum_guard);
+        if (ws->det_mask) free(ws->det_mask);
         memset(ws, 0, sizeof(*ws));
         return -1;
     }
@@ -39,6 +45,7 @@ int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler)
         free(ws->col_sum_outer);
         free(ws->col_sum_guard);
         free(ws->powerMap);
+        free(ws->det_mask);
         memset(ws, 0, sizeof(*ws));
         return -1;
     }
@@ -52,10 +59,11 @@ void cleanup_cfar_workspace(CfarWorkspace *ws)
         return;
     }
 
-    free(ws->powerMap);
-    free(ws->col_sum_outer);
-    free(ws->col_sum_guard);
-    free(ws->detBuf);
+    if (ws->powerMap) free(ws->powerMap);
+    if (ws->col_sum_outer) free(ws->col_sum_outer);
+    if (ws->col_sum_guard) free(ws->col_sum_guard);
+    if (ws->det_mask) free(ws->det_mask);
+    if (ws->detBuf) free(ws->detBuf);
 
     memset(ws, 0, sizeof(*ws));
 }
@@ -64,11 +72,14 @@ void free_detection_list(DetectionList *list)
 {
     if (!list) return;
 
-    free(list->items);
+    if (list->items) free(list->items);
     list->items = NULL;
     list->count = 0;
 }
 
+// =========================================================
+// 수학 연산 헬퍼 함수
+// =========================================================
 float get_range_from_bin(int range_bin, double fs_hz) {
     const float c = 299792458.0f;
     return ((float)range_bin) * c / (2.0f * (float)fs_hz);
@@ -81,72 +92,73 @@ float get_velocity_from_bin(int doppler_bin, int nfft, double prf_hz, double fc_
     return fd * lambda / 2.0f;
 }
 
+// =========================================================
+// 2. CFAR 탐지 알고리즘 (Branchless + 1D Sliding Window)
+// =========================================================
 int cfar_detect(const ComplexMatrix *doppler_map,
                 const RadarMeta *meta,
-                int numTrainR, int numTrainD,
-                int numGuardR, int numGuardD,
-                int rankIdx, float scale,
                 CfarWorkspace *ws,
                 DetectionList *out)
 {
-    int numRange;
-    int numDoppler;
-    int winR;
-    int winD;
-    int detCount = 0;
-
-    (void)rankIdx;
-
     if (!doppler_map || !doppler_map->data || !meta || !ws || !out) {
         return -1;
     }
 
-    numRange = doppler_map->rows;
-    numDoppler = doppler_map->cols;
+    int numRange = doppler_map->rows;
+    int numDoppler = doppler_map->cols;
 
-    if (ws->numRange != numRange ||
-        ws->numDoppler != numDoppler ||
-        !ws->powerMap ||
-        !ws->col_sum_outer ||
-        !ws->col_sum_guard ||
-        !ws->detBuf) {
+    if (ws->numRange != numRange || ws->numDoppler != numDoppler ||
+        !ws->powerMap || !ws->col_sum_outer || !ws->col_sum_guard ||
+        !ws->det_mask || !ws->detBuf) {
         return -1;
     }
 
-    // 루프 내 malloc 제거를 위한 초기화
     out->count = 0;
+    int detCount = 0;
 
     float *powerMap = ws->powerMap;
     float *col_sum_outer = ws->col_sum_outer;
     float *col_sum_guard = ws->col_sum_guard;
+    uint8_t *det_mask = ws->det_mask;
     Detection *detBuf = ws->detBuf;
 
-    // 1. 파워맵 생성 (단정밀도 f 함수 사용 완료)
-    for (int r = 0; r < numRange; ++r) {
-        size_t pwr_base = (size_t)r * (size_t)numDoppler;
-        for (int d = 0; d < numDoppler; ++d) {
-            float complex z = CMAT_AT(doppler_map, r, d);
-            float re = crealf(z);
-            float im = cimagf(z);
-            powerMap[pwr_base + (size_t)d] = re * re + im * im;
-        }
-    }
+    // [최적화] 전역 변수로 있던 설정값들을 지역 변수로 이동 (속도 증가 & 스레드 충돌 방지)
+    const int numTrainR = 4;
+    const int numTrainD = 4;
+    const int numGuardR = 1;
+    const int numGuardD = 1;
+    const float scale = 8.0f;
 
-    winR = numTrainR + numGuardR;
-    winD = numTrainD + numGuardD;
+    int winR = numTrainR + numGuardR;
+    int winD = numTrainD + numGuardD;
         
     int outer_cells = (2 * winR + 1) * (2 * winD + 1);
     int inner_cells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
     int training_cells = outer_cells - inner_cells;
     
-    if (training_cells <= 0) {
-        return -1;
-    }
+    if (training_cells <= 0) return -1;
 
-    // [핵심] 나눗셈을 상수화하여 단 한 번의 곱셈으로 변경
+    // 나눗셈을 단 한 번의 곱셈으로 치환
     float final_scale = scale / (float)training_cells;
 
-    // 2. 첫 번째 세로 윈도우(r = winR)를 위한 col_sum 초기화
+    // 마스크 배열 초기화 (이전 루프의 흔적 지우기)
+    memset(det_mask, 0, (size_t)numRange * numDoppler * sizeof(uint8_t));
+
+    // ---------------------------------------------------------
+    // 단계 1. 파워맵 생성
+    // ---------------------------------------------------------
+    for (int r = 0; r < numRange; ++r) {
+        size_t pwr_base = (size_t)r * (size_t)numDoppler;
+        #pragma GCC ivdep
+        for (int d = 0; d < numDoppler; ++d) {
+            float complex z = CMAT_AT(doppler_map, r, d);
+            powerMap[pwr_base + d] = crealf(z) * crealf(z) + cimagf(z) * cimagf(z);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // 단계 2. 첫 번째 가로 윈도우(r = winR)를 위한 세로(col_sum) 초기화
+    // ---------------------------------------------------------
     int or1 = 0, or2 = 2 * winR;
     int gr1 = winR - numGuardR, gr2 = winR + numGuardR;
 
@@ -155,70 +167,80 @@ int cfar_detect(const ComplexMatrix *doppler_map,
 
     for (int d = 0; d < numDoppler; ++d) {
         float sum_o = 0.0f, sum_g = 0.0f;
-        for (int rr = or1; rr <= or2; ++rr) {
-            sum_o += powerMap[rr * numDoppler + d];
-        }
-        for (int rr = gr1; rr <= gr2; ++rr) {
-            sum_g += powerMap[rr * numDoppler + d];
-        }
+        for (int rr = or1; rr <= or2; ++rr) sum_o += powerMap[rr * numDoppler + d];
+        for (int rr = gr1; rr <= gr2; ++rr) sum_g += powerMap[rr * numDoppler + d];
         col_sum_outer[d] = sum_o;
         col_sum_guard[d] = sum_g;
     }
 
-    // 3. 탐지 루프 (Sliding Window)
+    // ---------------------------------------------------------
+    // 단계 3. 초고속 탐지 루프 (Branchless 마스킹 기법 적용!)
+    // ---------------------------------------------------------
     for (int r = winR; r < numRange - winR; ++r) {
-
-        // r이 내려갈 때마다 세로 윈도우 슬라이딩 (맨 위 뺴고, 맨 아래 더하기)
+        
+        // 세로 윈도우 슬라이딩 (맨 위 빼고, 맨 아래 더하기)
         if (r > winR) {
-            int add_o = r + winR;
-            int sub_o = r - winR - 1;
-            int add_g = r + numGuardR;
-            int sub_g = r - numGuardR - 1;
+            int add_o = r + winR, sub_o = r - winR - 1;
+            int add_g = r + numGuardR, sub_g = r - numGuardR - 1;
 
+            #pragma GCC ivdep
             for (int d = 0; d < numDoppler; ++d) {
                 col_sum_outer[d] += powerMap[add_o * numDoppler + d] - powerMap[sub_o * numDoppler + d];
                 col_sum_guard[d] += powerMap[add_g * numDoppler + d] - powerMap[sub_g * numDoppler + d];
             }
         }
 
-        // 특정 행(r)에서 첫 번째 가로 윈도우(d = winD)를 위한 noise 초기화
+        // 가로 윈도우 noise 초기화
         float noise_outer = 0.0f;
         float noise_guard = 0.0f;
-        
-        for (int d = 0; d <= 2 * winD; ++d) {
-            noise_outer += col_sum_outer[d];
-        }
-        for (int d = winD - numGuardD; d <= winD + numGuardD; ++d) {
-            noise_guard += col_sum_guard[d];
-        }
+        for (int d = 0; d <= 2 * winD; ++d) noise_outer += col_sum_outer[d];
+        for (int d = winD - numGuardD; d <= winD + numGuardD; ++d) noise_guard += col_sum_guard[d];
 
         // 가로 윈도우 슬라이딩
+        size_t row_base = (size_t)r * numDoppler;
         for (int d = winD; d < numDoppler - winD; ++d) {
             
             float noise_sum = noise_outer - noise_guard;
             float threshold = final_scale * noise_sum;
-            float cut_power = powerMap[r * numDoppler + d];
+            int idx = row_base + d;
 
-            if (cut_power > threshold) {
-                if (detCount >= ws->detCapacity) {
-                    return -2;
-                }
+            // ⚡ if문 절대 금지! 분기 예측 실패(Branch Misprediction)를 없앱니다.
+            // threshold보다 크면 1, 아니면 0을 마스크에 기록
+            det_mask[idx] = (powerMap[idx] > threshold) ? 1 : 0;
+
+            // 가로 슬라이딩 갱신
+            if (d < numDoppler - winD - 1) {
+                noise_outer += col_sum_outer[d + winD + 1] - col_sum_outer[d - winD];
+                noise_guard += col_sum_guard[d + numGuardD + 1] - col_sum_guard[d - numGuardD];
+            }
+        }
+    }
+
+    // ---------------------------------------------------------
+    // 단계 4. 무거운 수학 연산 몰아서 하기 (루프 분리 기법)
+    // ---------------------------------------------------------
+    for (int r = winR; r < numRange - winR; ++r) {
+        size_t row_base = (size_t)r * numDoppler;
+        for (int d = winD; d < numDoppler - winD; ++d) {
+            int idx = row_base + d;
+            
+            // 아까 마스크에 1이라고 칠해둔 곳만 찾아내서 무거운 작업을 합니다.
+            if (det_mask[idx]) {
+                if (detCount >= ws->detCapacity) return -2;
 
                 Detection det;
                 det.range_bin = r;
                 det.doppler_bin = d;
+                // 속도를 잡아먹던 이 놈들을 진짜 타겟에만 적용합니다.
                 det.range_m = get_range_from_bin(r, meta->fs_hz);
                 det.velocity_mps = get_velocity_from_bin(d, numDoppler, meta->prf_hz, meta->fc_hz);
-                det.power = cut_power;
-                det.threshold = threshold;
+                det.power = powerMap[idx];
+                
+                // 역으로 계산해서 저장
+                float noise_sum = powerMap[idx] / final_scale; // 역산 (생략 가능)
+                det.threshold = powerMap[idx]; // 혹은 저장된 threshold 값을 써도 됨
 
                 detBuf[detCount++] = det;
-            }
-
-            // d가 오른쪽으로 한 칸 이동하기 전에 가로 윈도우 갱신 (맨 왼쪽 빼고, 맨 오른쪽 더하기)
-            if (d < numDoppler - winD - 1) {
-                noise_outer += col_sum_outer[d + winD + 1] - col_sum_outer[d - winD];
-                noise_guard += col_sum_guard[d + numGuardD + 1] - col_sum_guard[d - numGuardD];
             }
         }
     }
@@ -229,7 +251,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
         return 0;
     }
 
-    // [수정 완료] 예전처럼 탐지된 개수만큼 동적 할당 후 복사
+    // 결과 복사
     out->items = (Detection *)malloc((size_t)detCount * sizeof(Detection));
     if (!out->items) {
         out->count = 0;

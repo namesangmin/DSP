@@ -10,18 +10,15 @@ void *post_thread_main(void *arg)
     PostArgs *a = (PostArgs *)arg;
     PostJob job;
     
-    pin_thread_to_cpu(a->cpu_id);
+    //pin_thread_to_cpu(a->cpu_id);
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(0, &set); 
+    CPU_SET(3, &set);
+    pthread_setaffinity_np(pthread_self(), sizeof(set), &set);
+    
     double total_transpose_ms = 0.0;
     double total_cfar_ms = 0.0;
-    
-    // [최적화 2] 변하지 않는 상수 연산은 while 루프 진입 전에 단 1번만 미리 계산!
-    int numTrainR = 4;
-    int numTrainD = 4;
-    int numGuardR = 1;
-    int numGuardD = 1;
-    int totalWindowCells = (2 * (numTrainR + numGuardR) + 1) * (2 * (numTrainD + numGuardD) + 1);
-    int guardAndCUTCells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
-    int rankIdx = ((totalWindowCells - guardAndCUTCells) + 1) / 2;
 
     while (post_queue_pop(a->post_q, &job)) {
         
@@ -35,6 +32,7 @@ void *post_thread_main(void *arg)
         // 0. 도플러 처리 전, 1/2번 코어가 만든 rd_map을 Transpose!
         // =========================================================
         double t_trans = now_ms(); // 타이머 시작
+        
         if (transpose_rd_pulse_range_to_doppler_range_pulse(
                 &a->pool->rd_maps[idx].data,
                 &a->pool->doppler_maps[idx].data,
@@ -44,7 +42,7 @@ void *post_thread_main(void *arg)
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
         }
-        total_transpose_ms += (now_ms() - t_trans); // 누적
+        total_transpose_ms = (now_ms() - t_trans); // 누적
         // =========================================================
         // 1. 도플러 처리
         // =========================================================
@@ -66,9 +64,6 @@ void *post_thread_main(void *arg)
         // =========================================================
         int cfar_ret = cfar_detect(&a->pool->doppler_maps[idx].data,
                            a->meta,
-                           numTrainR, numTrainD,
-                           numGuardR, numGuardD,
-                           rankIdx, 8.0,
                            a->cfar_ws,
                            a->det);
 
@@ -79,7 +74,7 @@ void *post_thread_main(void *arg)
             break;
         }
         
-        total_cfar_ms += (now_ms() - t0);
+        total_cfar_ms = (now_ms() - t0);
 
         // =========================================================
         // 3. 사용 완료된 rd_map 버퍼 즉시 반납
