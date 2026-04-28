@@ -107,12 +107,7 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
 
     #pragma omp parallel num_threads(2)
     {
-        // 각 스레드(코어) 전용 로컬 버퍼 생성 (Thread-safe)
         float complex *local_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));
-        
-        // 각 스레드 전용 Plan 생성 (또는 기존 Plan을 execute 시점에만 조절)
-        // 안전하게 처리하기 위해 루프 밖에서 미리 스레드별 workspace를 만드는 것이 좋지만,
-        // 여기서는 개념적으로 분리된 처리를 보여드립니다.
 
         #pragma omp for schedule(static)
         for (int r = 0; r < rows; ++r) {
@@ -144,7 +139,7 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
 
     return 0;
 }
-/* rd_map 인자 제거 - doppler_map 하나로 in-place 처리 */
+
 int doppler_fft_processing(ComplexMatrix *doppler_map,
                            int nfft,
                            DopplerFftTiming *timing,
