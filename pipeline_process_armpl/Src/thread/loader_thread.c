@@ -15,7 +15,7 @@
 void *loader_thread_main(void *arg)
 {
     LoaderArgs *a = (LoaderArgs *)arg;
-    //pin_thread_to_cpu(a->cpu_id);
+    pin_thread_to_cpu(a->cpu_id);
 
     double t0 = now_ms();
 

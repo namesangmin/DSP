@@ -1,12 +1,9 @@
 //#define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <complex.h>
-#include <blas.h>
 #include "pulse_compress_thread.h"
 
 #ifndef M_PI
@@ -17,9 +14,7 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 int transpose_rd_pulse_range_to_doppler_range_pulse(
-    const ComplexMatrix *rd_map,
-    ComplexMatrix *doppler_map,
-    const RadarMeta *meta)
+    const ComplexMatrix *rd_map, ComplexMatrix *doppler_map, const RadarMeta *meta)
 {
     if (!rd_map || !rd_map->data || !doppler_map || !doppler_map->data || !meta) {
         return -1;
@@ -54,6 +49,7 @@ int transpose_rd_pulse_range_to_doppler_range_pulse(
 
     return 0;
 }
+
 static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) {
     int n;
     double fs = meta->fs_hz;
@@ -72,6 +68,7 @@ static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) {
     }
     return 0;
 }
+
 static float safe_acoshf(float x)
 {
     if (x < 1.0f) {
@@ -80,7 +77,9 @@ static float safe_acoshf(float x)
 
     return logf(x + sqrtf(x * x - 1.0f));
 }
-static int taylor_window(int N, int nbar, float sll_db, float *w) {
+
+static int taylor_window(int N, int nbar, float sll_db, float *w) 
+{
     float A, sp2;
     float *Fm = NULL;
     float maxv = 0.0;
@@ -129,7 +128,8 @@ static int taylor_window(int N, int nbar, float sll_db, float *w) {
     return 0;
 }
 
-int make_pulse_compression_filter(const RadarMeta *meta, int use_window, ComplexMatrix *h) {
+int make_pulse_compression_filter(const RadarMeta *meta, int use_window, ComplexMatrix *h)
+{
     ComplexMatrix pls = {0};
     float *win = NULL;
     int N;
@@ -294,8 +294,10 @@ int pulse_compress_one(PulseCompressCtx *ctx,
         fprintf(stderr, "pulse_compress_one: ctx not initialized\n");
         return -1;
     }
-const int inc = 1;
-ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
+    
+    const int inc = 1;
+    
+    ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
     memset(ctx->X + ctx->input_len, 0,
         (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
 
@@ -308,5 +310,5 @@ ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
 
     fftwf_execute(ctx->inverse_plan);
     
-ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);    return 0;
+    ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);    return 0;
 }

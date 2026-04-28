@@ -2,8 +2,7 @@
 
 int post_queue_init(PostQueue *q, int cap) {
     memset(q, 0, sizeof(*q));
-    // 락-프리 큐는 꽉 찬 상태와 빈 상태를 구분하기 위해 1칸을 비워둡니다.
-    // 따라서 요청받은 cap보다 1칸 더 크게 할당합니다.
+
     q->cap = cap + 1; 
     q->buf = (PostJob *)calloc((size_t)q->cap, sizeof(PostJob));
     if (!q->buf) return -1;
@@ -28,9 +27,6 @@ int post_queue_push(PostQueue *q, PostJob job) {
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
         usleep(1);
-        // for (int i = 0; i < 100; i++) {
-        //     __asm__ __volatile__("yield");
-        // }
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
@@ -43,18 +39,13 @@ int post_queue_push(PostQueue *q, PostJob job) {
 int post_queue_pop(PostQueue *q, PostJob *job) {
     int head = atomic_load_explicit(&q->head, memory_order_relaxed);
 
-    // 비어있으면 데이터가 들어올 때까지 대기 (Pure Spin-wait)
     while (head == atomic_load_explicit(&q->tail, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) {
-            // 닫혔고, 남은 데이터도 확인
             if (head == atomic_load_explicit(&q->tail, memory_order_acquire)) return 0;
-            break; // 닫혔지만 뺄 데이터가 남아있으면 루프 탈출
+            break;
         }
-        usleep(1);
-        // for (int i = 0; i < 100; i++) {
-        //     __asm__ __volatile__("yield");
-        // }
 
+        usleep(1);
     }
 
     *job = q->buf[head];

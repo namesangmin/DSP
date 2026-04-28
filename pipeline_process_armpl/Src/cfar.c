@@ -233,9 +233,6 @@ int cfar_detect(const ComplexMatrix *doppler_map,
                 det.range_m = get_range_from_bin(r, meta->fs_hz);
                 det.velocity_mps = get_velocity_from_bin(d, numDoppler, meta->prf_hz, meta->fc_hz);
                 det.power = powerMap[idx];
-                
-                // 역으로 계산해서 저장
-                float noise_sum = powerMap[idx] / final_scale; // 역산 (생략 가능)
                 det.threshold = powerMap[idx]; // 혹은 저장된 threshold 값을 써도 됨
 
                 detBuf[detCount++] = det;

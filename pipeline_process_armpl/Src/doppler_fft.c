@@ -80,8 +80,8 @@ static int apply_mti(ComplexMatrix *map, int order)
 
     return 0;
 }
-static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft,
-                     DopplerWorkspace *ws)
+
+static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWorkspace *ws)
 {
     if (!doppler_map || !doppler_map->data || !ws ||
         !ws->hamming_win || !ws->plan_buf || !ws->mtd_plan)
@@ -105,10 +105,7 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft,
     int rows        = doppler_map->rows;
     float *win      = ws->hamming_win;
 
-    
-    float complex *buf = (float complex *)ws->plan_buf;
-
-#pragma omp parallel num_threads(2)
+    #pragma omp parallel num_threads(2)
     {
         // 각 스레드(코어) 전용 로컬 버퍼 생성 (Thread-safe)
         float complex *local_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));

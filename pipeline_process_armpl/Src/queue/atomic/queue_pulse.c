@@ -1,9 +1,7 @@
 #include "queue_pulse.h"
-//#include <sched.h>     // usleep 대신 CPU를 똑똑하게 양보할 때 씀
 
 int pulse_queue_init(PulseQueue *q, int cap) {
     memset(q, 0, sizeof(*q));
-    // 락-프리 큐는 꽉 찬 상태와 빈 상태를 구분하기 위해 1칸을 비워둡니다.
     q->cap = cap + 1; 
     q->buf = (PulseJob *)calloc((size_t)q->cap, sizeof(PulseJob));
     if (!q->buf) return -1;
@@ -29,9 +27,6 @@ int pulse_queue_push(PulseQueue *q, PulseJob job) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
         
         usleep(1);
-        // for (int i = 0; i < 100; i++) {
-        //     __asm__ __volatile__("yield"); // ARM CPU에게 힌트를 줌
-        // }
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
@@ -64,10 +59,8 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) {
             return 0;
         }
+
         usleep(1);
-        // for (int i = 0; i < 100; i++) {
-        //     __asm__ __volatile__("yield"); // ARM CPU에게 힌트를 줌
-        // }
     }
 }
 

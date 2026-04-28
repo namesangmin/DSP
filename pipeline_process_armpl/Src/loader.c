@@ -6,14 +6,10 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-// mmap 사용할 때
-// #include <fcntl.h>
-// #include <unistd.h>
-// #include <sys/mman.h>
-
 #include "loader.h"
 
-static void trim(char *s) {
+static void trim(char *s) 
+{
     char *p = s;
     char *q;
 
@@ -27,25 +23,19 @@ static void trim(char *s) {
     *q = '\0';
 }
 
-int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m) {
+int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m) 
+{
     if (!m || rows <= 0 || cols <= 0) return -1;
 
     m->rows = rows;
     m->cols = cols;
     m->data = (float complex *)calloc((size_t)rows * (size_t)cols, sizeof(float complex));
     return (m->data != NULL) ? 0 : -1;
+
 }
 
-// int alloc_real_matrix(int rows, int cols, RealMatrix *m) {
-//     if (!m || rows <= 0 || cols <= 0) return -1;
-
-//     m->rows = rows;
-//     m->cols = cols;
-//     m->data = (double *)calloc((size_t)rows * (size_t)cols, sizeof(double));
-//     return (m->data != NULL) ? 0 : -1;
-// }
-
-void free_complex_matrix(ComplexMatrix *m) {
+void free_complex_matrix(ComplexMatrix *m) 
+{
     if (!m) return;
     free(m->data);
     m->data = NULL;
@@ -53,7 +43,8 @@ void free_complex_matrix(ComplexMatrix *m) {
     m->cols = 0;
 }
 
-int load_metadata(const char *path, RadarMeta *meta) {
+int load_metadata(const char *path, RadarMeta *meta) 
+{
     FILE *fp;
     char line[512];
 
@@ -134,17 +125,6 @@ int load_complex_bin_all_fread(const char *path,
         return -2;
     }
 
-    /*
-     * 파일 구조:
-     * header_offset bytes header
-     * 이후 RawIQSample 1001 * 512개
-     *
-     * RawIQSample:
-     *   double i;
-     *   double q;
-     *
-     * 1 sample = 16 bytes
-     */
     expected_size = header_offset + total_elements * sizeof(RawIQSample);
 
     if ((size_t)st.st_size != expected_size) {
@@ -156,16 +136,6 @@ int load_complex_bin_all_fread(const char *path,
         return -3;
     }
 
-    /*
-     * 중요:
-     * 이제 raw_data는 transpose하지 않고 파일 순서 그대로 저장한다.
-     *
-     * raw_data.rows = num_pulses              = 512
-     * raw_data.cols = num_fast_time_samples   = 1001
-     *
-     * 즉:
-     * raw_data[pulse][fast_time]
-     */
     if (alloc_complex_matrix(num_pulses, num_fast_time_samples, out) != 0) {
         fprintf(stderr, "load_complex_bin_all_fread: alloc failed\n");
         return -4;
@@ -185,13 +155,7 @@ int load_complex_bin_all_fread(const char *path,
         return -6;
     }
 
-    /*
-     * 펄스 하나 = fast-time sample 1001개
-     * 파일은 pulse 단위로 연속 저장되어 있다고 가정.
-     */
-    RawIQSample *pulse_buffer =
-        (RawIQSample *)malloc((size_t)num_fast_time_samples *
-                              sizeof(RawIQSample));
+    RawIQSample *pulse_buffer = (RawIQSample *)malloc((size_t)num_fast_time_samples * sizeof(RawIQSample));
 
     if (!pulse_buffer) {
         fprintf(stderr, "load_complex_bin_all_fread: pulse buffer alloc failed\n");
@@ -201,10 +165,8 @@ int load_complex_bin_all_fread(const char *path,
     }
 
     for (int p = 0; p < num_pulses; ++p) {
-        size_t read_count = fread(pulse_buffer,
-                                  sizeof(RawIQSample),
-                                  (size_t)num_fast_time_samples,
-                                  fp);
+        size_t read_count = fread(pulse_buffer, sizeof(RawIQSample),
+                                  (size_t)num_fast_time_samples, fp);
 
         if (read_count != (size_t)num_fast_time_samples) {
             fprintf(stderr,
@@ -221,15 +183,6 @@ int load_complex_bin_all_fread(const char *path,
             return -8;
         }
 
-        /*
-         * transpose 안 함.
-         *
-         * 기존:
-         *   out->data[c * num_pulses + p] = ...
-         *
-         * 수정:
-         *   out[p][c] = ...
-         */
         for (int c = 0; c < num_fast_time_samples; ++c) {
             CMAT_AT(out, p, c) =
                 (float)pulse_buffer[c].i + (float)pulse_buffer[c].q * I;
@@ -241,81 +194,3 @@ int load_complex_bin_all_fread(const char *path,
 
     return 0;
 }
-
-#if 0
-int load_complex_bin_single(const char *path, int rows, int cols, ComplexMatrix *out) {
-    FILE *fp = NULL;
-    struct stat st;
-    const long header_size = 232;
-    const size_t total_elements = (size_t)rows * (size_t)cols;
-    const size_t expected_size = (size_t)header_size + total_elements * sizeof(double) * 2;
-
-    if (!path || !out || rows <= 0 || cols <= 0) {
-        fprintf(stderr, "load_complex_bin_single: invalid args rows=%d cols=%d\n", rows, cols);
-        return -1;
-    }
-
-    if (alloc_complex_matrix(cols, rows, out) != 0) {
-        fprintf(stderr, "load_complex_bin_single: alloc failed rows=%d cols=%d\n", rows, cols);
-        return -2;
-    }
-
-    if (stat(path, &st) != 0) {
-        perror("stat");
-        free_complex_matrix(out);
-        return -3;
-    }
-
-    fprintf(stderr, "file size=%lld expected=%zu\n",
-            (long long)st.st_size, expected_size);
-
-    if ((size_t)st.st_size != expected_size) {
-        fprintf(stderr,
-                "load_complex_bin_single: file size mismatch "
-                "(actual=%lld, expected=%zu)\n",
-                (long long)st.st_size, expected_size);
-        free_complex_matrix(out);
-        return -4;
-    }
-
-    fp = fopen(path, "rb");
-    if (!fp) {
-        perror("fopen");
-        free_complex_matrix(out);
-        return -5;
-    }
-
-    if (fseek(fp, header_size, SEEK_SET) != 0) {
-        perror("fseek");
-        fclose(fp);
-        free_complex_matrix(out);
-        return -6;
-    }
-
-    /* row = pulse, col = fast-time sample */
-    for (int r = 0; r < rows; r++) {
-        for (int c = 0; c < cols; c++) {
-            double i_val, q_val;
-
-            char a = fread(&i_val, sizeof(double), 1, fp);
-            char b = fread(&q_val, sizeof(double), 1, fp);
-
-            if (a != 1 ||
-                b != 1) {
-                fprintf(stderr,
-                        "fread failed at row=%d col=%d pos=%ld\n",
-                        r, c, ftell(fp));
-                fclose(fp);
-                free_complex_matrix(out);
-                return -7;
-            }
-
-            out->data[(size_t)c * (size_t)rows + (size_t)r] =
-                i_val + q_val * _Complex_I;
-        }
-    }
-
-    fclose(fp);
-    return 0;
-}
-#endif

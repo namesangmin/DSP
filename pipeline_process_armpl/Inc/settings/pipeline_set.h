@@ -5,6 +5,7 @@
 #include <stdatomic.h>
 #include "common.h"
 #include "loader.h"
+#include "cfar.h"
 
 #define NUM_BUFFERS 3
 
@@ -37,8 +38,12 @@ typedef struct {
 
     atomic_int current_write_idx; // 짝/홀 코어가 현재 채우고 있는 인덱스 (0, 1, 2)
     atomic_int error;             // 에러 플래그 (0 정상, 1 에러)
-    
-    // atomic_int total_done_count; <-- 과거의 쓰레기, 삭제됨!
+
+    Detection current_det;      
+    double current_cfar_ms;
+    double current_doppler_ms;
+    double current_transpose_ms;
+    double current_pulse_ms;
 } PipelinePool; 
 
 int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool *pool);

@@ -31,7 +31,6 @@ OBJS = \
     Src/pulse.o \
     Src/doppler_fft.o \
     Src/cfar.o \
-    Src/writer.o \
     Src/settings/core_set.o \
     Src/settings/pipeline_set.o \
     Src/thread/loader_thread.o \

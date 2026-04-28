@@ -6,6 +6,7 @@
 #include "pulse_compress_thread.h"
 #include "core_set.h"
 #include "timer.h"
+
 void *worker_thread_main(void *arg)
 {
     WorkerArgs *a = (WorkerArgs *)arg;
