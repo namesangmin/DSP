@@ -1,4 +1,5 @@
 #include "queue_pulse.h"
+#include <unistd.h>
 
 int pulse_queue_init(PulseQueue *q, int cap) {
     memset(q, 0, sizeof(*q));

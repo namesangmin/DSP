@@ -1,5 +1,5 @@
 #include "queue_post.h"
-
+#include <unistd.h>
 int post_queue_init(PostQueue *q, int cap) {
     memset(q, 0, sizeof(*q));
 
