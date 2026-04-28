@@ -10,18 +10,12 @@ void *post_thread_main(void *arg)
     PostArgs *a = (PostArgs *)arg;
     PostJob job;
     
-    //pin_thread_to_cpu(a->cpu_id);
-    cpu_set_t set;
-    CPU_ZERO(&set);
-    CPU_SET(0, &set); 
-    CPU_SET(3, &set);
-    pthread_setaffinity_np(pthread_self(), sizeof(set), &set);
-    
+    pin_thread_to_cpu(a->cpu_id);
+
     double total_transpose_ms = 0.0;
     double total_cfar_ms = 0.0;
 
     while (post_queue_pop(a->post_q, &job)) {
-        
         if (atomic_load_explicit(&a->pool->error, memory_order_relaxed)) {
             break;
         }
@@ -32,7 +26,6 @@ void *post_thread_main(void *arg)
         // 0. 도플러 처리 전, 1/2번 코어가 만든 rd_map을 Transpose!
         // =========================================================
         double t_trans = now_ms(); // 타이머 시작
-        
         if (transpose_rd_pulse_range_to_doppler_range_pulse(
                 &a->pool->rd_maps[idx].data,
                 &a->pool->doppler_maps[idx].data,
@@ -42,7 +35,8 @@ void *post_thread_main(void *arg)
             atomic_store_explicit(&a->pool->error, 1, memory_order_relaxed);
             break;
         }
-        total_transpose_ms = (now_ms() - t_trans); // 누적
+        total_transpose_ms = (now_ms() - t_trans);
+
         // =========================================================
         // 1. 도플러 처리
         // =========================================================
@@ -56,7 +50,6 @@ void *post_thread_main(void *arg)
             break;
         }
 
-        // [최적화 3] 프로파일링이 끝났다면 now_ms() 호출은 최소화하는 것이 좋습니다.
         double t0 = now_ms();
 
         // =========================================================
@@ -98,6 +91,7 @@ void *post_thread_main(void *arg)
     if (a->cfar_ms) {
         *a->cfar_ms = total_cfar_ms;
     }
+    
     if (a->transpose_ms) {
         *a->transpose_ms = total_transpose_ms;
     }

@@ -23,6 +23,7 @@ typedef struct {
     
     CfarWorkspace * cfar_ws;
     DopplerWorkspace *doppler_ws;
+    
     double *cfar_ms;
     double *transpose_ms;
     int cpu_id;

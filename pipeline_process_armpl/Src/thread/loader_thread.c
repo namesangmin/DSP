@@ -12,6 +12,38 @@
 #include "loader_thread.h"
 #include "loader.h" // 고속 로드 함수 헤더 추가
 
+int loader_thread_init(const char *dat_path, const RadarMeta *meta, PipelinePool *pool, LoaderArgs *ld) {
+    // 1. 결과 행렬 메모리 할당
+    if (alloc_complex_matrix(meta->num_pulses, meta->num_fast_time_samples, &pool->raw_data) != 0) {
+        return -1;
+    }
+
+    // 2. 임시 펄스 버퍼 할당
+    ld->pulse_buffer = (RawIQSample *)malloc((size_t)meta->num_fast_time_samples * sizeof(RawIQSample));
+    if (!ld->pulse_buffer) {
+        free_complex_matrix(&pool->raw_data);
+        return -1;
+    }
+
+    // 기본 정보 세팅
+    ld->dat_path = dat_path;
+    ld->meta = meta;
+    ld->pool = pool;
+
+    return 0;
+}
+
+int loader_thread_destroy(LoaderArgs *ld) {
+    if (ld == NULL || ld->pulse_buffer == NULL) {
+        return 0;
+    }
+
+    free(ld->pulse_buffer);
+    ld->pulse_buffer = NULL;
+    
+    return 0;
+}
+
 void *loader_thread_main(void *arg)
 {
     LoaderArgs *a = (LoaderArgs *)arg;
@@ -23,14 +55,6 @@ void *loader_thread_main(void *arg)
     int fast = a->meta->num_fast_time_samples;
     int half = num_pulses / 2;
 
-    // 메모리 먼저 할당
-    if (alloc_complex_matrix(num_pulses, fast, &a->pool->raw_data) != 0) {
-        atomic_store(&a->pool->error, 1);
-        pulse_queue_close(a->even_q);
-        pulse_queue_close(a->odd_q);
-        return NULL;
-    }
-
     FILE *fp = fopen(a->dat_path, "rb");
     if (!fp) {
         atomic_store(&a->pool->error, 1);
@@ -41,9 +65,7 @@ void *loader_thread_main(void *arg)
 
     fseek(fp, 232, SEEK_SET);
 
-    RawIQSample *pulse_buffer = (RawIQSample *)malloc((size_t)fast * sizeof(RawIQSample));
-   
-    if (!pulse_buffer) {
+    if (!a->pulse_buffer) {
         atomic_store(&a->pool->error, 1);
         fclose(fp);
         pulse_queue_close(a->even_q);
@@ -52,20 +74,17 @@ void *loader_thread_main(void *arg)
     }
 
     for (int p = 0; p < num_pulses; ++p) {
-        // 펄스 1개 읽기
-        if (fread(pulse_buffer, sizeof(RawIQSample), (size_t)fast, fp)
-                != (size_t)fast) {
+
+        if (fread(a->pulse_buffer, sizeof(RawIQSample), (size_t)fast, fp) != (size_t)fast) {
             atomic_store(&a->pool->error, 1);
             break;
         }
 
-        // float 변환해서 raw_data에 저장
         float complex *dst = &CMAT_AT(&a->pool->raw_data, p, 0);
         for (int c = 0; c < fast; ++c) {
-            dst[c] = (float)pulse_buffer[c].i + (float)pulse_buffer[c].q * I;
+            dst[c] = (float)a->pulse_buffer[c].i + (float)a->pulse_buffer[c].q * I;
         }
 
-        // 읽자마자 바로 큐에 넣음 → 압축 스레드가 즉시 처리 가능
         PulseJob job = { .pulse_idx = p };
         PulseQueue *q = (p < half) ? a->even_q : a->odd_q;
 
@@ -75,13 +94,13 @@ void *loader_thread_main(void *arg)
         }
     }
 
-    free(pulse_buffer);
     fclose(fp);
     pulse_queue_close(a->even_q);
     pulse_queue_close(a->odd_q);
 
-    if (a->out_loader_ms)
+    if (a->out_loader_ms){
         *a->out_loader_ms = now_ms() - t0;
+    }
 
     return NULL;
 }
