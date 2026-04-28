@@ -204,8 +204,6 @@ int cfar_detect(const ComplexMatrix *doppler_map,
             float threshold = final_scale * noise_sum;
             int idx = row_base + d;
 
-            // ⚡ if문 절대 금지! 분기 예측 실패(Branch Misprediction)를 없앱니다.
-            // threshold보다 크면 1, 아니면 0을 마스크에 기록
             det_mask[idx] = (powerMap[idx] > threshold) ? 1 : 0;
 
             // 가로 슬라이딩 갱신

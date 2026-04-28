@@ -11,6 +11,7 @@
 #include "timer.h" 
 #include "loader_thread.h"
 #include "loader.h" // 고속 로드 함수 헤더 추가
+
 void *loader_thread_main(void *arg)
 {
     LoaderArgs *a = (LoaderArgs *)arg;
@@ -40,8 +41,8 @@ void *loader_thread_main(void *arg)
 
     fseek(fp, 232, SEEK_SET);
 
-    RawIQSample *pulse_buffer = (RawIQSample *)malloc(
-        (size_t)fast * sizeof(RawIQSample));
+    RawIQSample *pulse_buffer = (RawIQSample *)malloc((size_t)fast * sizeof(RawIQSample));
+   
     if (!pulse_buffer) {
         atomic_store(&a->pool->error, 1);
         fclose(fp);

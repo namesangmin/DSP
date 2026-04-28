@@ -25,29 +25,28 @@ int transpose_rd_pulse_range_to_doppler_range_pulse(
         return -1;
     }
 
-    int pulses = meta->num_pulses;                 // 512 (행)
-    int ranges = meta->num_fast_time_samples;      // 1001 (열)
+    const int pulses = meta->num_pulses;             // 512 (H)
+    const int ranges = meta->num_fast_time_samples;  // 1001 (W)
 
-    float complex *src = (float complex *)rd_map->data;
-    float complex *dst = (float complex *)doppler_map->data;
+    const float complex *restrict src = (const float complex *)rd_map->data;
+    float complex *restrict dst = (float complex *)doppler_map->data;
 
-    // 타일 크기 설정 (8, 16, 32 중 성능이 가장 좋은 것을 선택. 보통 16~32)
-    const int TILE = 32; 
+    // 라즈베리파이 5 싱글 코어에서 가장 효율이 좋았던 타일 크기 16
+    const int TILE = 16; 
 
-    // 타일 단위로 크게 크게 이동 (외부 루프)
-    for (int r = 0; r < pulses; r += TILE) {
-        for (int c = 0; c < ranges; c += TILE) {
+    for (int c = 0; c < ranges; c += TILE) {
+        for (int r = 0; r < pulses; r += TILE) {
             
-            // 타일이 행렬 바깥으로 나가지 않도록 경계 계산
-            int r_end = MIN(r + TILE, pulses);
-            int c_end = MIN(c + TILE, ranges);
+            // 타일 경계 계산
+            int c_end = (c + TILE > ranges) ? ranges : c + TILE;
+            int r_end = (r + TILE > pulses) ? pulses : r + TILE;
 
-            // 하나의 타일 내부에서 실제로 데이터를 옮기는 작업 (내부 루프)
-            for (int i = r; i < r_end; i++) {
-                for (int j = c; j < c_end; j++) {
-                    // src는 가로(Row-major)로 읽고, dst는 세로(Column-major)로 씁니다.
-                    // 이 작업이 L1 캐시 안에서만 이루어지므로 매우 빠릅니다.
-                    dst[j * pulses + i] = src[i * ranges + j];
+            for (int j = c; j < c_end; j++) {
+                // dst의 열(column) 주소를 미리 계산해서 루프 부하 감소
+                float complex *restrict d_ptr = &dst[j * pulses];
+                for (int i = r; i < r_end; i++) {
+                    // src[i][j]를 dst[j][i]에 박음
+                    d_ptr[i] = src[i * ranges + j];
                 }
             }
         }
@@ -55,7 +54,6 @@ int transpose_rd_pulse_range_to_doppler_range_pulse(
 
     return 0;
 }
-
 static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) {
     int n;
     double fs = meta->fs_hz;
@@ -200,6 +198,7 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     ctx->X = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
     ctx->Y = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
     ctx->out_buf = (float complex *)fftwf_malloc((size_t)ctx->input_len * sizeof(float complex));
+    
     if (!ctx->H || !ctx->X || !ctx->Y || !ctx->out_buf) {
         pulse_compress_ctx_destroy(ctx);
         return -1;
@@ -295,9 +294,8 @@ int pulse_compress_one(PulseCompressCtx *ctx,
         fprintf(stderr, "pulse_compress_one: ctx not initialized\n");
         return -1;
     }
-
-    memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
-
+const int inc = 1;
+ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
     memset(ctx->X + ctx->input_len, 0,
         (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
 
@@ -309,6 +307,6 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     }
 
     fftwf_execute(ctx->inverse_plan);
-    memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
-    return 0;
+    
+ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);    return 0;
 }
