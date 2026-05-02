@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <complex.h>
 #include <sys/stat.h>
 
 #include <fcntl.h>
@@ -11,6 +10,7 @@
 #include <errno.h>
 
 #include "loader.h"
+#include "common.h"
 
 static void trim(char *s) {
     char *p = s;
@@ -121,6 +121,7 @@ int load_metadata(const char *path, RadarMeta *meta) {
     return 0;
 }
 
+<<<<<<< Updated upstream
 static int load_real_csv_matrix(const char *path, int rows, int cols, double *out) {
     FILE *fp;
     char line[16384];
@@ -128,6 +129,19 @@ static int load_real_csv_matrix(const char *path, int rows, int cols, double *ou
 
     fp = fopen(path, "r");
     if (!fp) return -1;
+=======
+int load_complex_bin_all_fread(const char *path, 
+                               int num_pulses, 
+                               int num_fast_time_samples, 
+                               size_t header_offset, 
+                               ComplexMatrix *out) 
+{
+    FILE *fp = NULL;
+    struct stat st;
+    size_t expected_size;
+    const size_t total_elements =
+        (size_t)num_pulses * (size_t)num_fast_time_samples;
+>>>>>>> Stashed changes
 
     while (r < rows && fgets(line, sizeof(line), fp)) {
         char *p = line;

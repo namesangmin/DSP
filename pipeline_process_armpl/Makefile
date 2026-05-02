@@ -5,6 +5,7 @@ LDFLAGS = -pthread
 LDLIBS = -lm -lfftw3
 
 OBJS = \
+<<<<<<< Updated upstream
 	Src/radarBench.o \
 	Src/loader.o \
 	Src/pulse.o \
@@ -18,6 +19,21 @@ OBJS = \
 	Src/thread/doppler_cfar_thread.o \
 	Src/thread/loader_thread.o \
 	Src/thread/pulse_compress_thread.o
+=======
+    Src/radarBench.o \
+    Src/loader.o \
+    Src/pulse.o \
+    Src/doppler_fft.o \
+    Src/cfar.o \
+    Src/print.o \
+    Src/settings/core_set.o \
+    Src/settings/pipeline_set.o \
+    Src/thread/loader_thread.o \
+    Src/thread/pulse_compress_thread.o \
+    Src/thread/doppler_cfar_thread.o \
+    Src/queue/atomic/queue_post.o \
+    Src/queue/atomic/queue_pulse.o
+>>>>>>> Stashed changes
 
 TARGET = radarBench
 

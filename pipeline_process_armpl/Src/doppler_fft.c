@@ -1,5 +1,8 @@
+<<<<<<< Updated upstream
 #define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
+=======
+>>>>>>> Stashed changes
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
@@ -14,6 +17,7 @@ static int is_power_of_two(int n) {
     return (n > 0) && ((n & (n - 1)) == 0);
 }
 
+<<<<<<< Updated upstream
 static void bit_reverse_permute(double complex *x, int n) {
     int i, j, bit;
     for (i = 1, j = 0; i < n; ++i) {
@@ -29,6 +33,29 @@ static void bit_reverse_permute(double complex *x, int n) {
             x[j] = tmp;
         }
     }
+=======
+int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft)
+{
+    if (!ws || pulses <= 0 || nfft < pulses) return -1;
+
+    memset(ws, 0, sizeof(*ws));
+    ws->pulses = pulses;
+    ws->nfft   = nfft;
+
+    ws->hamming_win = (float *)malloc((size_t)pulses * sizeof(float));
+    if (!ws->hamming_win) { cleanup_doppler_workspace(ws); return -1; }
+    
+    make_hamming_window(pulses, ws->hamming_win);
+
+    ws->plan_buf = (fftwf_complex *)fftwf_malloc((size_t)nfft * sizeof(fftwf_complex));
+    if (!ws->plan_buf) { cleanup_doppler_workspace(ws); return -1; }
+
+    ws->mtd_plan = fftwf_plan_dft_1d(nfft, ws->plan_buf, ws->plan_buf,
+                                     FFTW_FORWARD, FFTW_ESTIMATE);
+    if (!ws->mtd_plan) { cleanup_doppler_workspace(ws); return -1; }
+
+    return 0;
+>>>>>>> Stashed changes
 }
 
 static void fft_inplace(double complex *x, int n) {
@@ -94,6 +121,7 @@ static int apply_mti(const ComplexMatrix *x, int order, ComplexMatrix *y) {
     return 0;
 }
 
+<<<<<<< Updated upstream
 static void make_hamming_window(int N, double *w) {
     if (N <= 1) {
         if (N == 1) w[0] = 1.0;
@@ -133,6 +161,30 @@ int doppler_fft_processing_ex(const ComplexMatrix *rxsig_pc, const RadarMeta *me
 
     if (nfft <= 0) nfft = pulses;
     if (!is_power_of_two(nfft)) return -1;
+=======
+int doppler_fft_processing(ComplexMatrix *doppler_map,
+                           int nfft,
+                           PipelineTiming *timing,
+                           DopplerWorkspace *ws)
+{
+    if (!doppler_map || !doppler_map->data || !timing || !ws)
+        return -1;
+
+    int pulses = doppler_map->cols;
+
+    if (nfft < pulses) return -1;
+
+    if (doppler_map->cols < nfft) {
+        fprintf(stderr,
+                "doppler_fft_processing: shape mismatch dop=%dx%d nfft=%d\n",
+                doppler_map->rows, doppler_map->cols, nfft);
+        return -1;
+    }
+    
+    double t0 = now_ms();
+    if (apply_mti(doppler_map, 1) != 0) return -1;
+    timing->mti_ms = now_ms() - t0;
+>>>>>>> Stashed changes
 
     t0 = now_ms();
     if (apply_mti(rxsig_pc, 1, &mti) != 0) return -1;

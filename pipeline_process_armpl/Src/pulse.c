@@ -1,12 +1,21 @@
+<<<<<<< Updated upstream
 #define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
+=======
+>>>>>>> Stashed changes
 #include <stdlib.h>
 #include <math.h>
+<<<<<<< Updated upstream
 #include <complex.h>
 #include "pulse.h"
 #include "timer.h"
+=======
+#include <blas.h>
+#include "pulse_compress_thread.h"
+#include "loader.h"
+>>>>>>> Stashed changes
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -219,9 +228,70 @@ int apply_pulse_compression_fft(const ComplexMatrix *x, const ComplexMatrix *h, 
         }
     }
 
+<<<<<<< Updated upstream
     free(H);
     free(X);
     free(Y);
+=======
+    ctx->filter_len = ctx->h.rows;
+    ctx->conv_len   = ctx->input_len + ctx->filter_len - 1;
+    ctx->nfft       = next_power_of_two_local(ctx->conv_len);
+    ctx->mf_delay   = ctx->filter_len - 1;
+
+    ctx->H = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    ctx->X = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    ctx->Y = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    
+    if (!ctx->H || !ctx->X || !ctx->Y) {
+        pulse_compress_ctx_destroy(ctx);
+        return -1;
+    }
+
+    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(float complex));
+    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float complex));
+    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(float complex));
+
+    ctx->forward_plan = fftwf_plan_dft_1d(ctx->nfft,
+                                        (fftwf_complex *)ctx->X,
+                                        (fftwf_complex *)ctx->X,
+                                        FFTW_FORWARD,
+                                        FFTW_ESTIMATE);
+
+    ctx->inverse_plan = fftwf_plan_dft_1d(ctx->nfft,
+                                        (fftwf_complex *)ctx->Y,
+                                        (fftwf_complex *)ctx->Y,
+                                        FFTW_BACKWARD,
+                                        FFTW_ESTIMATE);
+
+    if (!ctx->forward_plan || !ctx->inverse_plan) {
+        pulse_compress_ctx_destroy(ctx);
+        return -1;
+    }
+
+    for (int i = 0; i < ctx->filter_len; ++i) {
+        ctx->H[i] = CMAT_AT(&ctx->h, i, 0);
+    }
+
+    fftwf_plan h_plan = fftwf_plan_dft_1d(ctx->nfft,
+                                        (fftwf_complex *)ctx->H,
+                                        (fftwf_complex *)ctx->H,
+                                        FFTW_FORWARD,
+                                        FFTW_ESTIMATE);
+
+    if (!h_plan) {
+        pulse_compress_ctx_destroy(ctx);
+        return -1;
+    }
+
+    fftwf_execute(h_plan);
+    fftwf_destroy_plan(h_plan);
+
+    // [최적화 1] H에 1/NFFT 미리 곱해두기 (실시간 곱셈 51만번 제거)
+    float inv_n = 1.0f / (float)ctx->nfft;
+    for (int i = 0; i < ctx->nfft; ++i) {
+        ctx->H[i] *= inv_n;
+    }
+>>>>>>> Stashed changes
     return 0;
 }
 
@@ -236,11 +306,17 @@ int pulse_compression_ex(const ComplexMatrix *x, const RadarMeta *meta, ComplexM
         timing->compression_ms = 0.0;
     }
 
+<<<<<<< Updated upstream
     t0 = now_ms();
     ret = make_pulse_compression_filter(meta, 1, &h);
     t1 = now_ms();
     if (timing) timing->filter_ready_ms = t1 - t0;
     if (ret != 0) return ret;
+=======
+    if (ctx->H) fftwf_free(ctx->H);
+    if (ctx->X) fftwf_free(ctx->X);
+    if (ctx->Y) fftwf_free(ctx->Y);
+>>>>>>> Stashed changes
 
     t0 = now_ms();
     ret = apply_pulse_compression_fft(x, &h, y, &mf_delay);

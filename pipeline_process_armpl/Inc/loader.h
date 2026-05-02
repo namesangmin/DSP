@@ -3,6 +3,7 @@
 
 #include <complex.h>
 #include <stddef.h>
+<<<<<<< Updated upstream
 
 typedef struct {
     double fc_hz;
@@ -30,6 +31,12 @@ int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m);
 int alloc_real_matrix(int rows, int cols, RealMatrix *m);
 void free_complex_matrix(ComplexMatrix *m);
 void free_real_matrix(RealMatrix *m);
+=======
+#include "types.h"
+
+int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m);
+void free_complex_matrix(ComplexMatrix *m);
+>>>>>>> Stashed changes
 
 int load_metadata(const char *path, RadarMeta *meta);
 

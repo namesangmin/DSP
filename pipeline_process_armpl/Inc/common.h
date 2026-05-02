@@ -1,6 +1,7 @@
 #ifndef PIPELINE_TYPES_H
 #define PIPELINE_TYPES_H
 
+<<<<<<< Updated upstream
 #include <pthread.h>
 #include <stdatomic.h>
 
@@ -112,9 +113,10 @@ typedef struct {
 } TrackPoint;
 
 // 1. main 파일 상단에 누적용 구조체 선언
+=======
+>>>>>>> Stashed changes
 typedef struct {
     double load_ms;
-    double pulse_ready_ms;
     double pulse_apply_ms;
     double pulse_total_ms;
     double mti_ms;
@@ -126,4 +128,19 @@ typedef struct {
     int detections;
 } Accumulator;
 
+<<<<<<< Updated upstream
+=======
+// common.h에 추가
+typedef struct {
+    double loader_ms;
+    double compress_ms;
+    double transpose_ms;
+    double mti_ms;
+    double mtd_ms;
+    double cfar_ms;
+} PipelineTiming;
+
+#define CMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])
+
+>>>>>>> Stashed changes
 #endif
