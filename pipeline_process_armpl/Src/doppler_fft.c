@@ -1,4 +1,3 @@
-#define _POSIX_C_SOURCE 200809L
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
@@ -28,6 +27,7 @@ int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft)
 
     ws->hamming_win = (float *)malloc((size_t)pulses * sizeof(float));
     if (!ws->hamming_win) { cleanup_doppler_workspace(ws); return -1; }
+    
     make_hamming_window(pulses, ws->hamming_win);
 
     ws->plan_buf = (fftwf_complex *)fftwf_malloc((size_t)nfft * sizeof(fftwf_complex));
@@ -142,7 +142,7 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
 
 int doppler_fft_processing(ComplexMatrix *doppler_map,
                            int nfft,
-                           DopplerFftTiming *timing,
+                           PipelineTiming *timing,
                            DopplerWorkspace *ws)
 {
     if (!doppler_map || !doppler_map->data || !timing || !ws)
@@ -158,10 +158,7 @@ int doppler_fft_processing(ComplexMatrix *doppler_map,
                 doppler_map->rows, doppler_map->cols, nfft);
         return -1;
     }
-
-    timing->mti_ms = 0.0;
-    timing->mtd_ms = 0.0;
-
+    
     double t0 = now_ms();
     if (apply_mti(doppler_map, 1) != 0) return -1;
     timing->mti_ms = now_ms() - t0;

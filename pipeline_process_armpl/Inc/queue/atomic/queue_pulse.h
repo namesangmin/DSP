@@ -5,8 +5,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-
-#if 1
 typedef struct {
     int pulse_idx;
 } PulseJob;
@@ -24,6 +22,6 @@ void pulse_queue_destroy(PulseQueue *q);
 int pulse_queue_push(PulseQueue *q, PulseJob job);
 int pulse_queue_pop(PulseQueue *q, PulseJob *job);
 void pulse_queue_close(PulseQueue *q);
-#endif
+void pulse_queue_open(PulseQueue * q);
 
 #endif

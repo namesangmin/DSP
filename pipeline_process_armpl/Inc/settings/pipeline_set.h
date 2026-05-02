@@ -3,13 +3,11 @@
 
 #include <pthread.h>
 #include <stdatomic.h>
-#include "common.h"
-#include "loader.h"
-#include "cfar.h"
+#include "types.h"
+#include "queue_post.h"
+#include "queue_pulse.h"
 
 #define NUM_BUFFERS 3
-
-// 1. 버퍼 상태 플래그 정의
 typedef enum {
     BUF_FREE = 0,       // 비어 있음
     BUF_FILLING = 1,    // 짝/홀 코어가 열심히 쓰는 중
@@ -17,36 +15,32 @@ typedef enum {
     BUF_PROCESSING = 3  // 도플러/CFAR 코어가 처리 중
 } BufferState;
 
-// 2. 개별 버퍼 구조체
 typedef struct {
     ComplexMatrix data;
-    atomic_int state;       
-    atomic_int done_count;  // "이 버퍼"에 펄스가 다 찼는지 확인 (이게 핵심!)
+    atomic_int    state;
+    atomic_int    done_count; // worker들이 이 버퍼에 다 썼는지 카운팅
 } RdMapBuffer;
 
 typedef struct {
     ComplexMatrix data;
-    atomic_int state;
+    atomic_int    state;
 } DopplerBuffer;
 
-// 3. 메인 파이프라인 관리자
 typedef struct {
-    ComplexMatrix raw_data; // 파일에서 딱 한 번 읽을 원본 (1개)
+    atomic_int    current_write_idx;
+    atomic_int    error;
 
-    RdMapBuffer rd_maps[NUM_BUFFERS];      // 3중 버퍼
-    DopplerBuffer doppler_maps[NUM_BUFFERS]; // 3중 버퍼
+    PostQueue post_q;
+    PulseQueue even_q;   // pulse 0~255
+    PulseQueue odd_q;    // pulse 256~511
 
-    atomic_int current_write_idx; // 짝/홀 코어가 현재 채우고 있는 인덱스 (0, 1, 2)
-    atomic_int error;             // 에러 플래그 (0 정상, 1 에러)
+    ComplexMatrix  raw_data;
+    RdMapBuffer    rd_maps[NUM_BUFFERS];
+    DopplerBuffer  doppler_maps[NUM_BUFFERS];
+} Pipeline;
 
-    Detection current_det;      
-    double current_cfar_ms;
-    double current_doppler_ms;
-    double current_transpose_ms;
-    double current_pulse_ms;
-} PipelinePool; 
-
-int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, PipelinePool *pool);
-void cleanup_pipeline_pool(PipelinePool *pool);
+struct RadarMeta;
+int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, Pipeline *pipe);
+void cleanup_pipeline_pool(Pipeline *pool);
 
 #endif

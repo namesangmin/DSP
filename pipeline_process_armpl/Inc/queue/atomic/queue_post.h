@@ -23,5 +23,6 @@ void post_queue_destroy(PostQueue *q);
 int post_queue_push(PostQueue *q, PostJob job);
 int post_queue_pop(PostQueue *q, PostJob *job);
 void post_queue_close(PostQueue *q);
+void post_queue_open(PostQueue *q);
 
 #endif

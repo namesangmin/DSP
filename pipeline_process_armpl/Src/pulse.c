@@ -1,11 +1,9 @@
-//#define _GNU_SOURCE
-#define _POSIX_C_SOURCE 200809L
-
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "pulse_compress_thread.h"
 #include <blas.h>
+#include "pulse_compress_thread.h"
+#include "loader.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -198,9 +196,8 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     ctx->H = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
     ctx->X = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
     ctx->Y = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
-    ctx->out_buf = (float complex *)fftwf_malloc((size_t)ctx->input_len * sizeof(float complex));
     
-    if (!ctx->H || !ctx->X || !ctx->Y || !ctx->out_buf) {
+    if (!ctx->H || !ctx->X || !ctx->Y) {
         pulse_compress_ctx_destroy(ctx);
         return -1;
     }
@@ -208,7 +205,6 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(float complex));
     memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float complex));
     memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(float complex));
-    memset(ctx->out_buf, 0, (size_t)ctx->input_len * sizeof(float complex));    
 
     ctx->forward_plan = fftwf_plan_dft_1d(ctx->nfft,
                                         (fftwf_complex *)ctx->X,
@@ -264,7 +260,6 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
     if (ctx->H) fftwf_free(ctx->H);
     if (ctx->X) fftwf_free(ctx->X);
     if (ctx->Y) fftwf_free(ctx->Y);
-    if (ctx->out_buf) fftwf_free(ctx->out_buf);
 
     free_complex_matrix(&ctx->h);
     memset(ctx, 0, sizeof(*ctx));

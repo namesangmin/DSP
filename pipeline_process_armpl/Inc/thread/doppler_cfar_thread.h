@@ -1,35 +1,26 @@
 #ifndef __DOPPLER_CFAR_THREAD_H__
 #define __DOPPLER_CFAR_THREAD_H__
 
-#include "pipeline_set.h"
-#include "common.h"
-
+// doppler_cfar_thread.h
+#include "pipeline_set.h"  // RdMapBuffer, DopplerBuffer, Pipeline, 큐 전부 여기서
+#include "types.h"
 #include "doppler_fft.h"
 #include "cfar.h"
+#include "common.h"
+// ← cfar.h 중복 제거, queue_*.h 제거, pulse_compress_thread.h 제거, pulse.h 제거
+// ← ComplexMatrix *doppler 제거 (pipe->doppler_maps[idx].data로 접근)
 
-#include "queue_post.h"
-#include "queue_pulse.h"
-
-#include "pulse_compress_thread.h"
-#include "cfar.h"
-#include "pulse.h"
 
 typedef struct {
     const RadarMeta *meta;
-    PipelinePool *pool;
-    ComplexMatrix *doppler;
-    DetectionList *det;
-    DopplerFftTiming *doppler_timing;
-    
-    CfarWorkspace * cfar_ws;
+    Pipeline *pipe;    
     DopplerWorkspace *doppler_ws;
-    
-    double *cfar_ms;
-    double *transpose_ms;
+    CfarWorkspace * cfar_ws;
+    DetectionList *det;
+    PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
+
     int cpu_id;
     int status;    
-    
-    PostQueue *post_q;
 } PostArgs;
 
 void *post_thread_main(void *arg);

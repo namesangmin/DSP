@@ -1,8 +1,7 @@
 #ifndef CFAR_H
 #define CFAR_H
 
-#include "loader.h"
-#include "common.h"
+#include "types.h"
 #include <stdint.h> // uint8_t 사용을 위해 필요
 typedef struct {
     int range_bin;
@@ -15,11 +14,6 @@ typedef struct {
 
 typedef struct {
     char filename[256];
-    int detected;
-    Detection det;
-} TrackPoint;
-
-typedef struct {
     int count;
     Detection *items;
 } DetectionList;
@@ -33,9 +27,7 @@ typedef struct {
     float *col_sum_outer;
     float *col_sum_guard;
     
-    // 상대방의 비기: 탐지 여부만 0과 1로 기록할 1D 마스크 배열 추가!
     uint8_t *det_mask; 
-    
     Detection *detBuf;
 } CfarWorkspace;
 

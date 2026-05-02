@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <complex.h>
 #include <sys/stat.h>
 #include <errno.h>
 
 #include "loader.h"
+#include "common.h"
 
 static void trim(char *s) 
 {
@@ -99,7 +99,6 @@ int load_metadata(const char *path, RadarMeta *meta)
 
     return 0;
 }
-
 
 int load_complex_bin_all_fread(const char *path, 
                                int num_pulses, 

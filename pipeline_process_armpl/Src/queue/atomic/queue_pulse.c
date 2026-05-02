@@ -27,7 +27,7 @@ int pulse_queue_push(PulseQueue *q, PulseJob job) {
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
         
-        usleep(1);
+        usleep(3);
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
@@ -61,10 +61,17 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
             return 0;
         }
 
-        usleep(1);
+        usleep(3);
     }
 }
 
+// queue_pulse.c에 추가
 void pulse_queue_close(PulseQueue *q) {
+//    atomic_store_explicit(&q->head,   1, memory_order_relaxed);
+//    atomic_store_explicit(&q->tail,   1, memory_order_relaxed);
     atomic_store_explicit(&q->closed, 1, memory_order_release);
+}
+
+void pulse_queue_open(PulseQueue * q){
+    atomic_store_explicit(&q->closed, 0, memory_order_release);
 }

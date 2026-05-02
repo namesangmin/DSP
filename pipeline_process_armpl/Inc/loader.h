@@ -3,33 +3,10 @@
 
 #include <complex.h>
 #include <stddef.h>
-#include "common.h"
-
-typedef struct {
-    double fc_hz;
-    double fs_hz;
-    double prf_hz;
-    double pulse_width_s;
-    double sweep_bandwidth_hz;
-    int num_pulses;
-    int num_fast_time_samples;
-} RadarMeta;
-
-typedef struct {
-    int rows;
-    int cols;
-    float complex *data;
-} ComplexMatrix;
-
-typedef struct {
-    double i;
-    double q;
-} RawIQSample;
+#include "types.h"
 
 int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m);
-//int alloc_real_matrix(int rows, int cols, RealMatrix *m);
 void free_complex_matrix(ComplexMatrix *m);
-//void free_real_matrix(RealMatrix *m);
 
 int load_metadata(const char *path, RadarMeta *meta);
 
