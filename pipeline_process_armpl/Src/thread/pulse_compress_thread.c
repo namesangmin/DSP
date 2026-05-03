@@ -29,7 +29,8 @@ void *worker_thread_main(void *arg)
         float complex *rd_row_ptr = &CMAT_AT(&a->pipe->rd_maps[curr_idx].data, job.pulse_idx, 0);
         
         if (pulse_compress_one(&a->ctx, pulse_raw_ptr, rd_row_ptr) != 0) {
-            fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d\n", job.pulse_idx);
+            fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d ctx=%p raw=%p rd=%p\n",
+                job.pulse_idx, &a->ctx, pulse_raw_ptr, rd_row_ptr);            
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             return NULL;
         }

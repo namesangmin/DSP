@@ -266,7 +266,7 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
 }
 
 int pulse_compress_one(PulseCompressCtx *ctx,
-                       const float complex *raw_pulse,
+                       const fftwf_complex *raw_pulse,
                        float complex *out_range_bins)
 {
     if (!ctx) {
@@ -294,6 +294,8 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     const int inc = 1;
     
     ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
+    //memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
+
     memset(ctx->X + ctx->input_len, 0,
         (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
 
@@ -306,5 +308,8 @@ int pulse_compress_one(PulseCompressCtx *ctx,
 
     fftwf_execute(ctx->inverse_plan);
     
-    ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);    return 0;
+    ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);
+    //memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
+    
+    return 0;
 }
