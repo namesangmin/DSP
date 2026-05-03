@@ -10,9 +10,9 @@
 typedef struct {
     const RadarMeta *meta;
     Pipeline *pipe;  
-    RawIQSample *pulse_buffer;
     PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
-
+    
+    double *buffer;
     int cpu_id;
     const char *dat_path;
 } LoaderArgs;

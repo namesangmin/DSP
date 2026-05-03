@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <stdatomic.h>
+#include <fftw3.h>
 #include "types.h"
 #include "queue_post.h"
 #include "queue_pulse.h"
@@ -34,7 +35,7 @@ typedef struct {
     PulseQueue even_q;   // pulse 0~255
     PulseQueue odd_q;    // pulse 256~511
 
-    ComplexMatrix  raw_data;
+    fftwf_complex *raw_data;
     RdMapBuffer    rd_maps[NUM_BUFFERS];
     DopplerBuffer  doppler_maps[NUM_BUFFERS];
 } Pipeline;

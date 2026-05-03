@@ -10,12 +10,13 @@
 
 typedef struct {
     const RadarMeta *meta;
-    int cpu_id;
-    double compress_ms; 
-    PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
     Pipeline *pipe;
     PulseCompressCtx ctx;
     PulseQueue* q;
+    PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
+
+    int cpu_id;
+    double compress_ms; 
 } WorkerArgs;
 
 void *worker_thread_main(void *arg);

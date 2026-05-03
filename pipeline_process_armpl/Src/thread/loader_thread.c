@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdatomic.h> // atomic 함수 사용을 위해 추가
+#include <fftw3.h>
+#include <complex.h>
 
 #include "timer.h" 
 #include "loader_thread.h"
@@ -7,10 +9,10 @@
 #include "core_set.h"
 
 int loader_thread_init(const char *dat_path, const RadarMeta *meta,  LoaderArgs *ld, Pipeline* pool) {
-    ld->pulse_buffer = (RawIQSample *)malloc((size_t)meta->num_fast_time_samples * sizeof(RawIQSample));
+    size_t total_doubles = (size_t)meta->num_pulses * meta->num_fast_time_samples *2u;
    
-    if (!ld->pulse_buffer) {
-        free_complex_matrix(&pool->raw_data);
+    ld->buffer = (double*)malloc(total_doubles * sizeof(double));
+    if (!ld->buffer) {
         return -1;
     }
 
@@ -23,12 +25,12 @@ int loader_thread_init(const char *dat_path, const RadarMeta *meta,  LoaderArgs 
 }
 
 int loader_thread_destroy(LoaderArgs *ld) {
-    if (ld == NULL || ld->pulse_buffer == NULL) {
+    if (ld == NULL || ld->buffer == NULL) {
         return 0;
     }
 
-    free(ld->pulse_buffer);
-    ld->pulse_buffer = NULL;
+    fftwf_free(ld->buffer);
+    ld->buffer = NULL;
     
     return 0;
 }
@@ -37,12 +39,7 @@ void *loader_thread_main(void *arg)
 {
     LoaderArgs *a = (LoaderArgs *)arg;
     pin_thread_to_cpu(a->cpu_id);
-
     double t0 = now_ms();
-
-    int num_pulses = a->meta->num_pulses;
-    int fast = a->meta->num_fast_time_samples;
-    int half = num_pulses / 2;
 
     FILE *fp = fopen(a->dat_path, "rb");
 
@@ -55,39 +52,68 @@ void *loader_thread_main(void *arg)
 
     fseek(fp, 232, SEEK_SET);
 
-    if (!a->pulse_buffer) {
+    size_t total_doubles = (size_t)a->meta->num_pulses * a->meta->num_fast_time_samples * 2u;
+
+    if (fread(a->buffer, sizeof(double), total_doubles, fp) != total_doubles)
+    {
         atomic_store(&a->pipe->error, 1);
         fclose(fp);
         pulse_queue_close(&a->pipe->even_q);
         pulse_queue_close(&a->pipe->odd_q);
         return NULL;
     }
+    fclose(fp);
 
-    for (int p = 0; p < num_pulses; ++p) {
+    int cols = a->meta->num_pulses;
+    int rows = a->meta->num_fast_time_samples;
+    int half = cols / 2;
 
-        if (fread(a->pulse_buffer, sizeof(RawIQSample), (size_t)fast, fp) != (size_t)fast) {
-            atomic_store(&a->pipe->error, 1);
-            break;
-        }
+    for (int p = 0; p < cols; p++) {
+        for (int s = 0; s < rows; s++) {
+            size_t idx = (size_t)p * (size_t)rows + (size_t)s;
+            size_t bidx    = 2u * idx;
 
-        float complex *dst = &CMAT_AT(&a->pipe->raw_data, p, 0);
-        
-        for (int c = 0; c < fast; ++c) {
-            dst[c] = (float)a->pulse_buffer[c].i + (float)a->pulse_buffer[c].q * I;
+            //a->pipe->raw_data[idx] = (float)a->buffer[bidx] + (float)a->buffer[bidx + 1] * I;
+            a->pipe->raw_data[idx][0] = (float)a->buffer[bidx];
+            a->pipe->raw_data[idx][1] = (float)a->buffer[bidx + 1];
+
         }
 
         PulseJob job = { .pulse_idx = p };
         PulseQueue *q = (p < half) ? &a->pipe->even_q : &a->pipe->odd_q;
         //printf("📦 [Loader] 큐 Push -> pulse_idx: %d (대상: %s 큐)\n", p, (p < half) ? "EVEN" : "ODD");
 
-        if (pulse_queue_push(q, job) != 0) {
-            printf("🚨 [Loader ERROR] 큐 Push 실패! pulse_idx: %d\n", p);
+        if (pulse_queue_push(q, job) != 0) 
+        {
+            printf("[Loader ERROR] 큐 Push 실패! pulse_idx: %d\n", p);
             atomic_store(&a->pipe->error, 1);
             break;
         }
     }
+
+    // 큐에 인덱스 삽입
+    // for (int p = 0; p < num_pulses; p++) 
+    // {
+    //     float complex *dst = &CMAT_AT(&a->pipe->raw_data, p, 0);
+        
+    //     for (int c = 0; c < fast; ++c) 
+    //     {
+    //         dst[c] = (float)a->pulse_buffer[c].i + (float)a->pulse_buffer[c].q * I;
+    //     }
+
+    //     PulseJob job = { .pulse_idx = p };
+    //     PulseQueue *q = (p < half) ? &a->pipe->even_q : &a->pipe->odd_q;
+    //     //printf("📦 [Loader] 큐 Push -> pulse_idx: %d (대상: %s 큐)\n", p, (p < half) ? "EVEN" : "ODD");
+
+    //     if (pulse_queue_push(q, job) != 0) 
+    //     {
+    //         printf("[Loader ERROR] 큐 Push 실패! pulse_idx: %d\n", p);
+    //         atomic_store(&a->pipe->error, 1);
+    //         break;
+    //     }
+    // }
     
-    fclose(fp);
+    //fclose(fp);
     pulse_queue_close(&a->pipe->even_q);
     pulse_queue_close(&a->pipe->odd_q);
 

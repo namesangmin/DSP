@@ -14,8 +14,10 @@
 typedef struct {
     const RadarMeta *meta;
     Pipeline *pipe;    
+
     DopplerWorkspace *doppler_ws;
     CfarWorkspace * cfar_ws;
+    
     DetectionList *det;
     PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
 

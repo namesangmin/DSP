@@ -1,14 +1,20 @@
 #include <string.h>
 #include "pipeline_set.h"
 #include "loader.h"
-int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, Pipeline *pool) {
+int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, Pipeline *pool) 
+{
     memset(pool, 0, sizeof(*pool));
    
-    if (alloc_complex_matrix(meta->num_pulses, meta->num_fast_time_samples, &pool->raw_data) != 0) {
+    size_t total_doubles = (size_t)meta->num_pulses * meta->num_fast_time_samples *2u;
+
+    pool->raw_data = (fftwf_complex*)fftwf_malloc(total_doubles * sizeof(fftwf_complex));
+    if(!pool->raw_data)
+    {
         return -1;
     }
 
-    for (int i = 0; i < NUM_BUFFERS; i++) {
+    for (int i = 0; i < NUM_BUFFERS; i++) 
+    {
         alloc_complex_matrix(meta->num_pulses, meta->num_fast_time_samples, &pool->rd_maps[i].data);
         atomic_init(&pool->rd_maps[i].state, BUF_FREE);
         atomic_init(&pool->rd_maps[i].done_count, 0);
@@ -22,13 +28,17 @@ int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, Pipeline *po
     return 0;
 }
 
-void cleanup_pipeline_pool(Pipeline *pool) {
+void cleanup_pipeline_pool(Pipeline *pool) 
+{
     if (!pool) return;
 
-    // 1. 가장 먼저 읽어왔던 8MB짜리 원본 데이터 해제
-    free_complex_matrix(&pool->raw_data);
+    if (pool->raw_data) {
+        fftwf_free(pool->raw_data);
+        pool->raw_data = NULL;
+    }
 
-    for (int i = 0; i < NUM_BUFFERS; i++) {
+    for (int i = 0; i < NUM_BUFFERS; i++) 
+    {
         free_complex_matrix(&pool->rd_maps[i].data);
         free_complex_matrix(&pool->doppler_maps[i].data);
     }

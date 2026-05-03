@@ -2,10 +2,10 @@
 #ifndef __RADAR_TYPES_H__
 #define __RADAR_TYPES_H__
 
-#include <complex.h>
+//#include <complex.h>
 #include <stddef.h>
 #include <stdatomic.h>
-
+#include <fftw3.h>
 typedef struct {
     double fc_hz;
     double fs_hz;
@@ -19,13 +19,13 @@ typedef struct {
 typedef struct {
     int rows;
     int cols;
-    float complex *data;
+    fftwf_complex *data;
 } ComplexMatrix;
 
 // RawIQSample은 아래에서 따로 설명
-typedef struct {
-    double i;
-    double q;
-} RawIQSample;
+// typedef struct {
+//     double i;
+//     double q;
+// } RawIQSample;
 
 #endif

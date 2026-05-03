@@ -104,9 +104,7 @@ void print_global_average(const Accumulator *acc, int timing_files){
             print_average_line("transpose",     acc->transpose_ms          / timing_files);
             print_average_line("mti",           acc->mti_ms           / timing_files);
             print_average_line("mtd",           acc->mtd_ms           / timing_files);
-            //print_average_line("doppler_total", acc->doppler_total_ms / timing_files);
             print_average_line("cfar",          acc->cfar_ms          / timing_files);
-
             print_average_line("total time",    acc->total_time_ms    / timing_files);
             print_average_line("algo_only",     acc->algo_only_ms     / timing_files);
             printf("  %-18s = %.2f\n", "detections", (double)acc->detections / timing_files);

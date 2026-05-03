@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <sys/stat.h>
 #include <errno.h>
-
+#include <fftw3.h>
 #include "loader.h"
 #include "common.h"
 
@@ -29,15 +29,18 @@ int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m)
 
     m->rows = rows;
     m->cols = cols;
-    m->data = (float complex *)calloc((size_t)rows * (size_t)cols, sizeof(float complex));
-    return (m->data != NULL) ? 0 : -1;
-
+    m->data = (fftwf_complex *)fftwf_malloc((size_t)rows * (size_t)cols * sizeof(fftwf_complex));
+    if(!m->data)
+    {
+        return -1;
+    }
+    return 0;
 }
 
 void free_complex_matrix(ComplexMatrix *m) 
 {
     if (!m) return;
-    free(m->data);
+    fftwf_free(m->data);
     m->data = NULL;
     m->rows = 0;
     m->cols = 0;
@@ -100,96 +103,96 @@ int load_metadata(const char *path, RadarMeta *meta)
     return 0;
 }
 
-int load_complex_bin_all_fread(const char *path, 
-                               int num_pulses, 
-                               int num_fast_time_samples, 
-                               size_t header_offset, 
-                               ComplexMatrix *out) 
-{
-    FILE *fp = NULL;
-    struct stat st;
-    size_t expected_size;
-    const size_t total_elements =
-        (size_t)num_pulses * (size_t)num_fast_time_samples;
+// int load_complex_bin_all_fread(const char *path, 
+//                                int num_pulses, 
+//                                int num_fast_time_samples, 
+//                                size_t header_offset, 
+//                                ComplexMatrix *out) 
+// {
+//     FILE *fp = NULL;
+//     struct stat st;
+//     size_t expected_size;
+//     const size_t total_elements =
+//         (size_t)num_pulses * (size_t)num_fast_time_samples;
 
-    if (!path || !out || num_pulses <= 0 || num_fast_time_samples <= 0) {
-        fprintf(stderr, "load_complex_bin_all_fread: invalid args\n");
-        return -1;
-    }
+//     if (!path || !out || num_pulses <= 0 || num_fast_time_samples <= 0) {
+//         fprintf(stderr, "load_complex_bin_all_fread: invalid args\n");
+//         return -1;
+//     }
 
-    memset(out, 0, sizeof(*out));
+//     memset(out, 0, sizeof(*out));
 
-    if (stat(path, &st) != 0) {
-        perror("stat");
-        return -2;
-    }
+//     if (stat(path, &st) != 0) {
+//         perror("stat");
+//         return -2;
+//     }
 
-    expected_size = header_offset + total_elements * sizeof(RawIQSample);
+//     expected_size = header_offset + total_elements * sizeof(RawIQSample);
 
-    if ((size_t)st.st_size != expected_size) {
-        fprintf(stderr,
-                "load_complex_bin_all_fread: file size mismatch "
-                "(actual=%lld, expected=%zu)\n",
-                (long long)st.st_size,
-                expected_size);
-        return -3;
-    }
+//     if ((size_t)st.st_size != expected_size) {
+//         fprintf(stderr,
+//                 "load_complex_bin_all_fread: file size mismatch "
+//                 "(actual=%lld, expected=%zu)\n",
+//                 (long long)st.st_size,
+//                 expected_size);
+//         return -3;
+//     }
 
-    if (alloc_complex_matrix(num_pulses, num_fast_time_samples, out) != 0) {
-        fprintf(stderr, "load_complex_bin_all_fread: alloc failed\n");
-        return -4;
-    }
+//     if (alloc_complex_matrix(num_pulses, num_fast_time_samples, out) != 0) {
+//         fprintf(stderr, "load_complex_bin_all_fread: alloc failed\n");
+//         return -4;
+//     }
 
-    fp = fopen(path, "rb");
-    if (!fp) {
-        perror("fopen");
-        free_complex_matrix(out);
-        return -5;
-    }
+//     fp = fopen(path, "rb");
+//     if (!fp) {
+//         perror("fopen");
+//         free_complex_matrix(out);
+//         return -5;
+//     }
 
-    if (fseek(fp, (long)header_offset, SEEK_SET) != 0) {
-        perror("fseek");
-        fclose(fp);
-        free_complex_matrix(out);
-        return -6;
-    }
+//     if (fseek(fp, (long)header_offset, SEEK_SET) != 0) {
+//         perror("fseek");
+//         fclose(fp);
+//         free_complex_matrix(out);
+//         return -6;
+//     }
 
-    RawIQSample *pulse_buffer = (RawIQSample *)malloc((size_t)num_fast_time_samples * sizeof(RawIQSample));
+//     RawIQSample *pulse_buffer = (RawIQSample *)malloc((size_t)num_fast_time_samples * sizeof(RawIQSample));
 
-    if (!pulse_buffer) {
-        fprintf(stderr, "load_complex_bin_all_fread: pulse buffer alloc failed\n");
-        fclose(fp);
-        free_complex_matrix(out);
-        return -7;
-    }
+//     if (!pulse_buffer) {
+//         fprintf(stderr, "load_complex_bin_all_fread: pulse buffer alloc failed\n");
+//         fclose(fp);
+//         free_complex_matrix(out);
+//         return -7;
+//     }
 
-    for (int p = 0; p < num_pulses; ++p) {
-        size_t read_count = fread(pulse_buffer, sizeof(RawIQSample),
-                                  (size_t)num_fast_time_samples, fp);
+//     for (int p = 0; p < num_pulses; ++p) {
+//         size_t read_count = fread(pulse_buffer, sizeof(RawIQSample),
+//                                   (size_t)num_fast_time_samples, fp);
 
-        if (read_count != (size_t)num_fast_time_samples) {
-            fprintf(stderr,
-                    "load_complex_bin_all_fread: fread failed "
-                    "pulse=%d read=%zu expected=%d pos=%ld\n",
-                    p,
-                    read_count,
-                    num_fast_time_samples,
-                    ftell(fp));
+//         if (read_count != (size_t)num_fast_time_samples) {
+//             fprintf(stderr,
+//                     "load_complex_bin_all_fread: fread failed "
+//                     "pulse=%d read=%zu expected=%d pos=%ld\n",
+//                     p,
+//                     read_count,
+//                     num_fast_time_samples,
+//                     ftell(fp));
 
-            free(pulse_buffer);
-            fclose(fp);
-            free_complex_matrix(out);
-            return -8;
-        }
+//             free(pulse_buffer);
+//             fclose(fp);
+//             free_complex_matrix(out);
+//             return -8;
+//         }
 
-        for (int c = 0; c < num_fast_time_samples; ++c) {
-            CMAT_AT(out, p, c) =
-                (float)pulse_buffer[c].i + (float)pulse_buffer[c].q * I;
-        }
-    }
+//         for (int c = 0; c < num_fast_time_samples; ++c) {
+//             CMAT_AT(out, p, c) =
+//                 (float)pulse_buffer[c].i + (float)pulse_buffer[c].q * I;
+//         }
+//     }
 
-    free(pulse_buffer);
-    fclose(fp);
+//     free(pulse_buffer);
+//     fclose(fp);
 
-    return 0;
-}
+//     return 0;
+// }

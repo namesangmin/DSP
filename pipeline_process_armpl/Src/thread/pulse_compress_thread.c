@@ -14,16 +14,16 @@ void *worker_thread_main(void *arg)
 
     pin_thread_to_cpu(a->cpu_id);
     
-    double local_compress_ms = 0.0; // 타이머 변수 복구
+    double local_compress_ms = 0.0;
 
     while (pulse_queue_pop(a->q, &job)) {
         if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) {
             break;
         }
 
-        double t0 = now_ms(); // 시간 측정 시작
+        double t0 = now_ms();
 
-        const float complex *pulse_raw_ptr = &CMAT_AT(&a->pipe->raw_data, job.pulse_idx, 0);
+        const fftwf_complex *pulse_raw_ptr = &a->pipe->raw_data[(size_t)job.pulse_idx * a->meta->num_fast_time_samples];
         int curr_idx = atomic_load_explicit(&a->pipe->current_write_idx, memory_order_acquire); 
 
         float complex *rd_row_ptr = &CMAT_AT(&a->pipe->rd_maps[curr_idx].data, job.pulse_idx, 0);
@@ -33,8 +33,8 @@ void *worker_thread_main(void *arg)
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             return NULL;
         }
-        local_compress_ms += now_ms() - t0; // 시간 측정 완료 및 누적
-        // 데이터 쓰기가 완료되었음을 보장하기 위해 release 사용
+        local_compress_ms += now_ms() - t0; 
+
         int done = atomic_fetch_add_explicit(&a->pipe->rd_maps[curr_idx].done_count, 1, memory_order_release) + 1;
 
         // printf("🛠️ [Worker %d] curr_idx: %d | 꺼낸 pulse_idx: %d | 누적 done: %d\n", 
