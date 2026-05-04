@@ -72,7 +72,7 @@ void free_detection_list(DetectionList *list)
 {
     if (!list) return;
 
-    if (list->items) free(list->items);
+    //if (list->items) free(list->items);
     list->items = NULL;
     list->count = 0;
 }
@@ -245,16 +245,19 @@ int cfar_detect(const ComplexMatrix *doppler_map,
         out->items = NULL;
         return 0;
     }
-
-    // 결과 복사
-    out->items = (Detection *)malloc((size_t)detCount * sizeof(Detection));
-    if (!out->items) {
-        out->count = 0;
-        return -3;
-    }
-
-    memcpy(out->items, detBuf, (size_t)detCount * sizeof(Detection));
+    printf("detcount: %d\n", detCount);
+    out->items = ws->detBuf;
     out->count = detCount;
+
+// // 결과 복사
+//     out->items = (Detection *)malloc((size_t)detCount * sizeof(Detection));
+//     if (!out->items) {
+//         out->count = 0;
+//         return -3;
+//     }
+
+//     memcpy(out->items, detBuf, (size_t)detCount * sizeof(Detection));
+//     out->count = detCount;
 
     return 0;
 }

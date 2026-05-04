@@ -34,19 +34,14 @@ void *worker_thread_main(void *arg)
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             return NULL;
         }
-        local_compress_ms += now_ms() - t0; 
+        // local_compress_ms += now_ms() - t0; 
 
         int done = atomic_fetch_add_explicit(&a->pipe->rd_maps[curr_idx].done_count, 1, memory_order_release) + 1;
-
-        // printf("🛠️ [Worker %d] curr_idx: %d | 꺼낸 pulse_idx: %d | 누적 done: %d\n", 
-        //        a->cpu_id, curr_idx, job.pulse_idx, done);
-
 
         if (done == a->meta->num_pulses) {
             // 내가 마지막 512번째 펄스를 끝냈다면, 이전 스레드들의 쓰기 결과를 동기화
             atomic_thread_fence(memory_order_acquire);
             
-            // Transpose 없이 3번 코어(포스트)에게 번호표만 전달
             PostJob p_job = { .buffer_idx = curr_idx }; 
 
             if (post_queue_push(&a->pipe->post_q, p_job) != 0) {
@@ -56,9 +51,12 @@ void *worker_thread_main(void *arg)
             }
             post_queue_close(&a->pipe->post_q);
         }
+        
+        local_compress_ms += now_ms() - t0; 
     }
 
     printf("🔥 [Worker %d] 내가 압축에 쓴 시간: %f ms\n", a->cpu_id, local_compress_ms);
+   
     if (a->timing) {
             if (a->timing->compress_ms < local_compress_ms) {
                 a->timing->compress_ms = local_compress_ms;
