@@ -267,7 +267,7 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
 
 int pulse_compress_one(PulseCompressCtx *ctx,
                        const fftwf_complex *raw_pulse,
-                       float complex *out_range_bins)
+                       fftwf_complex *out_range_bins)
 {
     if (!ctx) {
         fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
