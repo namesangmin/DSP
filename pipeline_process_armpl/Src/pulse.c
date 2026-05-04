@@ -193,28 +193,28 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     ctx->nfft       = next_power_of_two_local(ctx->conv_len);
     ctx->mf_delay   = ctx->filter_len - 1;
 
-    ctx->H = fftwf_malloc((size_t)ctx->nfft * sizeof(fftwf_complex));
-    ctx->X = fftwf_malloc((size_t)ctx->nfft * sizeof(fftwf_complex));
-    ctx->Y = fftwf_malloc((size_t)ctx->nfft * sizeof(fftwf_complex));
+    ctx->H = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    ctx->X = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
+    ctx->Y = (float complex *)fftwf_malloc((size_t)ctx->nfft * sizeof(float complex));
     
     if (!ctx->H || !ctx->X || !ctx->Y) {
         pulse_compress_ctx_destroy(ctx);
         return -1;
     }
 
-    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(fftwf_complex));
-    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(fftwf_complex));
-    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(fftwf_complex));
+    memset(ctx->H, 0, (size_t)ctx->nfft * sizeof(float complex));
+    memset(ctx->X, 0, (size_t)ctx->nfft * sizeof(float complex));
+    memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(float complex));
 
     ctx->forward_plan = fftwf_plan_dft_1d(ctx->nfft,
-                                        ctx->X,
-                                        ctx->X,
+                                        (fftwf_complex *)ctx->X,
+                                        (fftwf_complex *)ctx->X,
                                         FFTW_FORWARD,
                                         FFTW_ESTIMATE);
 
     ctx->inverse_plan = fftwf_plan_dft_1d(ctx->nfft,
-                                        ctx->Y,
-                                        ctx->Y,
+                                        (fftwf_complex *)ctx->Y,
+                                        (fftwf_complex *)ctx->Y,
                                         FFTW_BACKWARD,
                                         FFTW_ESTIMATE);
 
@@ -224,9 +224,6 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     }
 
     for (int i = 0; i < ctx->filter_len; ++i) {
-        // fftwf_complex *src = &CMAT_AT(&ctx->h, i, 0);  // ComplexMatrix는 fftwf_complex*니까
-        // ctx->H[i][0] = src[0][0];
-        // ctx->H[i][1] = src[0][1];
         ctx->H[i] = CMAT_AT(&ctx->h, i, 0);
     }
 
@@ -270,7 +267,7 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
 
 int pulse_compress_one(PulseCompressCtx *ctx,
                        const fftwf_complex *raw_pulse,
-                       fftwf_complex *out_range_bins)
+                       float complex *out_range_bins)
 {
     if (!ctx) {
         fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
@@ -296,8 +293,8 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     
     const int inc = 1;
     
-    //ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
-    memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
+    ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
+    //memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
 
     memset(ctx->X + ctx->input_len, 0,
         (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));

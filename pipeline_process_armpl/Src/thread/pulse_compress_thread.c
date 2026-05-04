@@ -34,7 +34,7 @@ void *worker_thread_main(void *arg)
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             return NULL;
         }
-        // local_compress_ms += now_ms() - t0; 
+        local_compress_ms += now_ms() - t0; 
 
         int done = atomic_fetch_add_explicit(&a->pipe->rd_maps[curr_idx].done_count, 1, memory_order_release) + 1;
 
@@ -52,7 +52,7 @@ void *worker_thread_main(void *arg)
             post_queue_close(&a->pipe->post_q);
         }
         
-        local_compress_ms += now_ms() - t0; 
+        // local_compress_ms += now_ms() - t0; 
     }
 
     printf("🔥 [Worker %d] 내가 압축에 쓴 시간: %f ms\n", a->cpu_id, local_compress_ms);

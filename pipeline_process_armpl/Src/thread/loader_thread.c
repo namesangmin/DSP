@@ -39,8 +39,8 @@ void *loader_thread_main(void *arg)
 {
     LoaderArgs *a = (LoaderArgs *)arg;
     pin_thread_to_cpu(a->cpu_id);
+    
     double t0 = now_ms();
-
     FILE *fp = fopen(a->dat_path, "rb");
 
     if (!fp) {
@@ -63,6 +63,7 @@ void *loader_thread_main(void *arg)
         return NULL;
     }
     fclose(fp);
+    double t1 = now_ms();
 
     int cols = a->meta->num_pulses;
     int rows = a->meta->num_fast_time_samples;
@@ -92,7 +93,7 @@ void *loader_thread_main(void *arg)
     pulse_queue_close(&a->pipe->odd_q);
 
     if (a->timing){
-        a->timing->loader_ms = now_ms() - t0;
+        a->timing->loader_ms = t1 - t0;
     }
 
     return NULL;

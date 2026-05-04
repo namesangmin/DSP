@@ -14,10 +14,9 @@ typedef struct {
     int nfft;
     int mf_delay;
 
-    fftwf_complex    *H;   // float complex * → fftwf_complex *
-    fftwf_complex    *X;
-    fftwf_complex    *Y;
-    //PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
+    float complex *H;
+    float complex *X;
+    float complex *Y;
     fftwf_plan forward_plan;
     fftwf_plan inverse_plan;
 } PulseCompressCtx;
