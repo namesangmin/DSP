@@ -207,14 +207,14 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     memset(ctx->Y, 0, (size_t)ctx->nfft * sizeof(float complex));
 
     ctx->forward_plan = fftwf_plan_dft_1d(ctx->nfft,
-                                        (fftwf_complex *)ctx->X,
-                                        (fftwf_complex *)ctx->X,
+                                        ctx->X,
+                                        ctx->X,
                                         FFTW_FORWARD,
                                         FFTW_ESTIMATE);
 
     ctx->inverse_plan = fftwf_plan_dft_1d(ctx->nfft,
-                                        (fftwf_complex *)ctx->Y,
-                                        (fftwf_complex *)ctx->Y,
+                                        ctx->Y,
+                                        ctx->Y,
                                         FFTW_BACKWARD,
                                         FFTW_ESTIMATE);
 
@@ -293,8 +293,8 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     
     const int inc = 1;
     
-    ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
-    //memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
+    //ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
+    memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
 
     memset(ctx->X + ctx->input_len, 0,
         (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
@@ -308,8 +308,8 @@ int pulse_compress_one(PulseCompressCtx *ctx,
 
     fftwf_execute(ctx->inverse_plan);
     
-    ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);
-    //memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
+    //ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);
+    memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
     
     return 0;
 }

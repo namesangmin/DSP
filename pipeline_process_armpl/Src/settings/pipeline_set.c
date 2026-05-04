@@ -5,9 +5,9 @@ int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, Pipeline *po
 {
     memset(pool, 0, sizeof(*pool));
    
-    size_t total_doubles = (size_t)meta->num_pulses * meta->num_fast_time_samples *2u;
+    size_t total_doubles = (size_t)meta->num_pulses * meta->num_fast_time_samples;
 
-    pool->raw_data = (fftwf_complex*)fftwf_malloc(total_doubles * sizeof(fftwf_complex));
+    pool->raw_data = (float complex *)fftwf_malloc(total_doubles * sizeof(float complex));
     if(!pool->raw_data)
     {
         return -1;

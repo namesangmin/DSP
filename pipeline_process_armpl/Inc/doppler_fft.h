@@ -10,7 +10,7 @@ typedef struct {
     int nfft;               // 512
     float *hamming_win;     // length = pulses
 
-    fftwf_complex *plan_buf;
+    float complex *plan_buf;
     fftwf_plan mtd_plan;
 } DopplerWorkspace;
 

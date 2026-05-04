@@ -29,7 +29,7 @@ int loader_thread_destroy(LoaderArgs *ld) {
         return 0;
     }
 
-    fftwf_free(ld->buffer);
+    free(ld->buffer);
     ld->buffer = NULL;
     
     return 0;
@@ -74,8 +74,7 @@ void *loader_thread_main(void *arg)
             size_t idx = (size_t)p * (size_t)rows + (size_t)s;
             size_t bidx    = 2u * idx;
 
-            a->pipe->raw_data[idx][0] = (float)a->buffer[bidx];
-            a->pipe->raw_data[idx][1] = (float)a->buffer[bidx + 1];
+            a->pipe->raw_data[idx] = (float)a->buffer[bidx] + (float)a->buffer[bidx + 1] * I;
         }
 
         PulseJob job = { .pulse_idx = p };

@@ -35,7 +35,7 @@ typedef struct {
     PulseQueue even_q;   // pulse 0~255
     PulseQueue odd_q;    // pulse 256~511
 
-    fftwf_complex *raw_data;
+    float complex *raw_data;
     RdMapBuffer    rd_maps[NUM_BUFFERS];
     DopplerBuffer  doppler_maps[NUM_BUFFERS];
 } Pipeline;

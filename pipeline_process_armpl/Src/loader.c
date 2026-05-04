@@ -29,7 +29,7 @@ int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m)
 
     m->rows = rows;
     m->cols = cols;
-    m->data = (fftwf_complex *)fftwf_malloc((size_t)rows * (size_t)cols * sizeof(fftwf_complex));
+    m->data = (float complex *)fftwf_malloc((size_t)rows * (size_t)cols * sizeof(float complex));
     if(!m->data)
     {
         return -1;

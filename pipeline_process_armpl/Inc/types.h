@@ -5,7 +5,7 @@
 //#include <complex.h>
 #include <stddef.h>
 #include <stdatomic.h>
-#include <fftw3.h>
+#include <complex.h>
 typedef struct {
     double fc_hz;
     double fs_hz;
@@ -19,7 +19,7 @@ typedef struct {
 typedef struct {
     int rows;
     int cols;
-    fftwf_complex *data;
+    float complex *data;
 } ComplexMatrix;
 
 // RawIQSample은 아래에서 따로 설명
