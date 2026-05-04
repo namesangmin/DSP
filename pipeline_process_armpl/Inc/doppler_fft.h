@@ -11,6 +11,7 @@ typedef struct {
     float *hamming_win;     // length = pulses
 
     float complex *plan_buf;
+    float complex *local_buf;
     fftwf_plan mtd_plan;
 } DopplerWorkspace;
 

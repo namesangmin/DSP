@@ -30,12 +30,26 @@ int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft)
     
     make_hamming_window(pulses, ws->hamming_win);
 
-    ws->plan_buf = (fftwf_complex *)fftwf_malloc((size_t)nfft * sizeof(fftwf_complex));
-    if (!ws->plan_buf) { cleanup_doppler_workspace(ws); return -1; }
+    ws->plan_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));
+    if (!ws->plan_buf) 
+    { 
+        cleanup_doppler_workspace(ws); 
+        return -1;
+    }
 
+    ws->local_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));
+     if (!ws->local_buf) 
+    { 
+        cleanup_doppler_workspace(ws); 
+        return -1;
+    }   
     ws->mtd_plan = fftwf_plan_dft_1d(nfft, ws->plan_buf, ws->plan_buf,
                                      FFTW_FORWARD, FFTW_ESTIMATE);
-    if (!ws->mtd_plan) { cleanup_doppler_workspace(ws); return -1; }
+    if (!ws->mtd_plan)
+    {
+        cleanup_doppler_workspace(ws); 
+        return -1; 
+    }
 
     return 0;
 }
@@ -43,8 +57,9 @@ int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft)
 void cleanup_doppler_workspace(DopplerWorkspace *ws)
 {
     if (!ws) return;
-    if (ws->mtd_plan)    fftwf_destroy_plan(ws->mtd_plan);
-    if (ws->plan_buf)    fftwf_free(ws->plan_buf);
+    if (ws->mtd_plan) fftwf_destroy_plan(ws->mtd_plan);
+    if (ws->plan_buf) fftwf_free(ws->plan_buf);
+    if(ws->local_buf) fftwf_free(ws->local_buf);
     free(ws->hamming_win);
     memset(ws, 0, sizeof(*ws));
 }
@@ -105,36 +120,33 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
     int rows        = doppler_map->rows;
     float *win      = ws->hamming_win;
 
-    #pragma omp parallel num_threads(2)
+    //#pragma omp parallel num_threads(2)
     {
-        float complex *local_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));
-
-        #pragma omp for schedule(static)
+        //#pragma omp for schedule(static)
         for (int r = 0; r < rows; ++r) {
             float complex *row = &CMAT_AT(doppler_map, r, 0);
 
             // 1. 윈도우 적용
             for (int p = 0; p < pulses; ++p) {
-                local_buf[p] = row[p] * win[p];
+                ws->local_buf[p] = row[p] * win[p];
             }
 
             // 2. Zero-padding
             if (nfft > pulses) {
-                memset(&local_buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
+                memset(&ws->local_buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
             }
 
             // 3. FFT 실행 (ws->mtd_plan 대신 개별 plan 또는 전용 실행 함수 필요)
             // fftwf_execute_dft를 쓰면 버퍼를 지정해서 실행 가능합니다.
-            fftwf_execute_dft(ws->mtd_plan, (fftwf_complex *)local_buf, (fftwf_complex *)local_buf);
+            fftwf_execute_dft(ws->mtd_plan, ws->local_buf, ws->local_buf);
 
             // 4. Shift 및 복사
             int half = nfft / 2;
             for (int i = 0; i < half; ++i) {
-                row[i] = local_buf[i + half];
-                row[i + half] = local_buf[i];
+                row[i] = ws->local_buf[i + half];
+                row[i + half] = ws->local_buf[i];
             }
         }
-        fftwf_free(local_buf);
     }
 
     return 0;

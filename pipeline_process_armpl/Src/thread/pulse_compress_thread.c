@@ -23,7 +23,7 @@ void *worker_thread_main(void *arg)
 
         double t0 = now_ms();
 
-        const fftwf_complex *pulse_raw_ptr = &a->pipe->raw_data[(size_t)job.pulse_idx * a->meta->num_fast_time_samples];
+        const float complex *pulse_raw_ptr = &a->pipe->raw_data[(size_t)job.pulse_idx * a->meta->num_fast_time_samples];
         int curr_idx = atomic_load_explicit(&a->pipe->current_write_idx, memory_order_acquire); 
 
         float complex *rd_row_ptr = &CMAT_AT(&a->pipe->rd_maps[curr_idx].data, job.pulse_idx, 0);

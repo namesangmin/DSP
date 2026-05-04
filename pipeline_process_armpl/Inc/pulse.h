@@ -24,6 +24,6 @@ typedef struct {
 int make_pulse_compression_filter(const RadarMeta *meta, int use_window, ComplexMatrix *h);
 int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx);
 void pulse_compress_ctx_destroy(PulseCompressCtx *ctx);
-int pulse_compress_one(PulseCompressCtx *ctx, const fftwf_complex *raw_pulse, float complex *out_range_bins);
+int pulse_compress_one(PulseCompressCtx *ctx, const float complex *raw_pulse, float complex *out_range_bins);
 int transpose_rd_pulse_range_to_doppler_range_pulse(const ComplexMatrix *rd_map, ComplexMatrix *doppler_map, const RadarMeta *meta);
 #endif  

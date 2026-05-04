@@ -249,15 +249,5 @@ int cfar_detect(const ComplexMatrix *doppler_map,
     out->items = ws->detBuf;
     out->count = detCount;
 
-// // 결과 복사
-//     out->items = (Detection *)malloc((size_t)detCount * sizeof(Detection));
-//     if (!out->items) {
-//         out->count = 0;
-//         return -3;
-//     }
-
-//     memcpy(out->items, detBuf, (size_t)detCount * sizeof(Detection));
-//     out->count = detCount;
-
     return 0;
 }
