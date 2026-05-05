@@ -3,6 +3,7 @@
 #include <math.h>
 #include <complex.h>
 #include <string.h>
+#include <time.h>
 
 #include "cfar.h"
 #include "doppler_fft.h"
@@ -98,8 +99,13 @@ float get_velocity_from_bin(int doppler_bin, int nfft, double prf_hz, double fc_
 int cfar_detect(const ComplexMatrix *doppler_map,
                 const RadarMeta *meta,
                 CfarWorkspace *ws,
-                DetectionList *out)
+                DetectionList *out,
+                double *time)
 {
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    long sec, nsec;
+
     if (!doppler_map || !doppler_map->data || !meta || !ws || !out) {
         return -1;
     }
@@ -245,9 +251,13 @@ int cfar_detect(const ComplexMatrix *doppler_map,
         out->items = NULL;
         return 0;
     }
-    printf("detcount: %d\n", detCount);
+
     out->items = ws->detBuf;
     out->count = detCount;
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    sec = end.tv_sec - start.tv_sec;
+    nsec = end.tv_nsec - start.tv_nsec;
+    *time = (double)sec * 1000.0 + (double)nsec / 1000000.0;
 
     return 0;
 }

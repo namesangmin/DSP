@@ -21,20 +21,21 @@ void *worker_thread_main(void *arg)
             break;
         }
 
-        double t0 = now_ms();
 
         const float complex *pulse_raw_ptr = &a->pipe->raw_data[(size_t)job.pulse_idx * a->meta->num_fast_time_samples];
+        
         int curr_idx = atomic_load_explicit(&a->pipe->current_write_idx, memory_order_acquire); 
 
         float complex *rd_row_ptr = &CMAT_AT(&a->pipe->rd_maps[curr_idx].data, job.pulse_idx, 0);
         
-        if (pulse_compress_one(&a->ctx, pulse_raw_ptr, rd_row_ptr) != 0) {
+        double execute_time = 0.0f;
+        if (pulse_compress_one(&a->ctx, pulse_raw_ptr, rd_row_ptr, &execute_time) != 0) {
             fprintf(stderr, "pulse_compress_one failed: pulse_idx=%d ctx=%p raw=%p rd=%p\n",
                 job.pulse_idx, &a->ctx, pulse_raw_ptr, rd_row_ptr);            
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             return NULL;
         }
-        local_compress_ms += now_ms() - t0; 
+        local_compress_ms += execute_time; 
 
         int done = atomic_fetch_add_explicit(&a->pipe->rd_maps[curr_idx].done_count, 1, memory_order_release) + 1;
 
@@ -51,8 +52,6 @@ void *worker_thread_main(void *arg)
             }
             post_queue_close(&a->pipe->post_q);
         }
-        
-        // local_compress_ms += now_ms() - t0; 
     }
 
     printf("🔥 [Worker %d] 내가 압축에 쓴 시간: %f ms\n", a->cpu_id, local_compress_ms);

@@ -2,6 +2,8 @@
 #include <string.h>
 #include <math.h>
 #include <blas.h>
+#include <time.h>
+
 #include "pulse_compress_thread.h"
 #include "loader.h"
 
@@ -13,8 +15,12 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 int transpose_rd_pulse_range_to_doppler_range_pulse(
-    const ComplexMatrix *rd_map, ComplexMatrix *doppler_map, const RadarMeta *meta)
+    const ComplexMatrix *rd_map, ComplexMatrix *doppler_map, const RadarMeta *meta, double *time)
 {
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    long sec, nsec;
+
     if (!rd_map || !rd_map->data || !doppler_map || !doppler_map->data || !meta) {
         return -1;
     }
@@ -46,6 +52,11 @@ int transpose_rd_pulse_range_to_doppler_range_pulse(
         }
     }
 
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    sec = end.tv_sec - start.tv_sec;
+    nsec = end.tv_nsec - start.tv_nsec;
+    *time = (double)sec * 1000.0 + (double)nsec / 1000000.0;
+    
     return 0;
 }
 
@@ -266,9 +277,13 @@ void pulse_compress_ctx_destroy(PulseCompressCtx *ctx)
 }
 
 int pulse_compress_one(PulseCompressCtx *ctx,
-                       const float complex *raw_pulse,
-                       float complex *out_range_bins)
+                    const float complex *raw_pulse,
+                    float complex *out_range_bins,
+                    double *time)
 {
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    long sec, nsec;
     if (!ctx) {
         fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
         return -1;
@@ -311,5 +326,9 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     //ccopy_(&ctx->input_len, &ctx->Y[ctx->mf_delay], &inc, out_range_bins, &inc);
     memcpy(out_range_bins, &ctx->Y[ctx->mf_delay], (size_t)ctx->input_len * sizeof(float complex));
     
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    sec = end.tv_sec - start.tv_sec;
+    nsec = end.tv_nsec - start.tv_nsec;
+    *time = (double)sec * 1000.0 + (double)nsec / 1000000.0;
     return 0;
 }

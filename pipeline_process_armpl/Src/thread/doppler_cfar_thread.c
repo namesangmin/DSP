@@ -16,28 +16,30 @@ void *post_thread_main(void *arg)
     double total_transpose_ms = 0.0;
     double total_cfar_ms = 0.0;
 
-    while (post_queue_pop(&a->pipe->post_q, &job)) {
-        if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) {
+    while (post_queue_pop(&a->pipe->post_q, &job)) 
+    {
+        if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) 
+        {
             break;
         }
 
         int idx = job.buffer_idx;
-
+        double execute_time = 0.0f;
         // =========================================================
         // 0. 도플러 처리 전, 1/2번 코어가 만든 rd_map을 Transpose!
         // =========================================================
-        double t_trans = now_ms(); // 타이머 시작
         if (transpose_rd_pulse_range_to_doppler_range_pulse(
                 &a->pipe->rd_maps[idx].data,
                 &a->pipe->doppler_maps[idx].data,
-                a->meta) != 0) {
+                a->meta, &execute_time) != 0) 
+        {
             fprintf(stderr, "post: transpose failed: buffer_idx=%d\n", idx);
             a->status = -1;
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             break;
         }
         
-        total_transpose_ms = (now_ms() - t_trans);
+        total_transpose_ms = execute_time;
 
         // =========================================================
         // 1. 도플러 처리
@@ -45,31 +47,32 @@ void *post_thread_main(void *arg)
         if (doppler_fft_processing(&a->pipe->doppler_maps[idx].data,
                                 a->meta->num_pulses,
                                 a->timing,
-                                a->doppler_ws) != 0) {
+                                a->doppler_ws) != 0) 
+        {
             fprintf(stderr, "post: doppler_fft_processing failed: buffer_idx=%d\n", idx);
             a->status = -1;
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             break;
         }
 
-        double t0 = now_ms();
-
+        execute_time = 0.0f;
         // =========================================================
         // 2. CFAR 처리 (미리 계산해둔 상수들을 파라미터로 넘김)
         // =========================================================
         int cfar_ret = cfar_detect(&a->pipe->doppler_maps[idx].data,
                            a->meta,
                            a->cfar_ws,
-                           a->det);
+                           a->det, &execute_time);
 
-        if (cfar_ret != 0) {
+        if (cfar_ret != 0) 
+        {
             fprintf(stderr, "post: cfar_detect failed: ret=%d buffer_idx=%d\n", cfar_ret, idx);
             a->status = -2;
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             break;
         }
         
-        total_cfar_ms = (now_ms() - t0);
+        total_cfar_ms = execute_time;
 
         // =========================================================
         // 3. 사용 완료된 rd_map 버퍼 즉시 반납
@@ -90,7 +93,8 @@ void *post_thread_main(void *arg)
         // }
     }
 
-    if (a->timing) {
+    if (a->timing) 
+    {
         a->timing->cfar_ms = total_cfar_ms;
         a->timing->transpose_ms = total_transpose_ms;
     }

@@ -35,9 +35,10 @@ int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler);
 void cleanup_cfar_workspace(CfarWorkspace *ws);
 
 int cfar_detect(const ComplexMatrix *doppler_map,
-                const RadarMeta *meta,
-                CfarWorkspace *ws,
-                DetectionList *out);
+            const RadarMeta *meta,
+            CfarWorkspace *ws,
+            DetectionList *out2,
+            double *time);
 
 void free_detection_list(DetectionList *list);
 
