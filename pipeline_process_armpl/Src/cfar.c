@@ -248,6 +248,11 @@ int cfar_detect(const ComplexMatrix *doppler_map,
         }
     }
 
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    sec = end.tv_sec - start.tv_sec;
+    nsec = end.tv_nsec - start.tv_nsec;
+    *time = (double)sec * 1000.0 + (double)nsec / 1000000.0;
+    
     if (detCount == 0) {
         out->count = 0;
         out->items = NULL;
@@ -256,10 +261,6 @@ int cfar_detect(const ComplexMatrix *doppler_map,
 
     out->items = ws->detBuf;
     out->count = detCount;
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    sec = end.tv_sec - start.tv_sec;
-    nsec = end.tv_nsec - start.tv_nsec;
-    *time = (double)sec * 1000.0 + (double)nsec / 1000000.0;
 
     return 0;
 }
