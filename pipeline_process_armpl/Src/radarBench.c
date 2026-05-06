@@ -97,7 +97,7 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     }
 
     // loader 초기화
-    if (loader_thread_init(meta, &s->ld, &s->pipe) != 0) {
+    if (loader_thread_init(meta, &s->ld, &s->pipe, 5555) != 0) {
         fprintf(stderr, "loader_thread_init failed\n");
         post_queue_destroy(&s->pipe.post_q);
         pulse_queue_destroy(&s->pipe.even_q);

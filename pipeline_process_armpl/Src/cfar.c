@@ -134,7 +134,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
     const int numTrainD = 4;
     const int numGuardR = 1;
     const int numGuardD = 1;
-    const float scale = 12.0f;
+    const float scale = 15.0f;
 
     int winR = numTrainR + numGuardR;
     int winD = numTrainD + numGuardD;
@@ -210,7 +210,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
             float noise_sum = noise_outer - noise_guard;
             float threshold = final_scale * noise_sum;
             int idx = row_base + d;
-            
+
             ws->threshold_map[idx] = threshold;
             det_mask[idx] = (powerMap[idx] > threshold) ? 1 : 0;
 
