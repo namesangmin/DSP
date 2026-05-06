@@ -42,10 +42,9 @@ typedef struct {
     RdMapBuffer    rd_maps[NUM_BUFFERS];
     DopplerBuffer  doppler_maps[NUM_BUFFERS];
     char filenames[NUM_BUFFERS][256];
-    
+
     uint32_t dwell_ids[NUM_BUFFERS];
     float    phi[NUM_BUFFERS];  
-
 } Pipeline;
 
 struct RadarMeta;

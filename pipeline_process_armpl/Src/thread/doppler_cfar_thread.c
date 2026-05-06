@@ -114,9 +114,8 @@ void *post_thread_main(void *arg)
         // 4. 그래프 + 표적 정보 보냄
         // =========================================================
         uint32_t dwell_id = a->pipe->dwell_ids[idx];
-        uint32_t channel = dwell_id % 7;
-        float phi = channel * (80.0f / 7.0f) - 32.5;
-        
+        float phi = a->pipe->phi[idx];
+
         udp_target_t targets[MAX_TARGETS];
         for (int i = 0; i < a->clusters->count; i++) {
             targets[i].distance = a->clusters->items[i].range_m;

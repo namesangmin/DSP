@@ -19,6 +19,7 @@
 static int sock_fd = -1;
 static uint8_t *tmp = NULL;
 static fftwf_complex *rxsig_transpose = NULL;
+static fftwf_complex *pc_map_transpose = NULL;
 static uint8_t header[HEADER_SIZE];
 
 static void write_u32(uint8_t *buf, uint32_t val)
@@ -338,9 +339,25 @@ int send_graph_data_init(
         (size_t)fasttime *
         (size_t)num_pulses
     );
+    
+    pc_map_transpose = (fftwf_complex *)fftwf_malloc(
+        sizeof(fftwf_complex) *
+        (size_t)fasttime *
+        (size_t)num_pulses
+    );
 
     if (!rxsig_transpose) {
         perror("fftwf_malloc");
+        free(tmp);
+        tmp = NULL;
+        close(sock_fd);
+        sock_fd = -1;
+        return -5;
+    }
+
+    if (!pc_map_transpose) {
+        perror("fftwf_malloc pc map");
+        fftwf_free(rxsig_transpose);
         free(tmp);
         tmp = NULL;
         close(sock_fd);
@@ -416,6 +433,7 @@ int send_graph_data(
             size_t src = (size_t)pl * (size_t)src_fasttime + (size_t)ft;
 
             rxsig_transpose[dst] = ((fftwf_complex *)rxsig)[src];
+            pc_map_transpose[dst] = ((fftwf_complex *)pc_map)[src];
         }
     }
 
@@ -454,7 +472,7 @@ int send_graph_data(
                     TX_PULSES,
                     src_fasttime,
                     src_pulses,
-                    (fftwf_complex *)pc_map
+                    pc_map_transpose
                 )
             );
 
@@ -532,4 +550,10 @@ void send_graph_data_destroy(void)
         fftwf_free(rxsig_transpose);
         rxsig_transpose = NULL;
     }
+
+    if (pc_map_transpose) {
+        fftwf_free(pc_map_transpose);
+        pc_map_transpose = NULL;
+    }
+     
 }
