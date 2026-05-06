@@ -129,12 +129,12 @@ int udp_loop(uint32_t dwell_id,
     meta.target_num = (uint32_t)target_num;
     meta.theta = 45.0f;
     meta.phi = angle;
-    meta.compress_ms = timing->compress_ms;
-    meta.transpose_ms = timing->transpose_ms;
-    meta.mti_ms = timing->mti_ms;
-    meta.mtd_ms = timing->mtd_ms;
-    meta.cfar_ms = timing->cfar_ms;
-    meta.cluster_ms = timing->cluster_ms;
+    meta.compress_ms = timing->compress_ms / 1000;
+    meta.transpose_ms = timing->transpose_ms/ 1000;
+    meta.mti_ms = timing->mti_ms/ 1000;
+    meta.mtd_ms = timing->mtd_ms/ 1000;
+    meta.cfar_ms = timing->cfar_ms/ 1000;
+    meta.cluster_ms = timing->cluster_ms/ 1000;
 
     len = serialize_meta(&meta, pkt_buf, len);
     for (int i = 0; i < target_num; i++) {

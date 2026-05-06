@@ -114,8 +114,8 @@ void *post_thread_main(void *arg)
         // 4. 그래프 + 표적 정보 보냄
         // =========================================================
         uint32_t dwell_id = a->pipe->dwell_ids[idx];
-        uint32_t channel = (dwell_id - 126) % 7;
-        float phi = channel * (180.0f / 7.0f);
+        uint32_t channel = dwell_id % 7;
+        float phi = channel * (80.0f / 7.0f) - 32.5;
         
         udp_target_t targets[MAX_TARGETS];
         for (int i = 0; i < a->clusters->count; i++) {
@@ -131,7 +131,7 @@ void *post_thread_main(void *arg)
             a->cfar_ws->powerMap,
             a->cfar_ws->threshold_map,
             a->cfar_ws->det_mask);
-            
+
         // =========================================================
         // 5. 버퍼 반납 + 인덱스 증가
         // =========================================================
@@ -143,7 +143,7 @@ void *post_thread_main(void *arg)
         // =========================================================
         snprintf(a->history[fi].filename, 256, "%s", a->pipe->filenames[idx]);
        
-        print_file_result(a->timing, a->det, a->clusters, fi);
+        //print_file_result(a->timing, a->det, a->clusters, fi);
 
         Detection best = {0};
         best.range_bin = -1;
