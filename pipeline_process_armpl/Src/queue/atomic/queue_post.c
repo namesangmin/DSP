@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include "queue_post.h"
+
 int post_queue_init(PostQueue *q, int cap) {
     memset(q, 0, sizeof(*q));
 
@@ -26,7 +27,7 @@ int post_queue_push(PostQueue *q, PostJob job) {
     // 꽉 찼으면 빈 자리가 날 때까지 대기 (Pure Spin-wait)
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
-        usleep(3);
+        usleep(100);
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
@@ -45,7 +46,7 @@ int post_queue_pop(PostQueue *q, PostJob *job) {
             break;
         }
 
-        usleep(3);
+        usleep(100);
     }
 
     *job = q->buf[head];

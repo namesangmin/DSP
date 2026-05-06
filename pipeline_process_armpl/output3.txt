@@ -1,0 +1,5497 @@
+Target is a DIRECTORY. Batch processing...
+Loaded config:
+  fc = 10000000000.000 Hz
+  fs = 10000000.000 Hz
+  PRF = 10000.000 Hz
+  pulse width = 0.000001000 s
+  sweep BW = 5000000.000 Hz
+  pulses = 512
+  fast-time samples = 1001
+  lambda = 0.029979246 m
+  pulse samples = 10
+fi: 2, raw data idx : 2
+cpu id: 2, done count: 512
+fi: 3, raw data idx : 0
+cpu id: 2, done count: 512
+fi: 4, raw data idx : 1
+
+=========================================================
+[FILE 1]
+=========================================================
+
+--- Timing ---
+  load               = 12.965 ms (0.012964734 sec)
+  compress (Core 1)  = 13.045 ms (0.013045265 sec)
+  compress (Core 2)  = 13.597 ms (0.013597051 sec)
+  compress           = 13.597 ms (0.013597051 sec)
+  transpose          = 13.029 ms (0.013028660 sec)
+  mti                = 5.387 ms (0.005386536 sec)
+  mtd                = 9.602 ms (0.009601566 sec)
+  cfar               = 10.573 ms (0.010573481 sec)
+  total              = 38.594 ms (0.038594298 sec)
+  algo_only          = 52.187 ms (0.052187294 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 164
+  Doppler bin = 341
+  Range       = 2458.30 m
+  Velocity    = 24.89 m/s
+  Power       = 2.528791e-06
+  Threshold   = 2.528791e-06
+valid files: 1
+cpu id: 2, done count: 512
+fi: 5, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 2]
+=========================================================
+
+--- Timing ---
+  load               = 10.347 ms (0.010346817 sec)
+  compress (Core 1)  = 15.005 ms (0.015005268 sec)
+  compress (Core 2)  = 15.994 ms (0.015993687 sec)
+  compress           = 15.994 ms (0.015993687 sec)
+  transpose          = 12.571 ms (0.012571423 sec)
+  mti                = 5.230 ms (0.005230445 sec)
+  mtd                = 7.573 ms (0.007573143 sec)
+  cfar               = 6.455 ms (0.006455377 sec)
+  total              = 31.833 ms (0.031832869 sec)
+  algo_only          = 47.824 ms (0.047824075 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 163
+  Doppler bin = 341
+  Range       = 2443.31 m
+  Velocity    = 24.89 m/s
+  Power       = 2.782989e-06
+  Threshold   = 2.782989e-06
+valid files: 2
+fi: 6, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 3]
+=========================================================
+
+--- Timing ---
+  load               = 10.510 ms (0.010510260 sec)
+  compress (Core 1)  = 13.652 ms (0.013652211 sec)
+  compress (Core 2)  = 12.615 ms (0.012614820 sec)
+  compress           = 13.652 ms (0.013652211 sec)
+  transpose          = 12.438 ms (0.012438295 sec)
+  mti                = 5.425 ms (0.005425331 sec)
+  mtd                = 7.605 ms (0.007605087 sec)
+  cfar               = 6.403 ms (0.006403359 sec)
+  total              = 31.875 ms (0.031875258 sec)
+  algo_only          = 45.524 ms (0.045524283 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 163
+  Doppler bin = 341
+  Range       = 2443.31 m
+  Velocity    = 24.89 m/s
+  Power       = 2.458838e-06
+  Threshold   = 2.458838e-06
+valid files: 3
+fi: 7, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 4]
+=========================================================
+
+--- Timing ---
+  load               = 12.703 ms (0.012702737 sec)
+  compress (Core 1)  = 11.000 ms (0.011000477 sec)
+  compress (Core 2)  = 10.788 ms (0.010787706 sec)
+  compress           = 11.000 ms (0.011000477 sec)
+  transpose          = 6.850 ms (0.006850057 sec)
+  mti                = 4.882 ms (0.004882004 sec)
+  mtd                = 9.387 ms (0.009386883 sec)
+  cfar               = 6.751 ms (0.006751429 sec)
+  total              = 27.874 ms (0.027874448 sec)
+  algo_only          = 38.871 ms (0.038870850 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 163
+  Doppler bin = 341
+  Range       = 2443.31 m
+  Velocity    = 24.89 m/s
+  Power       = 2.635185e-06
+  Threshold   = 2.635185e-06
+valid files: 4
+fi: 8, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 5]
+=========================================================
+
+--- Timing ---
+  load               = 13.082 ms (0.013082158 sec)
+  compress (Core 1)  = 11.150 ms (0.011150080 sec)
+  compress (Core 2)  = 10.320 ms (0.010320132 sec)
+  compress           = 11.150 ms (0.011150080 sec)
+  transpose          = 6.880 ms (0.006880465 sec)
+  mti                = 4.645 ms (0.004644729 sec)
+  mtd                = 9.412 ms (0.009412012 sec)
+  cfar               = 6.695 ms (0.006695003 sec)
+  total              = 27.635 ms (0.027634524 sec)
+  algo_only          = 38.782 ms (0.038782289 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 162
+  Doppler bin = 341
+  Range       = 2428.32 m
+  Velocity    = 24.89 m/s
+  Power       = 2.382774e-06
+  Threshold   = 2.382774e-06
+valid files: 5
+fi: 9, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 6]
+=========================================================
+
+--- Timing ---
+  load               = 13.474 ms (0.013474358 sec)
+  compress (Core 1)  = 10.572 ms (0.010572263 sec)
+  compress (Core 2)  = 9.816 ms (0.009816196 sec)
+  compress           = 10.572 ms (0.010572263 sec)
+  transpose          = 7.164 ms (0.007164128 sec)
+  mti                = 4.679 ms (0.004678655 sec)
+  mtd                = 11.732 ms (0.011731691 sec)
+  cfar               = 6.593 ms (0.006593079 sec)
+  total              = 30.170 ms (0.030170424 sec)
+  algo_only          = 40.740 ms (0.040739816 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 162
+  Doppler bin = 341
+  Range       = 2428.32 m
+  Velocity    = 24.89 m/s
+  Power       = 2.593199e-06
+  Threshold   = 2.593199e-06
+valid files: 6
+fi: 10, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 7]
+=========================================================
+
+--- Timing ---
+  load               = 13.168 ms (0.013168084 sec)
+  compress (Core 1)  = 10.616 ms (0.010615801 sec)
+  compress (Core 2)  = 9.802 ms (0.009801987 sec)
+  compress           = 10.616 ms (0.010615801 sec)
+  transpose          = 7.261 ms (0.007261406 sec)
+  mti                = 4.472 ms (0.004472471 sec)
+  mtd                = 9.480 ms (0.009479585 sec)
+  cfar               = 6.753 ms (0.006752966 sec)
+  total              = 27.969 ms (0.027969298 sec)
+  algo_only          = 38.582 ms (0.038582229 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 161
+  Doppler bin = 341
+  Range       = 2413.33 m
+  Velocity    = 24.89 m/s
+  Power       = 2.311327e-06
+  Threshold   = 2.311327e-06
+valid files: 7
+fi: 11, raw data idx : 2
+
+=========================================================
+[FILE 8]
+=========================================================
+
+--- Timing ---
+  load               = 15.634 ms (0.015634169 sec)
+  compress (Core 1)  = 10.205 ms (0.010205200 sec)
+  compress (Core 2)  = 11.403 ms (0.011402862 sec)
+  compress           = 11.403 ms (0.011402862 sec)
+  transpose          = 6.034 ms (0.006033529 sec)
+  mti                = 3.386 ms (0.003386483 sec)
+  mtd                = 10.298 ms (0.010298411 sec)
+  cfar               = 8.617 ms (0.008616965 sec)
+  total              = 28.337 ms (0.028337294 sec)
+  algo_only          = 39.738 ms (0.039738250 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 161
+  Doppler bin = 341
+  Range       = 2413.33 m
+  Velocity    = 24.89 m/s
+  Power       = 2.535326e-06
+  Threshold   = 2.535326e-06
+valid files: 8
+cpu id: 2, done count: 512
+fi: 12, raw data idx : 0
+
+=========================================================
+[FILE 9]
+=========================================================
+
+--- Timing ---
+  load               = 15.112 ms (0.015111656 sec)
+  compress (Core 1)  = 10.814 ms (0.010813579 sec)
+  compress (Core 2)  = 9.725 ms (0.009724532 sec)
+  compress           = 10.814 ms (0.010813579 sec)
+  transpose          = 7.106 ms (0.007106036 sec)
+  mti                = 4.486 ms (0.004486268 sec)
+  mtd                = 9.492 ms (0.009491918 sec)
+  cfar               = 7.008 ms (0.007008037 sec)
+  total              = 28.095 ms (0.028095371 sec)
+  algo_only          = 38.906 ms (0.038905838 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 160
+  Doppler bin = 341
+  Range       = 2398.34 m
+  Velocity    = 24.89 m/s
+  Power       = 2.733923e-06
+  Threshold   = 2.733923e-06
+valid files: 9
+cpu id: 2, done count: 512
+fi: 13, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 10]
+=========================================================
+
+--- Timing ---
+  load               = 13.201 ms (0.013200935 sec)
+  compress (Core 1)  = 10.836 ms (0.010836300 sec)
+  compress (Core 2)  = 10.174 ms (0.010173966 sec)
+  compress           = 10.836 ms (0.010836300 sec)
+  transpose          = 7.399 ms (0.007398756 sec)
+  mti                = 5.036 ms (0.005035613 sec)
+  mtd                = 9.289 ms (0.009289236 sec)
+  cfar               = 6.952 ms (0.006952464 sec)
+  total              = 28.679 ms (0.028679217 sec)
+  algo_only          = 39.512 ms (0.039512369 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 160
+  Doppler bin = 341
+  Range       = 2398.34 m
+  Velocity    = 24.89 m/s
+  Power       = 2.429174e-06
+  Threshold   = 2.429174e-06
+valid files: 10
+fi: 14, raw data idx : 2
+
+=========================================================
+[FILE 11]
+=========================================================
+
+--- Timing ---
+  load               = 15.615 ms (0.015615243 sec)
+  compress (Core 1)  = 10.355 ms (0.010355222 sec)
+  compress (Core 2)  = 15.333 ms (0.015333325 sec)
+  compress           = 15.333 ms (0.015333325 sec)
+  transpose          = 7.067 ms (0.007066704 sec)
+  mti                = 4.016 ms (0.004015551 sec)
+  mtd                = 11.404 ms (0.011403769 sec)
+  cfar               = 6.660 ms (0.006659763 sec)
+  total              = 29.148 ms (0.029148267 sec)
+  algo_only          = 44.479 ms (0.044479112 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 160
+  Doppler bin = 341
+  Range       = 2398.34 m
+  Velocity    = 24.89 m/s
+  Power       = 2.645515e-06
+  Threshold   = 2.645515e-06
+valid files: 11
+cpu id: 2, done count: 512
+fi: 15, raw data idx : 0
+
+=========================================================
+[FILE 12]
+=========================================================
+
+--- Timing ---
+  load               = 14.202 ms (0.014202240 sec)
+  compress (Core 1)  = 11.553 ms (0.011552529 sec)
+  compress (Core 2)  = 11.790 ms (0.011789512 sec)
+  compress           = 11.790 ms (0.011789512 sec)
+  transpose          = 5.721 ms (0.005720995 sec)
+  mti                = 4.909 ms (0.004908819 sec)
+  mtd                = 9.920 ms (0.009920322 sec)
+  cfar               = 7.030 ms (0.007030426 sec)
+  total              = 27.585 ms (0.027585488 sec)
+  algo_only          = 39.370 ms (0.039370074 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 159
+  Doppler bin = 341
+  Range       = 2383.35 m
+  Velocity    = 24.89 m/s
+  Power       = 2.436150e-06
+  Threshold   = 2.436150e-06
+valid files: 12
+cpu id: 2, done count: 512
+fi: 16, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 13]
+=========================================================
+
+--- Timing ---
+  load               = 13.280 ms (0.013279934 sec)
+  compress (Core 1)  = 10.433 ms (0.010433384 sec)
+  compress (Core 2)  = 9.898 ms (0.009898232 sec)
+  compress           = 10.433 ms (0.010433384 sec)
+  transpose          = 6.939 ms (0.006939242 sec)
+  mti                = 5.137 ms (0.005136853 sec)
+  mtd                = 9.357 ms (0.009357253 sec)
+  cfar               = 6.678 ms (0.006677597 sec)
+  total              = 28.113 ms (0.028112834 sec)
+  algo_only          = 38.544 ms (0.038544329 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 159
+  Doppler bin = 341
+  Range       = 2383.35 m
+  Velocity    = 24.89 m/s
+  Power       = 2.701412e-06
+  Threshold   = 2.701412e-06
+valid files: 13
+fi: 17, raw data idx : 2
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 14]
+=========================================================
+
+--- Timing ---
+  load               = 12.091 ms (0.012091169 sec)
+  compress (Core 1)  = 13.164 ms (0.013164485 sec)
+  compress (Core 2)  = 10.185 ms (0.010184772 sec)
+  compress           = 13.164 ms (0.013164485 sec)
+  transpose          = 7.044 ms (0.007043648 sec)
+  mti                = 4.946 ms (0.004945800 sec)
+  mtd                = 9.213 ms (0.009212922 sec)
+  cfar               = 6.987 ms (0.006986852 sec)
+  total              = 28.192 ms (0.028191926 sec)
+  algo_only          = 41.354 ms (0.041353707 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 158
+  Doppler bin = 341
+  Range       = 2368.36 m
+  Velocity    = 24.89 m/s
+  Power       = 3.114416e-06
+  Threshold   = 3.114416e-06
+valid files: 14
+fi: 18, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 15]
+=========================================================
+
+--- Timing ---
+  load               = 12.406 ms (0.012406462 sec)
+  compress (Core 1)  = 10.454 ms (0.010453953 sec)
+  compress (Core 2)  = 9.800 ms (0.009799568 sec)
+  compress           = 10.454 ms (0.010453953 sec)
+  transpose          = 6.673 ms (0.006672763 sec)
+  mti                = 4.971 ms (0.004971077 sec)
+  mtd                = 9.260 ms (0.009260069 sec)
+  cfar               = 6.676 ms (0.006675892 sec)
+  total              = 27.584 ms (0.027583562 sec)
+  algo_only          = 38.034 ms (0.038033754 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 158
+  Doppler bin = 341
+  Range       = 2368.36 m
+  Velocity    = 24.89 m/s
+  Power       = 2.720523e-06
+  Threshold   = 2.720523e-06
+valid files: 15
+fi: 19, raw data idx : 1
+
+=========================================================
+[FILE 16]
+=========================================================
+
+--- Timing ---
+  load               = 12.572 ms (0.012571571 sec)
+  compress (Core 1)  = 13.884 ms (0.013884265 sec)
+  compress (Core 2)  = 10.589 ms (0.010589227 sec)
+  compress           = 13.884 ms (0.013884265 sec)
+  transpose          = 6.900 ms (0.006900020 sec)
+  mti                = 4.994 ms (0.004993762 sec)
+  mtd                = 9.402 ms (0.009402216 sec)
+  cfar               = 6.729 ms (0.006728559 sec)
+  total              = 28.027 ms (0.028027334 sec)
+  algo_only          = 41.909 ms (0.041908822 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 157
+  Doppler bin = 341
+  Range       = 2353.37 m
+  Velocity    = 24.89 m/s
+  Power       = 3.020300e-06
+  Threshold   = 3.020300e-06
+valid files: 16
+cpu id: 2, done count: 512
+fi: 20, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 17]
+=========================================================
+
+--- Timing ---
+  load               = 12.748 ms (0.012748422 sec)
+  compress (Core 1)  = 10.544 ms (0.010543846 sec)
+  compress (Core 2)  = 9.879 ms (0.009878772 sec)
+  compress           = 10.544 ms (0.010543846 sec)
+  transpose          = 7.404 ms (0.007403625 sec)
+  mti                = 5.263 ms (0.005262667 sec)
+  mtd                = 9.305 ms (0.009304791 sec)
+  cfar               = 6.668 ms (0.006667986 sec)
+  total              = 28.641 ms (0.028641328 sec)
+  algo_only          = 39.183 ms (0.039182915 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 157
+  Doppler bin = 341
+  Range       = 2353.37 m
+  Velocity    = 24.89 m/s
+  Power       = 2.750640e-06
+  Threshold   = 2.750640e-06
+valid files: 17
+fi: 21, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 18]
+=========================================================
+
+--- Timing ---
+  load               = 12.317 ms (0.012317463 sec)
+  compress (Core 1)  = 11.164 ms (0.011163905 sec)
+  compress (Core 2)  = 15.955 ms (0.015954948 sec)
+  compress           = 15.955 ms (0.015954948 sec)
+  transpose          = 6.991 ms (0.006990575 sec)
+  mti                = 4.977 ms (0.004976503 sec)
+  mtd                = 9.180 ms (0.009180144 sec)
+  cfar               = 6.663 ms (0.006662634 sec)
+  total              = 27.814 ms (0.027813633 sec)
+  algo_only          = 43.765 ms (0.043764804 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 157
+  Doppler bin = 341
+  Range       = 2353.37 m
+  Velocity    = 24.89 m/s
+  Power       = 2.988399e-06
+  Threshold   = 2.988399e-06
+valid files: 18
+fi: 22, raw data idx : 1
+
+=========================================================
+[FILE 19]
+=========================================================
+
+--- Timing ---
+  load               = 12.705 ms (0.012705348 sec)
+  compress (Core 1)  = 10.809 ms (0.010809306 sec)
+  compress (Core 2)  = 11.930 ms (0.011929537 sec)
+  compress           = 11.930 ms (0.011929537 sec)
+  transpose          = 7.026 ms (0.007025796 sec)
+  mti                = 4.743 ms (0.004742709 sec)
+  mtd                = 9.331 ms (0.009330587 sec)
+  cfar               = 6.989 ms (0.006988964 sec)
+  total              = 28.090 ms (0.028090168 sec)
+  algo_only          = 40.018 ms (0.040017593 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 156
+  Doppler bin = 341
+  Range       = 2338.38 m
+  Velocity    = 24.89 m/s
+  Power       = 2.555685e-06
+  Threshold   = 2.555685e-06
+valid files: 19
+cpu id: 2, done count: 512
+fi: 23, raw data idx : 2
+
+=========================================================
+[FILE 20]
+=========================================================
+
+--- Timing ---
+  load               = 12.729 ms (0.012729144 sec)
+  compress (Core 1)  = 10.459 ms (0.010458957 sec)
+  compress (Core 2)  = 9.785 ms (0.009784668 sec)
+  compress           = 10.459 ms (0.010458957 sec)
+  transpose          = 8.400 ms (0.008399504 sec)
+  mti                = 5.573 ms (0.005572608 sec)
+  mtd                = 9.384 ms (0.009383957 sec)
+  cfar               = 6.820 ms (0.006819706 sec)
+  total              = 30.179 ms (0.030178849 sec)
+  algo_only          = 40.635 ms (0.040634732 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 156
+  Doppler bin = 341
+  Range       = 2338.38 m
+  Velocity    = 24.89 m/s
+  Power       = 2.852823e-06
+  Threshold   = 2.852823e-06
+valid files: 20
+cpu id: 2, done count: 512
+fi: 24, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 21]
+=========================================================
+
+--- Timing ---
+  load               = 14.155 ms (0.014154555 sec)
+  compress (Core 1)  = 13.753 ms (0.013753228 sec)
+  compress (Core 2)  = 13.623 ms (0.013623382 sec)
+  compress           = 13.753 ms (0.013753228 sec)
+  transpose          = 8.149 ms (0.008148711 sec)
+  mti                = 5.769 ms (0.005768977 sec)
+  mtd                = 9.567 ms (0.009566548 sec)
+  cfar               = 9.046 ms (0.009046442 sec)
+  total              = 32.532 ms (0.032532454 sec)
+  algo_only          = 46.284 ms (0.046283906 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 155
+  Doppler bin = 341
+  Range       = 2323.39 m
+  Velocity    = 24.89 m/s
+  Power       = 3.217367e-06
+  Threshold   = 3.217367e-06
+valid files: 21
+fi: 25, raw data idx : 1
+
+=========================================================
+[FILE 22]
+=========================================================
+
+--- Timing ---
+  load               = 12.548 ms (0.012547701 sec)
+  compress (Core 1)  = 14.955 ms (0.014954681 sec)
+  compress (Core 2)  = 16.360 ms (0.016360053 sec)
+  compress           = 16.360 ms (0.016360053 sec)
+  transpose          = 7.648 ms (0.007647623 sec)
+  mti                = 5.130 ms (0.005129501 sec)
+  mtd                = 9.192 ms (0.009192088 sec)
+  cfar               = 6.672 ms (0.006672189 sec)
+  total              = 28.644 ms (0.028643995 sec)
+  algo_only          = 45.001 ms (0.045001454 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 155
+  Doppler bin = 341
+  Range       = 2323.39 m
+  Velocity    = 24.89 m/s
+  Power       = 2.848228e-06
+  Threshold   = 2.848228e-06
+valid files: 22
+cpu id: 2, done count: 512
+fi: 26, raw data idx : 2
+
+=========================================================
+[FILE 23]
+=========================================================
+
+--- Timing ---
+  load               = 13.419 ms (0.013418951 sec)
+  compress (Core 1)  = 13.951 ms (0.013951392 sec)
+  compress (Core 2)  = 11.256 ms (0.011256047 sec)
+  compress           = 13.951 ms (0.013951392 sec)
+  transpose          = 8.420 ms (0.008419615 sec)
+  mti                = 5.962 ms (0.005961845 sec)
+  mtd                = 8.873 ms (0.008873259 sec)
+  cfar               = 6.763 ms (0.006762762 sec)
+  total              = 30.020 ms (0.030019721 sec)
+  algo_only          = 43.969 ms (0.043968873 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 154
+  Doppler bin = 341
+  Range       = 2308.40 m
+  Velocity    = 24.89 m/s
+  Power       = 3.145145e-06
+  Threshold   = 3.145145e-06
+valid files: 23
+cpu id: 1, done count: 512
+fi: 27, raw data idx : 0
+
+=========================================================
+[FILE 24]
+=========================================================
+
+--- Timing ---
+  load               = 16.164 ms (0.016163534 sec)
+  compress (Core 1)  = 10.697 ms (0.010696603 sec)
+  compress (Core 2)  = 19.750 ms (0.019749985 sec)
+  compress           = 19.750 ms (0.019749985 sec)
+  transpose          = 7.250 ms (0.007249775 sec)
+  mti                = 4.932 ms (0.004932226 sec)
+  mtd                = 9.517 ms (0.009517381 sec)
+  cfar               = 8.828 ms (0.008827870 sec)
+  total              = 30.531 ms (0.030530771 sec)
+  algo_only          = 50.277 ms (0.050277237 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 154
+  Doppler bin = 341
+  Range       = 2308.40 m
+  Velocity    = 24.89 m/s
+  Power       = 2.957261e-06
+  Threshold   = 2.957261e-06
+valid files: 24
+cpu id: 2, done count: 512
+fi: 28, raw data idx : 1
+
+=========================================================
+[FILE 25]
+=========================================================
+
+--- Timing ---
+  load               = 14.930 ms (0.014929640 sec)
+  compress (Core 1)  = 19.178 ms (0.019177881 sec)
+  compress (Core 2)  = 10.372 ms (0.010372180 sec)
+  compress           = 19.178 ms (0.019177881 sec)
+  transpose          = 7.824 ms (0.007824454 sec)
+  mti                = 4.112 ms (0.004111883 sec)
+  mtd                = 10.159 ms (0.010159263 sec)
+  cfar               = 7.075 ms (0.007075481 sec)
+  total              = 29.173 ms (0.029172952 sec)
+  algo_only          = 48.349 ms (0.048348962 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 154
+  Doppler bin = 341
+  Range       = 2308.40 m
+  Velocity    = 24.89 m/s
+  Power       = 3.282784e-06
+  Threshold   = 3.282784e-06
+valid files: 25
+cpu id: 2, done count: 512
+fi: 29, raw data idx : 2
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 26]
+=========================================================
+
+--- Timing ---
+  load               = 14.649 ms (0.014649049 sec)
+  compress (Core 1)  = 11.707 ms (0.011706760 sec)
+  compress (Core 2)  = 10.322 ms (0.010321916 sec)
+  compress           = 11.707 ms (0.011706760 sec)
+  transpose          = 8.210 ms (0.008209525 sec)
+  mti                = 4.600 ms (0.004600229 sec)
+  mtd                = 9.797 ms (0.009797304 sec)
+  cfar               = 6.784 ms (0.006784410 sec)
+  total              = 29.394 ms (0.029394450 sec)
+  algo_only          = 41.098 ms (0.041098228 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 153
+  Doppler bin = 341
+  Range       = 2293.41 m
+  Velocity    = 24.89 m/s
+  Power       = 3.009672e-06
+  Threshold   = 3.009672e-06
+valid files: 26
+fi: 30, raw data idx : 0
+
+=========================================================
+[FILE 27]
+=========================================================
+
+--- Timing ---
+  load               = 13.312 ms (0.013311731 sec)
+  compress (Core 1)  = 10.595 ms (0.010594874 sec)
+  compress (Core 2)  = 17.084 ms (0.017083770 sec)
+  compress           = 17.084 ms (0.017083770 sec)
+  transpose          = 6.123 ms (0.006123083 sec)
+  mti                = 4.940 ms (0.004939578 sec)
+  mtd                = 10.250 ms (0.010249744 sec)
+  cfar               = 6.862 ms (0.006861650 sec)
+  total              = 28.176 ms (0.028175685 sec)
+  algo_only          = 45.258 ms (0.045257825 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 153
+  Doppler bin = 341
+  Range       = 2293.41 m
+  Velocity    = 24.89 m/s
+  Power       = 3.337557e-06
+  Threshold   = 3.337557e-06
+valid files: 27
+cpu id: 2, done count: 512
+fi: 31, raw data idx : 1
+
+=========================================================
+[FILE 28]
+=========================================================
+
+--- Timing ---
+  load               = 15.598 ms (0.015597725 sec)
+  compress (Core 1)  = 14.055 ms (0.014055314 sec)
+  compress (Core 2)  = 9.892 ms (0.009891992 sec)
+  compress           = 14.055 ms (0.014055314 sec)
+  transpose          = 8.224 ms (0.008223987 sec)
+  mti                = 3.550 ms (0.003550463 sec)
+  mtd                = 10.063 ms (0.010063061 sec)
+  cfar               = 7.661 ms (0.007660549 sec)
+  total              = 29.501 ms (0.029501226 sec)
+  algo_only          = 43.553 ms (0.043553374 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 152
+  Doppler bin = 341
+  Range       = 2278.42 m
+  Velocity    = 24.89 m/s
+  Power       = 3.564877e-06
+  Threshold   = 3.564877e-06
+valid files: 28
+cpu id: 2, done count: 512
+fi: 32, raw data idx : 2
+
+=========================================================
+[FILE 29]
+=========================================================
+
+--- Timing ---
+  load               = 15.016 ms (0.015015787 sec)
+  compress (Core 1)  = 11.913 ms (0.011912798 sec)
+  compress (Core 2)  = 17.286 ms (0.017286125 sec)
+  compress           = 17.286 ms (0.017286125 sec)
+  transpose          = 7.195 ms (0.007195128 sec)
+  mti                = 4.471 ms (0.004470564 sec)
+  mtd                = 10.021 ms (0.010020802 sec)
+  cfar               = 7.316 ms (0.007316349 sec)
+  total              = 29.005 ms (0.029004510 sec)
+  algo_only          = 46.289 ms (0.046288968 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 152
+  Doppler bin = 341
+  Range       = 2278.42 m
+  Velocity    = 24.89 m/s
+  Power       = 3.133756e-06
+  Threshold   = 3.133756e-06
+valid files: 29
+cpu id: 2, done count: 512
+fi: 33, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 30]
+=========================================================
+
+--- Timing ---
+  load               = 12.117 ms (0.012117446 sec)
+  compress (Core 1)  = 12.322 ms (0.012322388 sec)
+  compress (Core 2)  = 19.365 ms (0.019365244 sec)
+  compress           = 19.365 ms (0.019365244 sec)
+  transpose          = 7.269 ms (0.007268924 sec)
+  mti                = 5.017 ms (0.005017465 sec)
+  mtd                = 9.214 ms (0.009214144 sec)
+  cfar               = 6.709 ms (0.006709077 sec)
+  total              = 28.212 ms (0.028211555 sec)
+  algo_only          = 47.575 ms (0.047574854 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 152
+  Doppler bin = 341
+  Range       = 2278.42 m
+  Velocity    = 24.89 m/s
+  Power       = 3.356025e-06
+  Threshold   = 3.356025e-06
+valid files: 30
+fi: 34, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 31]
+=========================================================
+
+--- Timing ---
+  load               = 12.571 ms (0.012571127 sec)
+  compress (Core 1)  = 10.600 ms (0.010600350 sec)
+  compress (Core 2)  = 10.846 ms (0.010845983 sec)
+  compress           = 10.846 ms (0.010845983 sec)
+  transpose          = 6.867 ms (0.006866798 sec)
+  mti                = 4.863 ms (0.004863264 sec)
+  mtd                = 9.265 ms (0.009264884 sec)
+  cfar               = 6.662 ms (0.006662449 sec)
+  total              = 27.660 ms (0.027659636 sec)
+  algo_only          = 38.503 ms (0.038503378 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 151
+  Doppler bin = 341
+  Range       = 2263.43 m
+  Velocity    = 24.89 m/s
+  Power       = 2.995511e-06
+  Threshold   = 2.995511e-06
+valid files: 31
+fi: 35, raw data idx : 2
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 32]
+=========================================================
+
+--- Timing ---
+  load               = 11.661 ms (0.011661285 sec)
+  compress (Core 1)  = 10.901 ms (0.010900528 sec)
+  compress (Core 2)  = 9.912 ms (0.009911537 sec)
+  compress           = 10.901 ms (0.010900528 sec)
+  transpose          = 7.368 ms (0.007368422 sec)
+  mti                = 5.375 ms (0.005375110 sec)
+  mtd                = 9.916 ms (0.009915637 sec)
+  cfar               = 6.518 ms (0.006517709 sec)
+  total              = 29.181 ms (0.029180545 sec)
+  algo_only          = 40.077 ms (0.040077406 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 151
+  Doppler bin = 341
+  Range       = 2263.43 m
+  Velocity    = 24.89 m/s
+  Power       = 3.339711e-06
+  Threshold   = 3.339711e-06
+valid files: 32
+fi: 36, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 33]
+=========================================================
+
+--- Timing ---
+  load               = 13.311 ms (0.013310730 sec)
+  compress (Core 1)  = 10.574 ms (0.010573684 sec)
+  compress (Core 2)  = 9.858 ms (0.009858008 sec)
+  compress           = 10.574 ms (0.010573684 sec)
+  transpose          = 6.812 ms (0.006811558 sec)
+  mti                = 5.444 ms (0.005443831 sec)
+  mtd                = 9.768 ms (0.009768471 sec)
+  cfar               = 6.762 ms (0.006762188 sec)
+  total              = 28.790 ms (0.028789605 sec)
+  algo_only          = 39.360 ms (0.039359732 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 150
+  Doppler bin = 341
+  Range       = 2248.44 m
+  Velocity    = 24.89 m/s
+  Power       = 3.995682e-06
+  Threshold   = 3.995682e-06
+valid files: 33
+fi: 37, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 34]
+=========================================================
+
+--- Timing ---
+  load               = 14.255 ms (0.014254665 sec)
+  compress (Core 1)  = 12.796 ms (0.012795775 sec)
+  compress (Core 2)  = 9.774 ms (0.009773671 sec)
+  compress           = 12.796 ms (0.012795775 sec)
+  transpose          = 8.386 ms (0.008386208 sec)
+  mti                = 5.837 ms (0.005836827 sec)
+  mtd                = 9.610 ms (0.009610269 sec)
+  cfar               = 7.608 ms (0.007607772 sec)
+  total              = 31.445 ms (0.031445410 sec)
+  algo_only          = 44.237 ms (0.044236851 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 150
+  Doppler bin = 341
+  Range       = 2248.44 m
+  Velocity    = 24.89 m/s
+  Power       = 3.503927e-06
+  Threshold   = 3.503927e-06
+valid files: 34
+fi: 38, raw data idx : 2
+
+=========================================================
+[FILE 35]
+=========================================================
+
+--- Timing ---
+  load               = 19.561 ms (0.019561072 sec)
+  compress (Core 1)  = 10.561 ms (0.010561413 sec)
+  compress (Core 2)  = 10.085 ms (0.010085284 sec)
+  compress           = 10.561 ms (0.010561413 sec)
+  transpose          = 6.041 ms (0.006041307 sec)
+  mti                = 4.413 ms (0.004413009 sec)
+  mtd                = 8.800 ms (0.008800148 sec)
+  cfar               = 10.458 ms (0.010457686 sec)
+  total              = 29.714 ms (0.029714169 sec)
+  algo_only          = 40.274 ms (0.040273563 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 150
+  Doppler bin = 341
+  Range       = 2248.44 m
+  Velocity    = 24.89 m/s
+  Power       = 3.769403e-06
+  Threshold   = 3.769403e-06
+valid files: 35
+cpu id: 1, done count: 512
+fi: 39, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 36]
+=========================================================
+
+--- Timing ---
+  load               = 12.007 ms (0.012006966 sec)
+  compress (Core 1)  = 15.837 ms (0.015837263 sec)
+  compress (Core 2)  = 10.527 ms (0.010526953 sec)
+  compress           = 15.837 ms (0.015837263 sec)
+  transpose          = 10.088 ms (0.010088245 sec)
+  mti                = 6.702 ms (0.006702485 sec)
+  mtd                = 8.232 ms (0.008231783 sec)
+  cfar               = 7.001 ms (0.007000704 sec)
+  total              = 32.027 ms (0.032027052 sec)
+  algo_only          = 47.860 ms (0.047860480 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 149
+  Doppler bin = 341
+  Range       = 2233.45 m
+  Velocity    = 24.89 m/s
+  Power       = 3.334971e-06
+  Threshold   = 3.334971e-06
+valid files: 36
+fi: 40, raw data idx : 1
+
+=========================================================
+[FILE 37]
+=========================================================
+
+--- Timing ---
+  load               = 12.014 ms (0.012014374 sec)
+  compress (Core 1)  = 27.119 ms (0.027118857 sec)
+  compress (Core 2)  = 10.553 ms (0.010552789 sec)
+  compress           = 27.119 ms (0.027118857 sec)
+  transpose          = 7.455 ms (0.007454811 sec)
+  mti                = 4.856 ms (0.004856171 sec)
+  mtd                = 9.137 ms (0.009136959 sec)
+  cfar               = 6.766 ms (0.006766040 sec)
+  total              = 28.219 ms (0.028218888 sec)
+  algo_only          = 55.333 ms (0.055332838 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 149
+  Doppler bin = 341
+  Range       = 2233.45 m
+  Velocity    = 24.89 m/s
+  Power       = 3.641582e-06
+  Threshold   = 3.641582e-06
+valid files: 37
+cpu id: 2, done count: 512
+fi: 41, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 38]
+=========================================================
+
+--- Timing ---
+  load               = 11.682 ms (0.011682414 sec)
+  compress (Core 1)  = 14.165 ms (0.014164539 sec)
+  compress (Core 2)  = 14.029 ms (0.014028726 sec)
+  compress           = 14.165 ms (0.014164539 sec)
+  transpose          = 7.674 ms (0.007674420 sec)
+  mti                = 5.155 ms (0.005154650 sec)
+  mtd                = 9.362 ms (0.009362420 sec)
+  cfar               = 6.569 ms (0.006568764 sec)
+  total              = 28.763 ms (0.028763086 sec)
+  algo_only          = 42.925 ms (0.042924793 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 148
+  Doppler bin = 341
+  Range       = 2218.46 m
+  Velocity    = 24.89 m/s
+  Power       = 3.350662e-06
+  Threshold   = 3.350662e-06
+valid files: 38
+fi: 42, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 39]
+=========================================================
+
+--- Timing ---
+  load               = 12.289 ms (0.012288556 sec)
+  compress (Core 1)  = 12.398 ms (0.012397797 sec)
+  compress (Core 2)  = 13.512 ms (0.013511709 sec)
+  compress           = 13.512 ms (0.013511709 sec)
+  transpose          = 7.134 ms (0.007133925 sec)
+  mti                = 5.092 ms (0.005091779 sec)
+  mtd                = 9.176 ms (0.009176329 sec)
+  cfar               = 6.622 ms (0.006622060 sec)
+  total              = 28.029 ms (0.028028501 sec)
+  algo_only          = 41.536 ms (0.041535802 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 148
+  Doppler bin = 341
+  Range       = 2218.46 m
+  Velocity    = 24.89 m/s
+  Power       = 3.722275e-06
+  Threshold   = 3.722275e-06
+valid files: 39
+fi: 43, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 40]
+=========================================================
+
+--- Timing ---
+  load               = 11.426 ms (0.011426232 sec)
+  compress (Core 1)  = 11.884 ms (0.011883574 sec)
+  compress (Core 2)  = 11.687 ms (0.011686821 sec)
+  compress           = 11.884 ms (0.011883574 sec)
+  transpose          = 7.315 ms (0.007314701 sec)
+  mti                = 5.331 ms (0.005331074 sec)
+  mtd                = 8.920 ms (0.008920239 sec)
+  cfar               = 6.512 ms (0.006511876 sec)
+  total              = 28.081 ms (0.028080705 sec)
+  algo_only          = 39.961 ms (0.039961464 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 147
+  Doppler bin = 341
+  Range       = 2203.47 m
+  Velocity    = 24.89 m/s
+  Power       = 4.253201e-06
+  Threshold   = 4.253201e-06
+valid files: 40
+fi: 44, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 41]
+=========================================================
+
+--- Timing ---
+  load               = 9.142 ms (0.009142367 sec)
+  compress (Core 1)  = 10.469 ms (0.010469267 sec)
+  compress (Core 2)  = 9.917 ms (0.009917032 sec)
+  compress           = 10.469 ms (0.010469267 sec)
+  transpose          = 11.386 ms (0.011386417 sec)
+  mti                = 6.545 ms (0.006544579 sec)
+  mtd                = 7.677 ms (0.007676845 sec)
+  cfar               = 6.435 ms (0.006435395 sec)
+  total              = 32.047 ms (0.032046811 sec)
+  algo_only          = 42.513 ms (0.042512503 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 147
+  Doppler bin = 341
+  Range       = 2203.47 m
+  Velocity    = 24.89 m/s
+  Power       = 3.726481e-06
+  Threshold   = 3.726481e-06
+valid files: 41
+fi: 45, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 42]
+=========================================================
+
+--- Timing ---
+  load               = 11.579 ms (0.011579378 sec)
+  compress (Core 1)  = 10.571 ms (0.010571399 sec)
+  compress (Core 2)  = 10.017 ms (0.010017492 sec)
+  compress           = 10.571 ms (0.010571399 sec)
+  transpose          = 7.448 ms (0.007448292 sec)
+  mti                = 5.253 ms (0.005253093 sec)
+  mtd                = 9.431 ms (0.009430753 sec)
+  cfar               = 6.450 ms (0.006449858 sec)
+  total              = 28.586 ms (0.028586255 sec)
+  algo_only          = 39.153 ms (0.039153395 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 147
+  Doppler bin = 341
+  Range       = 2203.47 m
+  Velocity    = 24.89 m/s
+  Power       = 4.018477e-06
+  Threshold   = 4.018477e-06
+valid files: 42
+fi: 46, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 43]
+=========================================================
+
+--- Timing ---
+  load               = 12.050 ms (0.012049651 sec)
+  compress (Core 1)  = 13.153 ms (0.013153000 sec)
+  compress (Core 2)  = 12.478 ms (0.012478376 sec)
+  compress           = 13.153 ms (0.013153000 sec)
+  transpose          = 7.111 ms (0.007111240 sec)
+  mti                = 4.897 ms (0.004896819 sec)
+  mtd                = 9.185 ms (0.009184978 sec)
+  cfar               = 6.701 ms (0.006700503 sec)
+  total              = 27.897 ms (0.027896577 sec)
+  algo_only          = 41.047 ms (0.041046540 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 146
+  Doppler bin = 341
+  Range       = 2188.48 m
+  Velocity    = 24.89 m/s
+  Power       = 3.634617e-06
+  Threshold   = 3.634617e-06
+valid files: 43
+fi: 47, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 44]
+=========================================================
+
+--- Timing ---
+  load               = 11.636 ms (0.011635785 sec)
+  compress (Core 1)  = 10.344 ms (0.010343686 sec)
+  compress (Core 2)  = 9.913 ms (0.009913260 sec)
+  compress           = 10.344 ms (0.010343686 sec)
+  transpose          = 7.857 ms (0.007857177 sec)
+  mti                = 5.157 ms (0.005157353 sec)
+  mtd                = 8.768 ms (0.008768427 sec)
+  cfar               = 6.650 ms (0.006650356 sec)
+  total              = 28.437 ms (0.028437312 sec)
+  algo_only          = 38.777 ms (0.038776999 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 146
+  Doppler bin = 341
+  Range       = 2188.48 m
+  Velocity    = 24.89 m/s
+  Power       = 3.984807e-06
+  Threshold   = 3.984807e-06
+valid files: 44
+fi: 48, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 45]
+=========================================================
+
+--- Timing ---
+  load               = 10.545 ms (0.010544722 sec)
+  compress (Core 1)  = 11.463 ms (0.011462676 sec)
+  compress (Core 2)  = 9.863 ms (0.009863364 sec)
+  compress           = 11.463 ms (0.011462676 sec)
+  transpose          = 7.153 ms (0.007152739 sec)
+  mti                = 8.359 ms (0.008358967 sec)
+  mtd                = 8.055 ms (0.008054823 sec)
+  cfar               = 6.378 ms (0.006377896 sec)
+  total              = 29.949 ms (0.029948574 sec)
+  algo_only          = 41.407 ms (0.041407101 sec)
+  detections         = 305
+
+Strongest detection:
+  Range bin   = 145
+  Doppler bin = 341
+  Range       = 2173.50 m
+  Velocity    = 24.89 m/s
+  Power       = 3.616468e-06
+  Threshold   = 3.616468e-06
+valid files: 45
+fi: 49, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 46]
+=========================================================
+
+--- Timing ---
+  load               = 10.895 ms (0.010894738 sec)
+  compress (Core 1)  = 11.297 ms (0.011297472 sec)
+  compress (Core 2)  = 11.658 ms (0.011657899 sec)
+  compress           = 11.658 ms (0.011657899 sec)
+  transpose          = 7.830 ms (0.007829751 sec)
+  mti                = 5.108 ms (0.005107539 sec)
+  mtd                = 8.760 ms (0.008760167 sec)
+  cfar               = 6.664 ms (0.006664393 sec)
+  total              = 28.367 ms (0.028366887 sec)
+  algo_only          = 40.020 ms (0.040019749 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 145
+  Doppler bin = 341
+  Range       = 2173.50 m
+  Velocity    = 24.89 m/s
+  Power       = 4.008955e-06
+  Threshold   = 4.008955e-06
+valid files: 46
+fi: 50, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 47]
+=========================================================
+
+--- Timing ---
+  load               = 12.312 ms (0.012312370 sec)
+  compress (Core 1)  = 12.125 ms (0.012124724 sec)
+  compress (Core 2)  = 10.022 ms (0.010021892 sec)
+  compress           = 12.125 ms (0.012124724 sec)
+  transpose          = 7.130 ms (0.007129629 sec)
+  mti                = 4.924 ms (0.004923986 sec)
+  mtd                = 9.164 ms (0.009163756 sec)
+  cfar               = 6.756 ms (0.006755985 sec)
+  total              = 27.976 ms (0.027976150 sec)
+  algo_only          = 40.098 ms (0.040098080 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 144
+  Doppler bin = 341
+  Range       = 2158.51 m
+  Velocity    = 24.89 m/s
+  Power       = 4.493305e-06
+  Threshold   = 4.493305e-06
+valid files: 47
+fi: 51, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 48]
+=========================================================
+
+--- Timing ---
+  load               = 12.405 ms (0.012404592 sec)
+  compress (Core 1)  = 12.654 ms (0.012653814 sec)
+  compress (Core 2)  = 11.525 ms (0.011524711 sec)
+  compress           = 12.654 ms (0.012653814 sec)
+  transpose          = 6.690 ms (0.006690467 sec)
+  mti                = 5.132 ms (0.005131632 sec)
+  mtd                = 9.339 ms (0.009338679 sec)
+  cfar               = 6.953 ms (0.006953186 sec)
+  total              = 28.118 ms (0.028117945 sec)
+  algo_only          = 40.768 ms (0.040767778 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 144
+  Doppler bin = 341
+  Range       = 2158.51 m
+  Velocity    = 24.89 m/s
+  Power       = 3.944222e-06
+  Threshold   = 3.944222e-06
+valid files: 48
+fi: 52, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 49]
+=========================================================
+
+--- Timing ---
+  load               = 11.626 ms (0.011626341 sec)
+  compress (Core 1)  = 10.477 ms (0.010477485 sec)
+  compress (Core 2)  = 9.909 ms (0.009909484 sec)
+  compress           = 10.477 ms (0.010477485 sec)
+  transpose          = 7.183 ms (0.007183036 sec)
+  mti                = 5.140 ms (0.005140168 sec)
+  mtd                = 9.010 ms (0.009010424 sec)
+  cfar               = 6.588 ms (0.006587986 sec)
+  total              = 27.925 ms (0.027924670 sec)
+  algo_only          = 38.399 ms (0.038399099 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 144
+  Doppler bin = 341
+  Range       = 2158.51 m
+  Velocity    = 24.89 m/s
+  Power       = 4.246830e-06
+  Threshold   = 4.246830e-06
+valid files: 49
+fi: 53, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 50]
+=========================================================
+
+--- Timing ---
+  load               = 11.632 ms (0.011631562 sec)
+  compress (Core 1)  = 10.626 ms (0.010625768 sec)
+  compress (Core 2)  = 10.147 ms (0.010146876 sec)
+  compress           = 10.626 ms (0.010625768 sec)
+  transpose          = 7.541 ms (0.007540920 sec)
+  mti                = 5.277 ms (0.005276537 sec)
+  mtd                = 9.614 ms (0.009614436 sec)
+  cfar               = 6.557 ms (0.006556764 sec)
+  total              = 28.992 ms (0.028991621 sec)
+  algo_only          = 39.614 ms (0.039614425 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 143
+  Doppler bin = 341
+  Range       = 2143.52 m
+  Velocity    = 24.89 m/s
+  Power       = 3.788742e-06
+  Threshold   = 3.788742e-06
+valid files: 50
+fi: 54, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 51]
+=========================================================
+
+--- Timing ---
+  load               = 12.259 ms (0.012259093 sec)
+  compress (Core 1)  = 10.522 ms (0.010522406 sec)
+  compress (Core 2)  = 9.937 ms (0.009937064 sec)
+  compress           = 10.522 ms (0.010522406 sec)
+  transpose          = 7.294 ms (0.007294183 sec)
+  mti                = 4.942 ms (0.004941725 sec)
+  mtd                = 9.462 ms (0.009461993 sec)
+  cfar               = 6.621 ms (0.006621208 sec)
+  total              = 28.323 ms (0.028322739 sec)
+  algo_only          = 38.842 ms (0.038841515 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 143
+  Doppler bin = 341
+  Range       = 2143.52 m
+  Velocity    = 24.89 m/s
+  Power       = 4.195530e-06
+  Threshold   = 4.195530e-06
+valid files: 51
+fi: 55, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 52]
+=========================================================
+
+--- Timing ---
+  load               = 12.609 ms (0.012609423 sec)
+  compress (Core 1)  = 12.175 ms (0.012175320 sec)
+  compress (Core 2)  = 9.922 ms (0.009921533 sec)
+  compress           = 12.175 ms (0.012175320 sec)
+  transpose          = 7.141 ms (0.007141443 sec)
+  mti                = 5.058 ms (0.005057724 sec)
+  mtd                = 9.426 ms (0.009426123 sec)
+  cfar               = 6.641 ms (0.006641042 sec)
+  total              = 28.268 ms (0.028267888 sec)
+  algo_only          = 40.442 ms (0.040441652 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 142
+  Doppler bin = 341
+  Range       = 2128.53 m
+  Velocity    = 24.89 m/s
+  Power       = 3.889613e-06
+  Threshold   = 3.889613e-06
+valid files: 52
+fi: 56, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 53]
+=========================================================
+
+--- Timing ---
+  load               = 11.816 ms (0.011816005 sec)
+  compress (Core 1)  = 11.810 ms (0.011809747 sec)
+  compress (Core 2)  = 11.066 ms (0.011065718 sec)
+  compress           = 11.810 ms (0.011809747 sec)
+  transpose          = 7.284 ms (0.007283905 sec)
+  mti                = 4.908 ms (0.004907652 sec)
+  mtd                = 9.075 ms (0.009074572 sec)
+  cfar               = 6.580 ms (0.006579931 sec)
+  total              = 27.849 ms (0.027848707 sec)
+  algo_only          = 39.656 ms (0.039655807 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 142
+  Doppler bin = 341
+  Range       = 2128.53 m
+  Velocity    = 24.89 m/s
+  Power       = 4.361047e-06
+  Threshold   = 4.361047e-06
+valid files: 53
+fi: 57, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 54]
+=========================================================
+
+--- Timing ---
+  load               = 11.539 ms (0.011538804 sec)
+  compress (Core 1)  = 10.686 ms (0.010686233 sec)
+  compress (Core 2)  = 10.005 ms (0.010005394 sec)
+  compress           = 10.686 ms (0.010686233 sec)
+  transpose          = 7.365 ms (0.007365274 sec)
+  mti                = 5.317 ms (0.005317352 sec)
+  mtd                = 10.201 ms (0.010201170 sec)
+  cfar               = 6.587 ms (0.006587153 sec)
+  total              = 29.473 ms (0.029473024 sec)
+  algo_only          = 40.157 ms (0.040157182 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 141
+  Doppler bin = 341
+  Range       = 2113.54 m
+  Velocity    = 24.89 m/s
+  Power       = 4.740611e-06
+  Threshold   = 4.740611e-06
+valid files: 54
+fi: 58, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 55]
+=========================================================
+
+--- Timing ---
+  load               = 11.592 ms (0.011591711 sec)
+  compress (Core 1)  = 10.656 ms (0.010656423 sec)
+  compress (Core 2)  = 9.865 ms (0.009865099 sec)
+  compress           = 10.656 ms (0.010656423 sec)
+  transpose          = 7.482 ms (0.007481940 sec)
+  mti                = 5.117 ms (0.005116742 sec)
+  mtd                = 9.035 ms (0.009034739 sec)
+  cfar               = 6.780 ms (0.006779892 sec)
+  total              = 28.416 ms (0.028416090 sec)
+  algo_only          = 39.070 ms (0.039069736 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 141
+  Doppler bin = 341
+  Range       = 2113.54 m
+  Velocity    = 24.89 m/s
+  Power       = 4.291857e-06
+  Threshold   = 4.291857e-06
+valid files: 55
+fi: 59, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 56]
+=========================================================
+
+--- Timing ---
+  load               = 11.131 ms (0.011131309 sec)
+  compress (Core 1)  = 12.839 ms (0.012838557 sec)
+  compress (Core 2)  = 9.836 ms (0.009836420 sec)
+  compress           = 12.839 ms (0.012838557 sec)
+  transpose          = 7.450 ms (0.007449533 sec)
+  mti                = 5.332 ms (0.005332258 sec)
+  mtd                = 8.916 ms (0.008915888 sec)
+  cfar               = 6.658 ms (0.006657800 sec)
+  total              = 28.358 ms (0.028358146 sec)
+  algo_only          = 41.194 ms (0.041194036 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 141
+  Doppler bin = 341
+  Range       = 2113.54 m
+  Velocity    = 24.89 m/s
+  Power       = 4.664425e-06
+  Threshold   = 4.664425e-06
+valid files: 56
+fi: 60, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 57]
+=========================================================
+
+--- Timing ---
+  load               = 11.266 ms (0.011265548 sec)
+  compress (Core 1)  = 12.172 ms (0.012172351 sec)
+  compress (Core 2)  = 10.302 ms (0.010301630 sec)
+  compress           = 12.172 ms (0.012172351 sec)
+  transpose          = 7.312 ms (0.007312072 sec)
+  mti                = 5.218 ms (0.005218223 sec)
+  mtd                = 8.843 ms (0.008843147 sec)
+  cfar               = 6.536 ms (0.006535802 sec)
+  total              = 27.912 ms (0.027911669 sec)
+  algo_only          = 40.082 ms (0.040081595 sec)
+  detections         = 305
+
+Strongest detection:
+  Range bin   = 140
+  Doppler bin = 341
+  Range       = 2098.55 m
+  Velocity    = 24.89 m/s
+  Power       = 4.287993e-06
+  Threshold   = 4.287993e-06
+valid files: 57
+fi: 61, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 58]
+=========================================================
+
+--- Timing ---
+  load               = 12.459 ms (0.012459240 sec)
+  compress (Core 1)  = 12.616 ms (0.012615872 sec)
+  compress (Core 2)  = 11.528 ms (0.011527637 sec)
+  compress           = 12.616 ms (0.012615872 sec)
+  transpose          = 7.006 ms (0.007006482 sec)
+  mti                = 5.115 ms (0.005114761 sec)
+  mtd                = 9.246 ms (0.009246051 sec)
+  cfar               = 6.671 ms (0.006670949 sec)
+  total              = 28.040 ms (0.028039927 sec)
+  algo_only          = 40.654 ms (0.040654115 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 140
+  Doppler bin = 341
+  Range       = 2098.55 m
+  Velocity    = 24.89 m/s
+  Power       = 4.771197e-06
+  Threshold   = 4.771197e-06
+valid files: 58
+fi: 62, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 59]
+=========================================================
+
+--- Timing ---
+  load               = 11.226 ms (0.011225512 sec)
+  compress (Core 1)  = 10.428 ms (0.010428302 sec)
+  compress (Core 2)  = 9.931 ms (0.009931020 sec)
+  compress           = 10.428 ms (0.010428302 sec)
+  transpose          = 7.437 ms (0.007436958 sec)
+  mti                = 5.431 ms (0.005430703 sec)
+  mtd                = 10.040 ms (0.010039747 sec)
+  cfar               = 6.419 ms (0.006418840 sec)
+  total              = 29.331 ms (0.029330896 sec)
+  algo_only          = 39.755 ms (0.039754550 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 139
+  Doppler bin = 341
+  Range       = 2083.56 m
+  Velocity    = 24.89 m/s
+  Power       = 5.484600e-06
+  Threshold   = 5.484600e-06
+valid files: 59
+fi: 63, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 60]
+=========================================================
+
+--- Timing ---
+  load               = 12.663 ms (0.012663367 sec)
+  compress (Core 1)  = 10.744 ms (0.010743961 sec)
+  compress (Core 2)  = 9.975 ms (0.009975242 sec)
+  compress           = 10.744 ms (0.010743961 sec)
+  transpose          = 6.953 ms (0.006952538 sec)
+  mti                = 5.625 ms (0.005625070 sec)
+  mtd                = 9.287 ms (0.009286587 sec)
+  cfar               = 6.712 ms (0.006711985 sec)
+  total              = 28.579 ms (0.028579292 sec)
+  algo_only          = 39.320 ms (0.039320141 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 139
+  Doppler bin = 341
+  Range       = 2083.56 m
+  Velocity    = 24.89 m/s
+  Power       = 4.736627e-06
+  Threshold   = 4.736627e-06
+valid files: 60
+fi: 64, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 61]
+=========================================================
+
+--- Timing ---
+  load               = 13.192 ms (0.013192287 sec)
+  compress (Core 1)  = 12.954 ms (0.012954235 sec)
+  compress (Core 2)  = 9.790 ms (0.009789996 sec)
+  compress           = 12.954 ms (0.012954235 sec)
+  transpose          = 7.007 ms (0.007006815 sec)
+  mti                = 6.019 ms (0.006018882 sec)
+  mtd                = 9.347 ms (0.009346791 sec)
+  cfar               = 6.915 ms (0.006915280 sec)
+  total              = 29.290 ms (0.029290025 sec)
+  algo_only          = 42.242 ms (0.042242003 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 139
+  Doppler bin = 341
+  Range       = 2083.56 m
+  Velocity    = 24.89 m/s
+  Power       = 5.047965e-06
+  Threshold   = 5.047965e-06
+valid files: 61
+fi: 65, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 62]
+=========================================================
+
+--- Timing ---
+  load               = 12.834 ms (0.012834031 sec)
+  compress (Core 1)  = 11.177 ms (0.011177322 sec)
+  compress (Core 2)  = 9.931 ms (0.009930971 sec)
+  compress           = 11.177 ms (0.011177322 sec)
+  transpose          = 8.148 ms (0.008148192 sec)
+  mti                = 5.029 ms (0.005029113 sec)
+  mtd                = 9.002 ms (0.009002128 sec)
+  cfar               = 6.709 ms (0.006708744 sec)
+  total              = 28.891 ms (0.028891474 sec)
+  algo_only          = 40.065 ms (0.040065499 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 138
+  Doppler bin = 341
+  Range       = 2068.57 m
+  Velocity    = 24.89 m/s
+  Power       = 4.504470e-06
+  Threshold   = 4.504470e-06
+valid files: 62
+fi: 66, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 63]
+=========================================================
+
+--- Timing ---
+  load               = 11.748 ms (0.011748025 sec)
+  compress (Core 1)  = 15.532 ms (0.015531752 sec)
+  compress (Core 2)  = 10.009 ms (0.010008745 sec)
+  compress           = 15.532 ms (0.015531752 sec)
+  transpose          = 7.229 ms (0.007229461 sec)
+  mti                = 5.056 ms (0.005056299 sec)
+  mtd                = 10.475 ms (0.010475242 sec)
+  cfar               = 6.650 ms (0.006650448 sec)
+  total              = 29.414 ms (0.029413857 sec)
+  algo_only          = 44.943 ms (0.044943202 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 138
+  Doppler bin = 341
+  Range       = 2068.57 m
+  Velocity    = 24.89 m/s
+  Power       = 4.906823e-06
+  Threshold   = 4.906823e-06
+valid files: 63
+fi: 67, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 64]
+=========================================================
+
+--- Timing ---
+  load               = 12.110 ms (0.012109946 sec)
+  compress (Core 1)  = 11.029 ms (0.011028897 sec)
+  compress (Core 2)  = 10.321 ms (0.010321056 sec)
+  compress           = 11.029 ms (0.011028897 sec)
+  transpose          = 7.213 ms (0.007213054 sec)
+  mti                = 5.889 ms (0.005889142 sec)
+  mtd                = 8.940 ms (0.008940128 sec)
+  cfar               = 6.721 ms (0.006721133 sec)
+  total              = 28.769 ms (0.028768697 sec)
+  algo_only          = 39.792 ms (0.039792354 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 137
+  Doppler bin = 341
+  Range       = 2053.58 m
+  Velocity    = 24.89 m/s
+  Power       = 4.428227e-06
+  Threshold   = 4.428227e-06
+valid files: 64
+fi: 68, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 65]
+=========================================================
+
+--- Timing ---
+  load               = 12.051 ms (0.012051021 sec)
+  compress (Core 1)  = 12.991 ms (0.012990832 sec)
+  compress (Core 2)  = 9.911 ms (0.009911151 sec)
+  compress           = 12.991 ms (0.012990832 sec)
+  transpose          = 7.040 ms (0.007040426 sec)
+  mti                = 4.960 ms (0.004960225 sec)
+  mtd                = 9.675 ms (0.009674602 sec)
+  cfar               = 6.467 ms (0.006466747 sec)
+  total              = 28.144 ms (0.028144148 sec)
+  algo_only          = 41.133 ms (0.041132832 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 137
+  Doppler bin = 341
+  Range       = 2053.58 m
+  Velocity    = 24.89 m/s
+  Power       = 4.954631e-06
+  Threshold   = 4.954631e-06
+valid files: 65
+fi: 69, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 66]
+=========================================================
+
+--- Timing ---
+  load               = 11.317 ms (0.011317214 sec)
+  compress (Core 1)  = 11.980 ms (0.011980427 sec)
+  compress (Core 2)  = 9.978 ms (0.009977896 sec)
+  compress           = 11.980 ms (0.011980427 sec)
+  transpose          = 7.273 ms (0.007273424 sec)
+  mti                = 5.264 ms (0.005264222 sec)
+  mtd                = 8.900 ms (0.008899925 sec)
+  cfar               = 6.599 ms (0.006598690 sec)
+  total              = 28.039 ms (0.028039020 sec)
+  algo_only          = 40.017 ms (0.040016688 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 136
+  Doppler bin = 341
+  Range       = 2038.59 m
+  Velocity    = 24.89 m/s
+  Power       = 5.578443e-06
+  Threshold   = 5.578443e-06
+valid files: 66
+fi: 70, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 67]
+=========================================================
+
+--- Timing ---
+  load               = 11.754 ms (0.011754209 sec)
+  compress (Core 1)  = 10.485 ms (0.010485088 sec)
+  compress (Core 2)  = 9.943 ms (0.009943432 sec)
+  compress           = 10.485 ms (0.010485088 sec)
+  transpose          = 7.005 ms (0.007005463 sec)
+  mti                = 5.102 ms (0.005101520 sec)
+  mtd                = 9.069 ms (0.009068590 sec)
+  cfar               = 6.659 ms (0.006658875 sec)
+  total              = 27.837 ms (0.027837337 sec)
+  algo_only          = 38.320 ms (0.038319536 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 136
+  Doppler bin = 341
+  Range       = 2038.59 m
+  Velocity    = 24.89 m/s
+  Power       = 4.982201e-06
+  Threshold   = 4.982201e-06
+valid files: 67
+fi: 71, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 68]
+=========================================================
+
+--- Timing ---
+  load               = 11.645 ms (0.011645044 sec)
+  compress (Core 1)  = 11.157 ms (0.011156814 sec)
+  compress (Core 2)  = 9.934 ms (0.009934079 sec)
+  compress           = 11.157 ms (0.011156814 sec)
+  transpose          = 7.294 ms (0.007294219 sec)
+  mti                = 8.084 ms (0.008084063 sec)
+  mtd                = 8.257 ms (0.008256524 sec)
+  cfar               = 6.271 ms (0.006271397 sec)
+  total              = 29.910 ms (0.029909592 sec)
+  algo_only          = 41.063 ms (0.041063017 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 136
+  Doppler bin = 341
+  Range       = 2038.59 m
+  Velocity    = 24.89 m/s
+  Power       = 5.454279e-06
+  Threshold   = 5.454279e-06
+valid files: 68
+fi: 72, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 69]
+=========================================================
+
+--- Timing ---
+  load               = 11.594 ms (0.011594063 sec)
+  compress (Core 1)  = 10.487 ms (0.010487024 sec)
+  compress (Core 2)  = 9.887 ms (0.009887455 sec)
+  compress           = 10.487 ms (0.010487024 sec)
+  transpose          = 7.295 ms (0.007294867 sec)
+  mti                = 5.750 ms (0.005750069 sec)
+  mtd                = 9.244 ms (0.009243958 sec)
+  cfar               = 6.749 ms (0.006749022 sec)
+  total              = 29.043 ms (0.029042639 sec)
+  algo_only          = 39.525 ms (0.039524940 sec)
+  detections         = 305
+
+Strongest detection:
+  Range bin   = 135
+  Doppler bin = 341
+  Range       = 2023.60 m
+  Velocity    = 24.89 m/s
+  Power       = 4.976833e-06
+  Threshold   = 4.976833e-06
+valid files: 69
+fi: 73, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 70]
+=========================================================
+
+--- Timing ---
+  load               = 11.531 ms (0.011530879 sec)
+  compress (Core 1)  = 11.060 ms (0.011060139 sec)
+  compress (Core 2)  = 9.540 ms (0.009540320 sec)
+  compress           = 11.060 ms (0.011060139 sec)
+  transpose          = 7.618 ms (0.007617661 sec)
+  mti                = 5.715 ms (0.005714551 sec)
+  mtd                = 8.775 ms (0.008774704 sec)
+  cfar               = 6.479 ms (0.006479080 sec)
+  total              = 28.589 ms (0.028589477 sec)
+  algo_only          = 39.646 ms (0.039646135 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 135
+  Doppler bin = 341
+  Range       = 2023.60 m
+  Velocity    = 24.89 m/s
+  Power       = 5.487855e-06
+  Threshold   = 5.487855e-06
+valid files: 70
+fi: 74, raw data idx : 2
+
+=========================================================
+[FILE 71]
+=========================================================
+
+--- Timing ---
+  load               = 11.176 ms (0.011175587 sec)
+  compress (Core 1)  = 13.591 ms (0.013591318 sec)
+  compress (Core 2)  = 12.221 ms (0.012221116 sec)
+  compress           = 13.591 ms (0.013591318 sec)
+  transpose          = 7.263 ms (0.007262794 sec)
+  mti                = 5.067 ms (0.005067206 sec)
+  mtd                = 9.039 ms (0.009039035 sec)
+  cfar               = 6.961 ms (0.006961131 sec)
+  total              = 28.333 ms (0.028332517 sec)
+  algo_only          = 41.921 ms (0.041921484 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 134
+  Doppler bin = 341
+  Range       = 2008.61 m
+  Velocity    = 24.89 m/s
+  Power       = 4.910632e-06
+  Threshold   = 4.910632e-06
+valid files: 71
+cpu id: 2, done count: 512
+fi: 75, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 72]
+=========================================================
+
+--- Timing ---
+  load               = 11.142 ms (0.011142050 sec)
+  compress (Core 1)  = 10.528 ms (0.010527836 sec)
+  compress (Core 2)  = 9.963 ms (0.009963392 sec)
+  compress           = 10.528 ms (0.010527836 sec)
+  transpose          = 13.913 ms (0.013912631 sec)
+  mti                = 4.907 ms (0.004906726 sec)
+  mtd                = 7.816 ms (0.007815844 sec)
+  cfar               = 6.650 ms (0.006649504 sec)
+  total              = 33.289 ms (0.033289168 sec)
+  algo_only          = 43.813 ms (0.043812541 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 134
+  Doppler bin = 341
+  Range       = 2008.61 m
+  Velocity    = 24.89 m/s
+  Power       = 5.492951e-06
+  Threshold   = 5.492951e-06
+valid files: 72
+fi: 76, raw data idx : 1
+
+=========================================================
+[FILE 73]
+=========================================================
+
+--- Timing ---
+  load               = 11.040 ms (0.011039681 sec)
+  compress (Core 1)  = 12.856 ms (0.012855613 sec)
+  compress (Core 2)  = 15.806 ms (0.015805743 sec)
+  compress           = 15.806 ms (0.015805743 sec)
+  transpose          = 8.396 ms (0.008396301 sec)
+  mti                = 5.375 ms (0.005374869 sec)
+  mtd                = 8.725 ms (0.008725353 sec)
+  cfar               = 7.524 ms (0.007523699 sec)
+  total              = 30.024 ms (0.030023777 sec)
+  algo_only          = 45.826 ms (0.045825965 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 133
+  Doppler bin = 341
+  Range       = 1993.62 m
+  Velocity    = 24.89 m/s
+  Power       = 5.999531e-06
+  Threshold   = 5.999531e-06
+valid files: 73
+cpu id: 2, done count: 512
+fi: 77, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 74]
+=========================================================
+
+--- Timing ---
+  load               = 11.977 ms (0.011977133 sec)
+  compress (Core 1)  = 12.537 ms (0.012537021 sec)
+  compress (Core 2)  = 18.172 ms (0.018171995 sec)
+  compress           = 18.172 ms (0.018171995 sec)
+  transpose          = 7.965 ms (0.007965472 sec)
+  mti                = 5.889 ms (0.005889327 sec)
+  mtd                = 8.795 ms (0.008794593 sec)
+  cfar               = 6.880 ms (0.006880242 sec)
+  total              = 29.534 ms (0.029534097 sec)
+  algo_only          = 47.702 ms (0.047701629 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 133
+  Doppler bin = 341
+  Range       = 1993.62 m
+  Velocity    = 24.89 m/s
+  Power       = 5.388585e-06
+  Threshold   = 5.388585e-06
+valid files: 74
+fi: 78, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 75]
+=========================================================
+
+--- Timing ---
+  load               = 11.590 ms (0.011590323 sec)
+  compress (Core 1)  = 11.064 ms (0.011063908 sec)
+  compress (Core 2)  = 18.892 ms (0.018892263 sec)
+  compress           = 18.892 ms (0.018892263 sec)
+  transpose          = 7.226 ms (0.007225646 sec)
+  mti                = 5.020 ms (0.005019873 sec)
+  mtd                = 11.376 ms (0.011375788 sec)
+  cfar               = 6.717 ms (0.006716855 sec)
+  total              = 30.341 ms (0.030341348 sec)
+  algo_only          = 49.230 ms (0.049230425 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 133
+  Doppler bin = 341
+  Range       = 1993.62 m
+  Velocity    = 24.89 m/s
+  Power       = 5.889856e-06
+  Threshold   = 5.889856e-06
+valid files: 75
+fi: 79, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 76]
+=========================================================
+
+--- Timing ---
+  load               = 12.064 ms (0.012064373 sec)
+  compress (Core 1)  = 11.352 ms (0.011351831 sec)
+  compress (Core 2)  = 10.934 ms (0.010934158 sec)
+  compress           = 11.352 ms (0.011351831 sec)
+  transpose          = 7.185 ms (0.007184924 sec)
+  mti                = 5.737 ms (0.005736940 sec)
+  mtd                = 9.069 ms (0.009068979 sec)
+  cfar               = 7.792 ms (0.007791974 sec)
+  total              = 29.786 ms (0.029786242 sec)
+  algo_only          = 41.135 ms (0.041134648 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 132
+  Doppler bin = 341
+  Range       = 1978.63 m
+  Velocity    = 24.89 m/s
+  Power       = 5.312995e-06
+  Threshold   = 5.312995e-06
+valid files: 76
+fi: 80, raw data idx : 2
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 77]
+=========================================================
+
+--- Timing ---
+  load               = 10.969 ms (0.010968940 sec)
+  compress (Core 1)  = 13.937 ms (0.013937273 sec)
+  compress (Core 2)  = 12.619 ms (0.012619448 sec)
+  compress           = 13.937 ms (0.013937273 sec)
+  transpose          = 7.472 ms (0.007472088 sec)
+  mti                = 9.042 ms (0.009041516 sec)
+  mtd                = 9.634 ms (0.009633546 sec)
+  cfar               = 6.398 ms (0.006397914 sec)
+  total              = 32.548 ms (0.032547713 sec)
+  algo_only          = 46.482 ms (0.046482337 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 132
+  Doppler bin = 341
+  Range       = 1978.63 m
+  Velocity    = 24.89 m/s
+  Power       = 5.860388e-06
+  Threshold   = 5.860388e-06
+valid files: 77
+fi: 81, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 78]
+=========================================================
+
+--- Timing ---
+  load               = 12.150 ms (0.012150076 sec)
+  compress (Core 1)  = 11.820 ms (0.011819986 sec)
+  compress (Core 2)  = 9.884 ms (0.009884189 sec)
+  compress           = 11.820 ms (0.011819986 sec)
+  transpose          = 7.038 ms (0.007037741 sec)
+  mti                = 6.006 ms (0.006005604 sec)
+  mtd                = 9.526 ms (0.009525678 sec)
+  cfar               = 6.556 ms (0.006555671 sec)
+  total              = 29.129 ms (0.029128879 sec)
+  algo_only          = 40.945 ms (0.040944680 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 131
+  Doppler bin = 341
+  Range       = 1963.64 m
+  Velocity    = 24.89 m/s
+  Power       = 6.526710e-06
+  Threshold   = 6.526710e-06
+valid files: 78
+fi: 82, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 79]
+=========================================================
+
+--- Timing ---
+  load               = 10.096 ms (0.010095782 sec)
+  compress (Core 1)  = 13.607 ms (0.013606739 sec)
+  compress (Core 2)  = 9.940 ms (0.009940068 sec)
+  compress           = 13.607 ms (0.013606739 sec)
+  transpose          = 10.237 ms (0.010236707 sec)
+  mti                = 7.125 ms (0.007125314 sec)
+  mtd                = 7.650 ms (0.007649938 sec)
+  cfar               = 6.208 ms (0.006207787 sec)
+  total              = 31.223 ms (0.031222931 sec)
+  algo_only          = 44.826 ms (0.044826485 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 131
+  Doppler bin = 341
+  Range       = 1963.64 m
+  Velocity    = 24.89 m/s
+  Power       = 5.731465e-06
+  Threshold   = 5.731465e-06
+valid files: 79
+fi: 83, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 80]
+=========================================================
+
+--- Timing ---
+  load               = 14.339 ms (0.014339146 sec)
+  compress (Core 1)  = 10.599 ms (0.010598891 sec)
+  compress (Core 2)  = 9.958 ms (0.009957914 sec)
+  compress           = 10.599 ms (0.010598891 sec)
+  transpose          = 6.992 ms (0.006992408 sec)
+  mti                = 4.538 ms (0.004538064 sec)
+  mtd                = 9.318 ms (0.009317809 sec)
+  cfar               = 6.833 ms (0.006832539 sec)
+  total              = 27.682 ms (0.027682191 sec)
+  algo_only          = 38.280 ms (0.038279711 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 130
+  Doppler bin = 341
+  Range       = 1948.65 m
+  Velocity    = 24.89 m/s
+  Power       = 6.382997e-06
+  Threshold   = 6.382997e-06
+valid files: 80
+fi: 84, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 81]
+=========================================================
+
+--- Timing ---
+  load               = 14.039 ms (0.014039482 sec)
+  compress (Core 1)  = 12.161 ms (0.012160864 sec)
+  compress (Core 2)  = 9.921 ms (0.009921160 sec)
+  compress           = 12.161 ms (0.012160864 sec)
+  transpose          = 8.088 ms (0.008087730 sec)
+  mti                = 3.944 ms (0.003943699 sec)
+  mtd                = 9.648 ms (0.009648417 sec)
+  cfar               = 7.025 ms (0.007024593 sec)
+  total              = 28.706 ms (0.028706384 sec)
+  algo_only          = 40.865 ms (0.040865303 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 130
+  Doppler bin = 341
+  Range       = 1948.65 m
+  Velocity    = 24.89 m/s
+  Power       = 5.997797e-06
+  Threshold   = 5.997797e-06
+valid files: 81
+fi: 85, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 82]
+=========================================================
+
+--- Timing ---
+  load               = 11.059 ms (0.011058605 sec)
+  compress (Core 1)  = 10.723 ms (0.010723446 sec)
+  compress (Core 2)  = 9.824 ms (0.009823526 sec)
+  compress           = 10.723 ms (0.010723446 sec)
+  transpose          = 7.597 ms (0.007596531 sec)
+  mti                = 5.387 ms (0.005386906 sec)
+  mtd                = 8.699 ms (0.008698779 sec)
+  cfar               = 6.921 ms (0.006921131 sec)
+  total              = 28.609 ms (0.028608569 sec)
+  algo_only          = 39.327 ms (0.039326793 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 130
+  Doppler bin = 341
+  Range       = 1948.65 m
+  Velocity    = 24.89 m/s
+  Power       = 6.696891e-06
+  Threshold   = 6.696891e-06
+valid files: 82
+fi: 86, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 83]
+=========================================================
+
+--- Timing ---
+  load               = 12.117 ms (0.012117040 sec)
+  compress (Core 1)  = 12.309 ms (0.012308729 sec)
+  compress (Core 2)  = 11.380 ms (0.011379529 sec)
+  compress           = 12.309 ms (0.012308729 sec)
+  transpose          = 6.925 ms (0.006925149 sec)
+  mti                = 5.547 ms (0.005547423 sec)
+  mtd                = 9.602 ms (0.009601585 sec)
+  cfar               = 6.430 ms (0.006429858 sec)
+  total              = 28.506 ms (0.028506033 sec)
+  algo_only          = 40.813 ms (0.040812744 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 129
+  Doppler bin = 341
+  Range       = 1933.66 m
+  Velocity    = 24.89 m/s
+  Power       = 6.230151e-06
+  Threshold   = 6.230151e-06
+valid files: 83
+fi: 87, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 84]
+=========================================================
+
+--- Timing ---
+  load               = 10.925 ms (0.010924570 sec)
+  compress (Core 1)  = 12.016 ms (0.012015512 sec)
+  compress (Core 2)  = 10.051 ms (0.010050633 sec)
+  compress           = 12.016 ms (0.012015512 sec)
+  transpose          = 7.427 ms (0.007427033 sec)
+  mti                = 5.326 ms (0.005325833 sec)
+  mtd                = 8.935 ms (0.008934721 sec)
+  cfar               = 6.434 ms (0.006434080 sec)
+  total              = 28.125 ms (0.028124779 sec)
+  algo_only          = 40.137 ms (0.040137179 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 129
+  Doppler bin = 341
+  Range       = 1933.66 m
+  Velocity    = 24.89 m/s
+  Power       = 6.900361e-06
+  Threshold   = 6.900361e-06
+valid files: 84
+fi: 88, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 85]
+=========================================================
+
+--- Timing ---
+  load               = 11.283 ms (0.011283437 sec)
+  compress (Core 1)  = 10.424 ms (0.010424366 sec)
+  compress (Core 2)  = 9.774 ms (0.009774082 sec)
+  compress           = 10.424 ms (0.010424366 sec)
+  transpose          = 7.193 ms (0.007192998 sec)
+  mti                = 5.287 ms (0.005286555 sec)
+  mtd                = 8.971 ms (0.008970664 sec)
+  cfar               = 6.498 ms (0.006497599 sec)
+  total              = 27.952 ms (0.027951706 sec)
+  algo_only          = 38.372 ms (0.038372182 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 128
+  Doppler bin = 341
+  Range       = 1918.67 m
+  Velocity    = 24.89 m/s
+  Power       = 7.399695e-06
+  Threshold   = 7.399695e-06
+valid files: 85
+fi: 89, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 86]
+=========================================================
+
+--- Timing ---
+  load               = 10.626 ms (0.010626425 sec)
+  compress (Core 1)  = 10.485 ms (0.010484853 sec)
+  compress (Core 2)  = 9.901 ms (0.009900692 sec)
+  compress           = 10.485 ms (0.010484853 sec)
+  transpose          = 7.854 ms (0.007853584 sec)
+  mti                = 6.489 ms (0.006489080 sec)
+  mtd                = 8.451 ms (0.008451485 sec)
+  cfar               = 6.790 ms (0.006790244 sec)
+  total              = 29.589 ms (0.029589207 sec)
+  algo_only          = 40.069 ms (0.040069246 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 128
+  Doppler bin = 341
+  Range       = 1918.67 m
+  Velocity    = 24.89 m/s
+  Power       = 6.509588e-06
+  Threshold   = 6.509588e-06
+valid files: 86
+fi: 90, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 87]
+=========================================================
+
+--- Timing ---
+  load               = 13.197 ms (0.013197047 sec)
+  compress (Core 1)  = 10.674 ms (0.010673613 sec)
+  compress (Core 2)  = 9.900 ms (0.009899616 sec)
+  compress           = 10.674 ms (0.010673613 sec)
+  transpose          = 7.065 ms (0.007064815 sec)
+  mti                = 5.447 ms (0.005447350 sec)
+  mtd                = 9.686 ms (0.009686083 sec)
+  cfar               = 7.995 ms (0.007995341 sec)
+  total              = 30.196 ms (0.030195868 sec)
+  algo_only          = 40.867 ms (0.040867202 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 128
+  Doppler bin = 341
+  Range       = 1918.67 m
+  Velocity    = 24.89 m/s
+  Power       = 6.981478e-06
+  Threshold   = 6.981478e-06
+valid files: 87
+fi: 91, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 88]
+=========================================================
+
+--- Timing ---
+  load               = 12.534 ms (0.012533516 sec)
+  compress (Core 1)  = 11.144 ms (0.011144421 sec)
+  compress (Core 2)  = 10.639 ms (0.010638725 sec)
+  compress           = 11.144 ms (0.011144421 sec)
+  transpose          = 7.108 ms (0.007107685 sec)
+  mti                = 5.907 ms (0.005906900 sec)
+  mtd                = 9.287 ms (0.009286884 sec)
+  cfar               = 6.866 ms (0.006865706 sec)
+  total              = 29.172 ms (0.029171619 sec)
+  algo_only          = 40.312 ms (0.040311596 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 127
+  Doppler bin = 341
+  Range       = 1903.68 m
+  Velocity    = 24.89 m/s
+  Power       = 6.332205e-06
+  Threshold   = 6.332205e-06
+valid files: 88
+fi: 92, raw data idx : 2
+
+=========================================================
+[FILE 89]
+=========================================================
+
+--- Timing ---
+  load               = 11.418 ms (0.011417806 sec)
+  compress (Core 1)  = 15.884 ms (0.015883921 sec)
+  compress (Core 2)  = 10.965 ms (0.010965362 sec)
+  compress           = 15.884 ms (0.015883921 sec)
+  transpose          = 7.831 ms (0.007831306 sec)
+  mti                = 5.652 ms (0.005651608 sec)
+  mtd                = 8.709 ms (0.008709186 sec)
+  cfar               = 6.615 ms (0.006614764 sec)
+  total              = 28.810 ms (0.028810086 sec)
+  algo_only          = 44.691 ms (0.044690785 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 127
+  Doppler bin = 341
+  Range       = 1903.68 m
+  Velocity    = 24.89 m/s
+  Power       = 6.954956e-06
+  Threshold   = 6.954956e-06
+valid files: 89
+cpu id: 2, done count: 512
+fi: 93, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 90]
+=========================================================
+
+--- Timing ---
+  load               = 11.228 ms (0.011228271 sec)
+  compress (Core 1)  = 14.288 ms (0.014287533 sec)
+  compress (Core 2)  = 10.376 ms (0.010376011 sec)
+  compress           = 14.288 ms (0.014287533 sec)
+  transpose          = 7.997 ms (0.007997009 sec)
+  mti                = 6.182 ms (0.006182454 sec)
+  mtd                = 8.805 ms (0.008804630 sec)
+  cfar               = 6.681 ms (0.006680726 sec)
+  total              = 29.668 ms (0.029668095 sec)
+  algo_only          = 43.952 ms (0.043952352 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 126
+  Doppler bin = 341
+  Range       = 1888.69 m
+  Velocity    = 24.89 m/s
+  Power       = 6.341149e-06
+  Threshold   = 6.341149e-06
+valid files: 90
+fi: 94, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 91]
+=========================================================
+
+--- Timing ---
+  load               = 12.844 ms (0.012843662 sec)
+  compress (Core 1)  = 10.769 ms (0.010769436 sec)
+  compress (Core 2)  = 17.987 ms (0.017986785 sec)
+  compress           = 17.987 ms (0.017986785 sec)
+  transpose          = 8.143 ms (0.008142544 sec)
+  mti                = 6.566 ms (0.006565579 sec)
+  mtd                = 10.306 ms (0.010306299 sec)
+  cfar               = 7.911 ms (0.007910806 sec)
+  total              = 32.929 ms (0.032929394 sec)
+  algo_only          = 50.912 ms (0.050912013 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 126
+  Doppler bin = 341
+  Range       = 1888.69 m
+  Velocity    = 24.89 m/s
+  Power       = 7.071347e-06
+  Threshold   = 7.071347e-06
+valid files: 91
+fi: 95, raw data idx : 2
+
+=========================================================
+[FILE 92]
+=========================================================
+
+--- Timing ---
+  load               = 16.155 ms (0.016154664 sec)
+  compress (Core 1)  = 11.694 ms (0.011693605 sec)
+  compress (Core 2)  = 13.622 ms (0.013622069 sec)
+  compress           = 13.622 ms (0.013622069 sec)
+  transpose          = 7.844 ms (0.007844010 sec)
+  mti                = 4.396 ms (0.004396194 sec)
+  mtd                = 11.084 ms (0.011084421 sec)
+  cfar               = 7.037 ms (0.007037296 sec)
+  total              = 30.364 ms (0.030363959 sec)
+  algo_only          = 43.984 ms (0.043983990 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 125
+  Doppler bin = 341
+  Range       = 1873.70 m
+  Velocity    = 24.89 m/s
+  Power       = 7.895790e-06
+  Threshold   = 7.895790e-06
+valid files: 92
+cpu id: 1, done count: 512
+fi: 96, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 93]
+=========================================================
+
+--- Timing ---
+  load               = 12.614 ms (0.012613664 sec)
+  compress (Core 1)  = 18.280 ms (0.018280137 sec)
+  compress (Core 2)  = 12.140 ms (0.012140225 sec)
+  compress           = 18.280 ms (0.018280137 sec)
+  transpose          = 7.293 ms (0.007293016 sec)
+  mti                = 5.579 ms (0.005579071 sec)
+  mtd                = 9.363 ms (0.009363458 sec)
+  cfar               = 6.687 ms (0.006686837 sec)
+  total              = 28.924 ms (0.028923900 sec)
+  algo_only          = 47.203 ms (0.047202519 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 125
+  Doppler bin = 341
+  Range       = 1873.70 m
+  Velocity    = 24.89 m/s
+  Power       = 7.060612e-06
+  Threshold   = 7.060612e-06
+valid files: 93
+fi: 97, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 94]
+=========================================================
+
+--- Timing ---
+  load               = 11.565 ms (0.011564971 sec)
+  compress (Core 1)  = 16.143 ms (0.016142918 sec)
+  compress (Core 2)  = 10.485 ms (0.010484572 sec)
+  compress           = 16.143 ms (0.016142918 sec)
+  transpose          = 7.364 ms (0.007364459 sec)
+  mti                = 5.364 ms (0.005363703 sec)
+  mtd                = 10.046 ms (0.010046487 sec)
+  cfar               = 6.494 ms (0.006494246 sec)
+  total              = 29.272 ms (0.029272285 sec)
+  algo_only          = 45.412 ms (0.045411813 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 125
+  Doppler bin = 341
+  Range       = 1873.70 m
+  Velocity    = 24.89 m/s
+  Power       = 7.740717e-06
+  Threshold   = 7.740717e-06
+valid files: 94
+fi: 98, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 95]
+=========================================================
+
+--- Timing ---
+  load               = 12.361 ms (0.012361444 sec)
+  compress (Core 1)  = 10.634 ms (0.010633844 sec)
+  compress (Core 2)  = 9.954 ms (0.009954223 sec)
+  compress           = 10.634 ms (0.010633844 sec)
+  transpose          = 7.584 ms (0.007584124 sec)
+  mti                = 5.151 ms (0.005150520 sec)
+  mtd                = 8.897 ms (0.008897036 sec)
+  cfar               = 7.851 ms (0.007850750 sec)
+  total              = 29.487 ms (0.029487061 sec)
+  algo_only          = 40.116 ms (0.040116274 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 124
+  Doppler bin = 341
+  Range       = 1858.71 m
+  Velocity    = 24.89 m/s
+  Power       = 7.178401e-06
+  Threshold   = 7.178401e-06
+valid files: 95
+fi: 99, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 96]
+=========================================================
+
+--- Timing ---
+  load               = 11.676 ms (0.011676359 sec)
+  compress (Core 1)  = 11.378 ms (0.011377777 sec)
+  compress (Core 2)  = 9.937 ms (0.009937344 sec)
+  compress           = 11.378 ms (0.011377777 sec)
+  transpose          = 7.874 ms (0.007873769 sec)
+  mti                = 5.205 ms (0.005205001 sec)
+  mtd                = 11.874 ms (0.011874375 sec)
+  cfar               = 6.186 ms (0.006185916 sec)
+  total              = 31.142 ms (0.031142340 sec)
+  algo_only          = 42.517 ms (0.042516838 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 124
+  Doppler bin = 341
+  Range       = 1858.71 m
+  Velocity    = 24.89 m/s
+  Power       = 7.978339e-06
+  Threshold   = 7.978339e-06
+valid files: 96
+fi: 100, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 97]
+=========================================================
+
+--- Timing ---
+  load               = 12.138 ms (0.012137854 sec)
+  compress (Core 1)  = 10.567 ms (0.010567443 sec)
+  compress (Core 2)  = 9.795 ms (0.009795356 sec)
+  compress           = 10.567 ms (0.010567443 sec)
+  transpose          = 6.795 ms (0.006794576 sec)
+  mti                = 5.078 ms (0.005077984 sec)
+  mtd                = 10.814 ms (0.010813850 sec)
+  cfar               = 6.711 ms (0.006710688 sec)
+  total              = 29.401 ms (0.029401265 sec)
+  algo_only          = 39.965 ms (0.039964541 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 123
+  Doppler bin = 341
+  Range       = 1843.72 m
+  Velocity    = 24.89 m/s
+  Power       = 7.226756e-06
+  Threshold   = 7.226756e-06
+valid files: 97
+fi: 101, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 98]
+=========================================================
+
+--- Timing ---
+  load               = 10.315 ms (0.010314910 sec)
+  compress (Core 1)  = 11.059 ms (0.011058545 sec)
+  compress (Core 2)  = 9.602 ms (0.009601631 sec)
+  compress           = 11.059 ms (0.011058545 sec)
+  transpose          = 8.873 ms (0.008873129 sec)
+  mti                = 5.653 ms (0.005652867 sec)
+  mtd                = 8.284 ms (0.008283524 sec)
+  cfar               = 6.466 ms (0.006466173 sec)
+  total              = 29.279 ms (0.029278729 sec)
+  algo_only          = 40.334 ms (0.040334238 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 123
+  Doppler bin = 341
+  Range       = 1843.72 m
+  Velocity    = 24.89 m/s
+  Power       = 8.052973e-06
+  Threshold   = 8.052973e-06
+valid files: 98
+fi: 102, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 99]
+=========================================================
+
+--- Timing ---
+  load               = 14.031 ms (0.014030816 sec)
+  compress (Core 1)  = 10.144 ms (0.010144285 sec)
+  compress (Core 2)  = 13.314 ms (0.013314127 sec)
+  compress           = 13.314 ms (0.013314127 sec)
+  transpose          = 7.220 ms (0.007219813 sec)
+  mti                = 4.266 ms (0.004266140 sec)
+  mtd                = 9.649 ms (0.009648509 sec)
+  cfar               = 7.254 ms (0.007254480 sec)
+  total              = 28.391 ms (0.028391498 sec)
+  algo_only          = 41.703 ms (0.041703069 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 123
+  Doppler bin = 341
+  Range       = 1843.72 m
+  Velocity    = 24.89 m/s
+  Power       = 8.615319e-06
+  Threshold   = 8.615319e-06
+valid files: 99
+fi: 103, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 100]
+=========================================================
+
+--- Timing ---
+  load               = 12.140 ms (0.012139965 sec)
+  compress (Core 1)  = 10.843 ms (0.010842839 sec)
+  compress (Core 2)  = 10.287 ms (0.010286573 sec)
+  compress           = 10.843 ms (0.010842839 sec)
+  transpose          = 6.547 ms (0.006546597 sec)
+  mti                = 5.123 ms (0.005122649 sec)
+  mtd                = 9.501 ms (0.009501345 sec)
+  cfar               = 6.723 ms (0.006723207 sec)
+  total              = 27.897 ms (0.027896669 sec)
+  algo_only          = 38.737 ms (0.038736637 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 122
+  Doppler bin = 341
+  Range       = 1828.73 m
+  Velocity    = 24.89 m/s
+  Power       = 7.653197e-06
+  Threshold   = 7.653197e-06
+valid files: 100
+fi: 104, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 101]
+=========================================================
+
+--- Timing ---
+  load               = 11.132 ms (0.011132086 sec)
+  compress (Core 1)  = 10.519 ms (0.010518521 sec)
+  compress (Core 2)  = 10.276 ms (0.010275651 sec)
+  compress           = 10.519 ms (0.010518521 sec)
+  transpose          = 7.308 ms (0.007307961 sec)
+  mti                = 5.344 ms (0.005343925 sec)
+  mtd                = 9.256 ms (0.009255514 sec)
+  cfar               = 6.748 ms (0.006747781 sec)
+  total              = 28.658 ms (0.028657939 sec)
+  algo_only          = 39.174 ms (0.039173702 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 122
+  Doppler bin = 341
+  Range       = 1828.73 m
+  Velocity    = 24.89 m/s
+  Power       = 8.336513e-06
+  Threshold   = 8.336513e-06
+valid files: 101
+fi: 105, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 102]
+=========================================================
+
+--- Timing ---
+  load               = 14.170 ms (0.014169629 sec)
+  compress (Core 1)  = 10.505 ms (0.010505346 sec)
+  compress (Core 2)  = 9.785 ms (0.009784894 sec)
+  compress           = 10.505 ms (0.010505346 sec)
+  transpose          = 6.603 ms (0.006602764 sec)
+  mti                = 4.501 ms (0.004500860 sec)
+  mtd                = 9.718 ms (0.009717639 sec)
+  cfar               = 7.114 ms (0.007113963 sec)
+  total              = 27.937 ms (0.027937446 sec)
+  algo_only          = 38.441 ms (0.038440572 sec)
+  detections         = 306
+
+Strongest detection:
+  Range bin   = 121
+  Doppler bin = 341
+  Range       = 1813.74 m
+  Velocity    = 24.89 m/s
+  Power       = 7.640496e-06
+  Threshold   = 7.640496e-06
+valid files: 102
+fi: 106, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 103]
+=========================================================
+
+--- Timing ---
+  load               = 12.152 ms (0.012151520 sec)
+  compress (Core 1)  = 12.324 ms (0.012324090 sec)
+  compress (Core 2)  = 10.220 ms (0.010220043 sec)
+  compress           = 12.324 ms (0.012324090 sec)
+  transpose          = 7.668 ms (0.007667846 sec)
+  mti                = 4.929 ms (0.004928855 sec)
+  mtd                = 9.050 ms (0.009049868 sec)
+  cfar               = 7.016 ms (0.007016296 sec)
+  total              = 28.666 ms (0.028666421 sec)
+  algo_only          = 40.987 ms (0.040986955 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 121
+  Doppler bin = 341
+  Range       = 1813.74 m
+  Velocity    = 24.89 m/s
+  Power       = 8.544779e-06
+  Threshold   = 8.544779e-06
+valid files: 103
+fi: 107, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 104]
+=========================================================
+
+--- Timing ---
+  load               = 10.027 ms (0.010026579 sec)
+  compress (Core 1)  = 12.945 ms (0.012945153 sec)
+  compress (Core 2)  = 10.731 ms (0.010731167 sec)
+  compress           = 12.945 ms (0.012945153 sec)
+  transpose          = 8.984 ms (0.008984091 sec)
+  mti                = 6.065 ms (0.006064510 sec)
+  mtd                = 8.051 ms (0.008051193 sec)
+  cfar               = 6.363 ms (0.006363434 sec)
+  total              = 29.468 ms (0.029468005 sec)
+  algo_only          = 42.408 ms (0.042408381 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 120
+  Doppler bin = 341
+  Range       = 1798.75 m
+  Velocity    = 24.89 m/s
+  Power       = 1.003218e-05
+  Threshold   = 1.003218e-05
+valid files: 104
+fi: 108, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 105]
+=========================================================
+
+--- Timing ---
+  load               = 10.808 ms (0.010807683 sec)
+  compress (Core 1)  = 14.885 ms (0.014884821 sec)
+  compress (Core 2)  = 9.923 ms (0.009923056 sec)
+  compress           = 14.885 ms (0.014884821 sec)
+  transpose          = 7.598 ms (0.007598198 sec)
+  mti                = 5.809 ms (0.005808606 sec)
+  mtd                = 9.106 ms (0.009105904 sec)
+  cfar               = 6.703 ms (0.006703411 sec)
+  total              = 29.220 ms (0.029219656 sec)
+  algo_only          = 44.101 ms (0.044100940 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 120
+  Doppler bin = 341
+  Range       = 1798.75 m
+  Velocity    = 24.89 m/s
+  Power       = 8.896412e-06
+  Threshold   = 8.896412e-06
+valid files: 105
+fi: 109, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 106]
+=========================================================
+
+--- Timing ---
+  load               = 11.930 ms (0.011930449 sec)
+  compress (Core 1)  = 11.439 ms (0.011438556 sec)
+  compress (Core 2)  = 10.017 ms (0.010017226 sec)
+  compress           = 11.439 ms (0.011438556 sec)
+  transpose          = 7.395 ms (0.007394756 sec)
+  mti                = 5.222 ms (0.005221538 sec)
+  mtd                = 9.104 ms (0.009104219 sec)
+  cfar               = 6.696 ms (0.006696133 sec)
+  total              = 28.422 ms (0.028422164 sec)
+  algo_only          = 39.855 ms (0.039855202 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 120
+  Doppler bin = 341
+  Range       = 1798.75 m
+  Velocity    = 24.89 m/s
+  Power       = 9.607377e-06
+  Threshold   = 9.607377e-06
+valid files: 106
+fi: 110, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 107]
+=========================================================
+
+--- Timing ---
+  load               = 11.145 ms (0.011145420 sec)
+  compress (Core 1)  = 10.757 ms (0.010756697 sec)
+  compress (Core 2)  = 12.256 ms (0.012255508 sec)
+  compress           = 12.256 ms (0.012255508 sec)
+  transpose          = 7.505 ms (0.007504718 sec)
+  mti                = 5.426 ms (0.005426498 sec)
+  mtd                = 8.710 ms (0.008709538 sec)
+  cfar               = 6.453 ms (0.006453340 sec)
+  total              = 28.097 ms (0.028097019 sec)
+  algo_only          = 40.350 ms (0.040349602 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 119
+  Doppler bin = 341
+  Range       = 1783.77 m
+  Velocity    = 24.89 m/s
+  Power       = 8.511530e-06
+  Threshold   = 8.511530e-06
+valid files: 107
+fi: 111, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 108]
+=========================================================
+
+--- Timing ---
+  load               = 10.993 ms (0.010992866 sec)
+  compress (Core 1)  = 11.554 ms (0.011554014 sec)
+  compress (Core 2)  = 12.039 ms (0.012038587 sec)
+  compress           = 12.039 ms (0.012038587 sec)
+  transpose          = 7.291 ms (0.007290609 sec)
+  mti                = 6.928 ms (0.006928057 sec)
+  mtd                = 8.557 ms (0.008557059 sec)
+  cfar               = 6.532 ms (0.006531839 sec)
+  total              = 29.313 ms (0.029312562 sec)
+  algo_only          = 41.346 ms (0.041346151 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 119
+  Doppler bin = 341
+  Range       = 1783.77 m
+  Velocity    = 24.89 m/s
+  Power       = 9.285705e-06
+  Threshold   = 9.285705e-06
+valid files: 108
+fi: 112, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 109]
+=========================================================
+
+--- Timing ---
+  load               = 11.214 ms (0.011214048 sec)
+  compress (Core 1)  = 10.681 ms (0.010681434 sec)
+  compress (Core 2)  = 9.942 ms (0.009941733 sec)
+  compress           = 10.681 ms (0.010681434 sec)
+  transpose          = 7.989 ms (0.007988602 sec)
+  mti                = 5.648 ms (0.005647681 sec)
+  mtd                = 9.160 ms (0.009159700 sec)
+  cfar               = 6.435 ms (0.006435302 sec)
+  total              = 29.235 ms (0.029235118 sec)
+  algo_only          = 39.913 ms (0.039912719 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 118
+  Doppler bin = 341
+  Range       = 1768.78 m
+  Velocity    = 24.89 m/s
+  Power       = 8.286343e-06
+  Threshold   = 8.286343e-06
+valid files: 109
+fi: 113, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 110]
+=========================================================
+
+--- Timing ---
+  load               = 11.050 ms (0.011050032 sec)
+  compress (Core 1)  = 12.965 ms (0.012965197 sec)
+  compress (Core 2)  = 10.123 ms (0.010123302 sec)
+  compress           = 12.965 ms (0.012965197 sec)
+  transpose          = 7.543 ms (0.007542717 sec)
+  mti                = 5.443 ms (0.005442517 sec)
+  mtd                = 8.747 ms (0.008747093 sec)
+  cfar               = 6.404 ms (0.006403692 sec)
+  total              = 28.139 ms (0.028138723 sec)
+  algo_only          = 41.101 ms (0.041101216 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 118
+  Doppler bin = 341
+  Range       = 1768.78 m
+  Velocity    = 24.89 m/s
+  Power       = 9.266117e-06
+  Threshold   = 9.266117e-06
+valid files: 110
+fi: 114, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 111]
+=========================================================
+
+--- Timing ---
+  load               = 11.411 ms (0.011410528 sec)
+  compress (Core 1)  = 10.927 ms (0.010927449 sec)
+  compress (Core 2)  = 11.486 ms (0.011486177 sec)
+  compress           = 11.486 ms (0.011486177 sec)
+  transpose          = 7.339 ms (0.007338738 sec)
+  mti                = 5.387 ms (0.005386888 sec)
+  mtd                = 8.836 ms (0.008836074 sec)
+  cfar               = 6.496 ms (0.006496377 sec)
+  total              = 28.060 ms (0.028059649 sec)
+  algo_only          = 39.544 ms (0.039544254 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 117
+  Doppler bin = 341
+  Range       = 1753.79 m
+  Velocity    = 24.89 m/s
+  Power       = 1.064578e-05
+  Threshold   = 1.064578e-05
+valid files: 111
+fi: 115, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 112]
+=========================================================
+
+--- Timing ---
+  load               = 11.327 ms (0.011327399 sec)
+  compress (Core 1)  = 10.513 ms (0.010513025 sec)
+  compress (Core 2)  = 9.883 ms (0.009883028 sec)
+  compress           = 10.513 ms (0.010513025 sec)
+  transpose          = 7.395 ms (0.007394904 sec)
+  mti                = 6.869 ms (0.006868928 sec)
+  mtd                = 8.904 ms (0.008903999 sec)
+  cfar               = 6.566 ms (0.006566375 sec)
+  total              = 29.738 ms (0.029737539 sec)
+  algo_only          = 40.247 ms (0.040247231 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 117
+  Doppler bin = 341
+  Range       = 1753.79 m
+  Velocity    = 24.89 m/s
+  Power       = 9.611567e-06
+  Threshold   = 9.611567e-06
+valid files: 112
+fi: 116, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 113]
+=========================================================
+
+--- Timing ---
+  load               = 11.650 ms (0.011649803 sec)
+  compress (Core 1)  = 10.658 ms (0.010658296 sec)
+  compress (Core 2)  = 9.938 ms (0.009938007 sec)
+  compress           = 10.658 ms (0.010658296 sec)
+  transpose          = 7.701 ms (0.007700900 sec)
+  mti                = 6.122 ms (0.006121861 sec)
+  mtd                = 8.587 ms (0.008586928 sec)
+  cfar               = 6.767 ms (0.006766873 sec)
+  total              = 29.183 ms (0.029182545 sec)
+  algo_only          = 39.835 ms (0.039834858 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 117
+  Doppler bin = 341
+  Range       = 1753.79 m
+  Velocity    = 24.89 m/s
+  Power       = 1.054783e-05
+  Threshold   = 1.054783e-05
+valid files: 113
+fi: 117, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 114]
+=========================================================
+
+--- Timing ---
+  load               = 11.114 ms (0.011114198 sec)
+  compress (Core 1)  = 14.192 ms (0.014192493 sec)
+  compress (Core 2)  = 9.917 ms (0.009917126 sec)
+  compress           = 14.192 ms (0.014192493 sec)
+  transpose          = 7.552 ms (0.007551828 sec)
+  mti                = 5.371 ms (0.005370721 sec)
+  mtd                = 8.770 ms (0.008769501 sec)
+  cfar               = 6.855 ms (0.006855113 sec)
+  total              = 28.552 ms (0.028552404 sec)
+  algo_only          = 42.740 ms (0.042739656 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 116
+  Doppler bin = 341
+  Range       = 1738.80 m
+  Velocity    = 24.89 m/s
+  Power       = 9.817335e-06
+  Threshold   = 9.817335e-06
+valid files: 114
+fi: 118, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 115]
+=========================================================
+
+--- Timing ---
+  load               = 11.188 ms (0.011187827 sec)
+  compress (Core 1)  = 11.968 ms (0.011968360 sec)
+  compress (Core 2)  = 10.263 ms (0.010263474 sec)
+  compress           = 11.968 ms (0.011968360 sec)
+  transpose          = 7.532 ms (0.007532458 sec)
+  mti                = 5.089 ms (0.005089094 sec)
+  mtd                = 8.960 ms (0.008960498 sec)
+  cfar               = 6.519 ms (0.006518506 sec)
+  total              = 28.104 ms (0.028103834 sec)
+  algo_only          = 40.069 ms (0.040068916 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 116
+  Doppler bin = 341
+  Range       = 1738.80 m
+  Velocity    = 24.89 m/s
+  Power       = 1.076974e-05
+  Threshold   = 1.076974e-05
+valid files: 115
+fi: 119, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 116]
+=========================================================
+
+--- Timing ---
+  load               = 10.881 ms (0.010881275 sec)
+  compress (Core 1)  = 10.891 ms (0.010890927 sec)
+  compress (Core 2)  = 9.976 ms (0.009976163 sec)
+  compress           = 10.891 ms (0.010890927 sec)
+  transpose          = 7.465 ms (0.007464551 sec)
+  mti                = 5.244 ms (0.005243815 sec)
+  mtd                = 8.772 ms (0.008772334 sec)
+  cfar               = 6.414 ms (0.006414062 sec)
+  total              = 27.897 ms (0.027896966 sec)
+  algo_only          = 38.786 ms (0.038785689 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 115
+  Doppler bin = 341
+  Range       = 1723.81 m
+  Velocity    = 24.89 m/s
+  Power       = 9.604923e-06
+  Threshold   = 9.604923e-06
+valid files: 116
+fi: 120, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 117]
+=========================================================
+
+--- Timing ---
+  load               = 10.335 ms (0.010335095 sec)
+  compress (Core 1)  = 11.188 ms (0.011188317 sec)
+  compress (Core 2)  = 9.840 ms (0.009839989 sec)
+  compress           = 11.188 ms (0.011188317 sec)
+  transpose          = 7.762 ms (0.007762196 sec)
+  mti                = 5.632 ms (0.005631774 sec)
+  mtd                = 9.703 ms (0.009702583 sec)
+  cfar               = 6.279 ms (0.006279082 sec)
+  total              = 29.380 ms (0.029379895 sec)
+  algo_only          = 40.564 ms (0.040563952 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 115
+  Doppler bin = 341
+  Range       = 1723.81 m
+  Velocity    = 24.89 m/s
+  Power       = 1.059676e-05
+  Threshold   = 1.059676e-05
+valid files: 117
+fi: 121, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 118]
+=========================================================
+
+--- Timing ---
+  load               = 12.340 ms (0.012340259 sec)
+  compress (Core 1)  = 10.561 ms (0.010561307 sec)
+  compress (Core 2)  = 9.920 ms (0.009919595 sec)
+  compress           = 10.561 ms (0.010561307 sec)
+  transpose          = 7.546 ms (0.007545754 sec)
+  mti                = 4.635 ms (0.004634544 sec)
+  mtd                = 9.343 ms (0.009342568 sec)
+  cfar               = 7.022 ms (0.007022500 sec)
+  total              = 28.551 ms (0.028550997 sec)
+  algo_only          = 39.107 ms (0.039106673 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 114
+  Doppler bin = 341
+  Range       = 1708.82 m
+  Velocity    = 24.89 m/s
+  Power       = 1.167604e-05
+  Threshold   = 1.167604e-05
+valid files: 118
+fi: 122, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 119]
+=========================================================
+
+--- Timing ---
+  load               = 11.841 ms (0.011841098 sec)
+  compress (Core 1)  = 12.310 ms (0.012310319 sec)
+  compress (Core 2)  = 9.503 ms (0.009503036 sec)
+  compress           = 12.310 ms (0.012310319 sec)
+  transpose          = 7.262 ms (0.007262108 sec)
+  mti                = 5.915 ms (0.005915290 sec)
+  mtd                = 8.805 ms (0.008805074 sec)
+  cfar               = 6.526 ms (0.006525654 sec)
+  total              = 28.512 ms (0.028512367 sec)
+  algo_only          = 40.818 ms (0.040818445 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 114
+  Doppler bin = 341
+  Range       = 1708.82 m
+  Velocity    = 24.89 m/s
+  Power       = 1.033833e-05
+  Threshold   = 1.033833e-05
+valid files: 119
+fi: 123, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 120]
+=========================================================
+
+--- Timing ---
+  load               = 10.770 ms (0.010770165 sec)
+  compress (Core 1)  = 11.994 ms (0.011993999 sec)
+  compress (Core 2)  = 12.601 ms (0.012601426 sec)
+  compress           = 12.601 ms (0.012601426 sec)
+  transpose          = 7.716 ms (0.007715642 sec)
+  mti                = 5.479 ms (0.005478757 sec)
+  mtd                = 8.606 ms (0.008605983 sec)
+  cfar               = 6.449 ms (0.006449210 sec)
+  total              = 28.252 ms (0.028252184 sec)
+  algo_only          = 40.851 ms (0.040851018 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 114
+  Doppler bin = 341
+  Range       = 1708.82 m
+  Velocity    = 24.89 m/s
+  Power       = 1.122465e-05
+  Threshold   = 1.122465e-05
+valid files: 120
+fi: 124, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 121]
+=========================================================
+
+--- Timing ---
+  load               = 10.919 ms (0.010919293 sec)
+  compress (Core 1)  = 10.560 ms (0.010560458 sec)
+  compress (Core 2)  = 9.917 ms (0.009916850 sec)
+  compress           = 10.560 ms (0.010560458 sec)
+  transpose          = 7.533 ms (0.007532865 sec)
+  mti                = 5.337 ms (0.005337481 sec)
+  mtd                = 8.892 ms (0.008892221 sec)
+  cfar               = 6.633 ms (0.006633022 sec)
+  total              = 28.398 ms (0.028398442 sec)
+  algo_only          = 38.956 ms (0.038956047 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 113
+  Doppler bin = 341
+  Range       = 1693.83 m
+  Velocity    = 24.89 m/s
+  Power       = 1.019977e-05
+  Threshold   = 1.019977e-05
+valid files: 121
+fi: 125, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 122]
+=========================================================
+
+--- Timing ---
+  load               = 11.581 ms (0.011580915 sec)
+  compress (Core 1)  = 10.759 ms (0.010758737 sec)
+  compress (Core 2)  = 10.171 ms (0.010171053 sec)
+  compress           = 10.759 ms (0.010758737 sec)
+  transpose          = 7.709 ms (0.007709382 sec)
+  mti                = 5.975 ms (0.005974807 sec)
+  mtd                = 8.585 ms (0.008584873 sec)
+  cfar               = 6.475 ms (0.006474821 sec)
+  total              = 28.749 ms (0.028748883 sec)
+  algo_only          = 39.503 ms (0.039502620 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 113
+  Doppler bin = 341
+  Range       = 1693.83 m
+  Velocity    = 24.89 m/s
+  Power       = 1.128131e-05
+  Threshold   = 1.128131e-05
+valid files: 122
+fi: 126, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 123]
+=========================================================
+
+--- Timing ---
+  load               = 10.684 ms (0.010683776 sec)
+  compress (Core 1)  = 12.379 ms (0.012378727 sec)
+  compress (Core 2)  = 9.794 ms (0.009793836 sec)
+  compress           = 12.379 ms (0.012378727 sec)
+  transpose          = 7.760 ms (0.007759604 sec)
+  mti                = 5.484 ms (0.005484295 sec)
+  mtd                = 8.752 ms (0.008752482 sec)
+  cfar               = 6.367 ms (0.006367377 sec)
+  total              = 28.368 ms (0.028367609 sec)
+  algo_only          = 40.742 ms (0.040742485 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 112
+  Doppler bin = 341
+  Range       = 1678.84 m
+  Velocity    = 24.89 m/s
+  Power       = 1.296001e-05
+  Threshold   = 1.296001e-05
+valid files: 123
+fi: 127, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 124]
+=========================================================
+
+--- Timing ---
+  load               = 11.881 ms (0.011880727 sec)
+  compress (Core 1)  = 11.456 ms (0.011456418 sec)
+  compress (Core 2)  = 10.095 ms (0.010094896 sec)
+  compress           = 11.456 ms (0.011456418 sec)
+  transpose          = 7.158 ms (0.007158017 sec)
+  mti                = 5.148 ms (0.005148261 sec)
+  mtd                = 9.023 ms (0.009023183 sec)
+  cfar               = 6.569 ms (0.006568894 sec)
+  total              = 27.900 ms (0.027899800 sec)
+  algo_only          = 39.355 ms (0.039354773 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 112
+  Doppler bin = 341
+  Range       = 1678.84 m
+  Velocity    = 24.89 m/s
+  Power       = 1.137106e-05
+  Threshold   = 1.137106e-05
+valid files: 124
+fi: 128, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 125]
+=========================================================
+
+--- Timing ---
+  load               = 10.229 ms (0.010228707 sec)
+  compress (Core 1)  = 10.767 ms (0.010766835 sec)
+  compress (Core 2)  = 9.980 ms (0.009980173 sec)
+  compress           = 10.767 ms (0.010766835 sec)
+  transpose          = 8.640 ms (0.008639576 sec)
+  mti                = 5.596 ms (0.005595571 sec)
+  mtd                = 8.279 ms (0.008278950 sec)
+  cfar               = 6.463 ms (0.006463080 sec)
+  total              = 28.982 ms (0.028981825 sec)
+  algo_only          = 39.744 ms (0.039744012 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 111
+  Doppler bin = 341
+  Range       = 1663.85 m
+  Velocity    = 24.89 m/s
+  Power       = 1.276849e-05
+  Threshold   = 1.276849e-05
+valid files: 125
+fi: 129, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 126]
+=========================================================
+
+--- Timing ---
+  load               = 10.887 ms (0.010886904 sec)
+  compress (Core 1)  = 10.408 ms (0.010407638 sec)
+  compress (Core 2)  = 9.871 ms (0.009870999 sec)
+  compress           = 10.408 ms (0.010407638 sec)
+  transpose          = 7.554 ms (0.007553643 sec)
+  mti                = 5.434 ms (0.005434165 sec)
+  mtd                = 8.898 ms (0.008897888 sec)
+  cfar               = 6.636 ms (0.006636374 sec)
+  total              = 28.526 ms (0.028525959 sec)
+  algo_only          = 38.930 ms (0.038929708 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 111
+  Doppler bin = 341
+  Range       = 1663.85 m
+  Velocity    = 24.89 m/s
+  Power       = 1.155305e-05
+  Threshold   = 1.155305e-05
+valid files: 126
+fi: 130, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 127]
+=========================================================
+
+--- Timing ---
+  load               = 12.186 ms (0.012185613 sec)
+  compress (Core 1)  = 10.789 ms (0.010789149 sec)
+  compress (Core 2)  = 10.198 ms (0.010198431 sec)
+  compress           = 10.789 ms (0.010789149 sec)
+  transpose          = 7.077 ms (0.007076592 sec)
+  mti                = 5.696 ms (0.005695515 sec)
+  mtd                = 9.472 ms (0.009472456 sec)
+  cfar               = 6.558 ms (0.006557727 sec)
+  total              = 28.804 ms (0.028804346 sec)
+  algo_only          = 39.591 ms (0.039591439 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 111
+  Doppler bin = 341
+  Range       = 1663.85 m
+  Velocity    = 24.89 m/s
+  Power       = 1.263933e-05
+  Threshold   = 1.263933e-05
+valid files: 127
+fi: 131, raw data idx : 2
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 128]
+=========================================================
+
+--- Timing ---
+  load               = 11.375 ms (0.011374547 sec)
+  compress (Core 1)  = 13.017 ms (0.013017019 sec)
+  compress (Core 2)  = 10.142 ms (0.010142120 sec)
+  compress           = 13.017 ms (0.013017019 sec)
+  transpose          = 8.408 ms (0.008408430 sec)
+  mti                = 5.973 ms (0.005972697 sec)
+  mtd                = 8.643 ms (0.008642779 sec)
+  cfar               = 7.059 ms (0.007058648 sec)
+  total              = 30.086 ms (0.030086202 sec)
+  algo_only          = 43.100 ms (0.043099573 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 110
+  Doppler bin = 341
+  Range       = 1648.86 m
+  Velocity    = 24.89 m/s
+  Power       = 1.139774e-05
+  Threshold   = 1.139774e-05
+valid files: 128
+fi: 132, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 129]
+=========================================================
+
+--- Timing ---
+  load               = 9.145 ms (0.009145126 sec)
+  compress (Core 1)  = 11.190 ms (0.011189734 sec)
+  compress (Core 2)  = 9.947 ms (0.009946817 sec)
+  compress           = 11.190 ms (0.011189734 sec)
+  transpose          = 12.867 ms (0.012866624 sec)
+  mti                = 4.646 ms (0.004646192 sec)
+  mtd                = 7.614 ms (0.007614123 sec)
+  cfar               = 6.448 ms (0.006447710 sec)
+  total              = 31.579 ms (0.031579150 sec)
+  algo_only          = 42.764 ms (0.042764383 sec)
+  detections         = 311
+
+Strongest detection:
+  Range bin   = 110
+  Doppler bin = 341
+  Range       = 1648.86 m
+  Velocity    = 24.89 m/s
+  Power       = 1.260881e-05
+  Threshold   = 1.260881e-05
+valid files: 129
+fi: 133, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 130]
+=========================================================
+
+--- Timing ---
+  load               = 12.709 ms (0.012708515 sec)
+  compress (Core 1)  = 15.820 ms (0.015820285 sec)
+  compress (Core 2)  = 10.247 ms (0.010247468 sec)
+  compress           = 15.820 ms (0.015820285 sec)
+  transpose          = 6.605 ms (0.006605097 sec)
+  mti                = 5.680 ms (0.005680200 sec)
+  mtd                = 9.232 ms (0.009232311 sec)
+  cfar               = 6.904 ms (0.006903520 sec)
+  total              = 28.423 ms (0.028422923 sec)
+  algo_only          = 44.241 ms (0.044241413 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 109
+  Doppler bin = 341
+  Range       = 1633.87 m
+  Velocity    = 24.89 m/s
+  Power       = 1.433581e-05
+  Threshold   = 1.433581e-05
+valid files: 130
+fi: 134, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 131]
+=========================================================
+
+--- Timing ---
+  load               = 10.186 ms (0.010185930 sec)
+  compress (Core 1)  = 11.358 ms (0.011358009 sec)
+  compress (Core 2)  = 10.477 ms (0.010476601 sec)
+  compress           = 11.358 ms (0.011358009 sec)
+  transpose          = 7.755 ms (0.007755437 sec)
+  mti                = 5.678 ms (0.005677793 sec)
+  mtd                = 8.396 ms (0.008395746 sec)
+  cfar               = 6.501 ms (0.006501153 sec)
+  total              = 28.337 ms (0.028336795 sec)
+  algo_only          = 39.688 ms (0.039688138 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 109
+  Doppler bin = 341
+  Range       = 1633.87 m
+  Velocity    = 24.89 m/s
+  Power       = 1.263338e-05
+  Threshold   = 1.263338e-05
+valid files: 131
+fi: 135, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 132]
+=========================================================
+
+--- Timing ---
+  load               = 10.879 ms (0.010878608 sec)
+  compress (Core 1)  = 11.311 ms (0.011311016 sec)
+  compress (Core 2)  = 9.988 ms (0.009987505 sec)
+  compress           = 11.311 ms (0.011311016 sec)
+  transpose          = 7.797 ms (0.007796640 sec)
+  mti                = 6.016 ms (0.006015567 sec)
+  mtd                = 8.725 ms (0.008725074 sec)
+  cfar               = 6.359 ms (0.006358674 sec)
+  total              = 28.899 ms (0.028899029 sec)
+  algo_only          = 40.207 ms (0.040206971 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 109
+  Doppler bin = 341
+  Range       = 1633.87 m
+  Velocity    = 24.89 m/s
+  Power       = 1.372972e-05
+  Threshold   = 1.372972e-05
+valid files: 132
+fi: 136, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 133]
+=========================================================
+
+--- Timing ---
+  load               = 11.766 ms (0.011765599 sec)
+  compress (Core 1)  = 10.844 ms (0.010843506 sec)
+  compress (Core 2)  = 10.200 ms (0.010200097 sec)
+  compress           = 10.844 ms (0.010843506 sec)
+  transpose          = 7.250 ms (0.007250072 sec)
+  mti                = 4.851 ms (0.004850838 sec)
+  mtd                = 9.142 ms (0.009141811 sec)
+  cfar               = 6.579 ms (0.006579116 sec)
+  total              = 27.824 ms (0.027823874 sec)
+  algo_only          = 38.665 ms (0.038665343 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 108
+  Doppler bin = 341
+  Range       = 1618.88 m
+  Velocity    = 24.89 m/s
+  Power       = 1.262743e-05
+  Threshold   = 1.262743e-05
+valid files: 133
+fi: 137, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 134]
+=========================================================
+
+--- Timing ---
+  load               = 11.433 ms (0.011432935 sec)
+  compress (Core 1)  = 10.686 ms (0.010686362 sec)
+  compress (Core 2)  = 9.887 ms (0.009886566 sec)
+  compress           = 10.686 ms (0.010686362 sec)
+  transpose          = 7.433 ms (0.007432589 sec)
+  mti                = 5.263 ms (0.005262556 sec)
+  mtd                = 8.832 ms (0.008832388 sec)
+  cfar               = 6.482 ms (0.006481784 sec)
+  total              = 28.012 ms (0.028012279 sec)
+  algo_only          = 38.696 ms (0.038695679 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 108
+  Doppler bin = 341
+  Range       = 1618.88 m
+  Velocity    = 24.89 m/s
+  Power       = 1.389756e-05
+  Threshold   = 1.389756e-05
+valid files: 134
+fi: 138, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 135]
+=========================================================
+
+--- Timing ---
+  load               = 11.066 ms (0.011066383 sec)
+  compress (Core 1)  = 10.636 ms (0.010636036 sec)
+  compress (Core 2)  = 9.820 ms (0.009820239 sec)
+  compress           = 10.636 ms (0.010636036 sec)
+  transpose          = 7.681 ms (0.007681234 sec)
+  mti                = 4.405 ms (0.004405101 sec)
+  mtd                = 9.128 ms (0.009127533 sec)
+  cfar               = 6.767 ms (0.006767318 sec)
+  total              = 27.983 ms (0.027982965 sec)
+  algo_only          = 38.617 ms (0.038617222 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 107
+  Doppler bin = 341
+  Range       = 1603.89 m
+  Velocity    = 24.89 m/s
+  Power       = 1.248457e-05
+  Threshold   = 1.248457e-05
+valid files: 135
+fi: 139, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 136]
+=========================================================
+
+--- Timing ---
+  load               = 11.323 ms (0.011322973 sec)
+  compress (Core 1)  = 10.641 ms (0.010641231 sec)
+  compress (Core 2)  = 9.988 ms (0.009987839 sec)
+  compress           = 10.641 ms (0.010641231 sec)
+  transpose          = 7.646 ms (0.007645901 sec)
+  mti                = 4.977 ms (0.004976744 sec)
+  mtd                = 9.053 ms (0.009052608 sec)
+  cfar               = 7.068 ms (0.007067962 sec)
+  total              = 28.746 ms (0.028746271 sec)
+  algo_only          = 39.384 ms (0.039384446 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 107
+  Doppler bin = 341
+  Range       = 1603.89 m
+  Velocity    = 24.89 m/s
+  Power       = 1.401168e-05
+  Threshold   = 1.401168e-05
+valid files: 136
+fi: 140, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 137]
+=========================================================
+
+--- Timing ---
+  load               = 12.483 ms (0.012483035 sec)
+  compress (Core 1)  = 12.420 ms (0.012419855 sec)
+  compress (Core 2)  = 9.899 ms (0.009899490 sec)
+  compress           = 12.420 ms (0.012419855 sec)
+  transpose          = 6.923 ms (0.006922983 sec)
+  mti                = 5.012 ms (0.005012133 sec)
+  mtd                = 9.357 ms (0.009357254 sec)
+  cfar               = 6.781 ms (0.006781262 sec)
+  total              = 28.077 ms (0.028077464 sec)
+  algo_only          = 40.493 ms (0.040493487 sec)
+  detections         = 311
+
+Strongest detection:
+  Range bin   = 106
+  Doppler bin = 341
+  Range       = 1588.90 m
+  Velocity    = 24.89 m/s
+  Power       = 1.586923e-05
+  Threshold   = 1.586923e-05
+valid files: 137
+fi: 141, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 138]
+=========================================================
+
+--- Timing ---
+  load               = 10.753 ms (0.010752609 sec)
+  compress (Core 1)  = 13.008 ms (0.013008112 sec)
+  compress (Core 2)  = 10.779 ms (0.010778960 sec)
+  compress           = 13.008 ms (0.013008112 sec)
+  transpose          = 7.474 ms (0.007473903 sec)
+  mti                = 5.440 ms (0.005440480 sec)
+  mtd                = 8.754 ms (0.008754333 sec)
+  cfar               = 6.430 ms (0.006430229 sec)
+  total              = 28.103 ms (0.028102927 sec)
+  algo_only          = 41.107 ms (0.041107057 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 106
+  Doppler bin = 341
+  Range       = 1588.90 m
+  Velocity    = 24.89 m/s
+  Power       = 1.423953e-05
+  Threshold   = 1.423953e-05
+valid files: 138
+fi: 142, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 139]
+=========================================================
+
+--- Timing ---
+  load               = 10.793 ms (0.010793202 sec)
+  compress (Core 1)  = 10.560 ms (0.010559751 sec)
+  compress (Core 2)  = 10.169 ms (0.010169489 sec)
+  compress           = 10.560 ms (0.010559751 sec)
+  transpose          = 7.661 ms (0.007661104 sec)
+  mti                = 5.463 ms (0.005463220 sec)
+  mtd                = 8.710 ms (0.008710260 sec)
+  cfar               = 6.631 ms (0.006630616 sec)
+  total              = 28.468 ms (0.028468145 sec)
+  algo_only          = 39.025 ms (0.039024951 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 106
+  Doppler bin = 341
+  Range       = 1588.90 m
+  Velocity    = 24.89 m/s
+  Power       = 1.552436e-05
+  Threshold   = 1.552436e-05
+valid files: 139
+fi: 143, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 140]
+=========================================================
+
+--- Timing ---
+  load               = 13.617 ms (0.013616801 sec)
+  compress (Core 1)  = 10.638 ms (0.010637909 sec)
+  compress (Core 2)  = 9.941 ms (0.009941378 sec)
+  compress           = 10.638 ms (0.010637909 sec)
+  transpose          = 6.712 ms (0.006711967 sec)
+  mti                = 4.985 ms (0.004984669 sec)
+  mtd                = 9.546 ms (0.009545733 sec)
+  cfar               = 6.733 ms (0.006732725 sec)
+  total              = 27.979 ms (0.027978650 sec)
+  algo_only          = 38.613 ms (0.038613003 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 105
+  Doppler bin = 341
+  Range       = 1573.91 m
+  Velocity    = 24.89 m/s
+  Power       = 1.393766e-05
+  Threshold   = 1.393766e-05
+valid files: 140
+fi: 144, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 141]
+=========================================================
+
+--- Timing ---
+  load               = 13.416 ms (0.013415785 sec)
+  compress (Core 1)  = 12.966 ms (0.012965907 sec)
+  compress (Core 2)  = 10.141 ms (0.010141440 sec)
+  compress           = 12.966 ms (0.012965907 sec)
+  transpose          = 6.522 ms (0.006522375 sec)
+  mti                = 5.238 ms (0.005238056 sec)
+  mtd                = 9.455 ms (0.009455289 sec)
+  cfar               = 6.997 ms (0.006997500 sec)
+  total              = 28.215 ms (0.028215296 sec)
+  algo_only          = 41.179 ms (0.041179127 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 105
+  Doppler bin = 341
+  Range       = 1573.91 m
+  Velocity    = 24.89 m/s
+  Power       = 1.548258e-05
+  Threshold   = 1.548258e-05
+valid files: 141
+fi: 145, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 142]
+=========================================================
+
+--- Timing ---
+  load               = 11.285 ms (0.011284659 sec)
+  compress (Core 1)  = 11.027 ms (0.011026581 sec)
+  compress (Core 2)  = 9.818 ms (0.009818356 sec)
+  compress           = 11.027 ms (0.011026581 sec)
+  transpose          = 7.461 ms (0.007461162 sec)
+  mti                = 5.471 ms (0.005470831 sec)
+  mtd                = 8.848 ms (0.008847852 sec)
+  cfar               = 6.517 ms (0.006517468 sec)
+  total              = 28.300 ms (0.028300165 sec)
+  algo_only          = 39.324 ms (0.039323894 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 104
+  Doppler bin = 341
+  Range       = 1558.92 m
+  Velocity    = 24.89 m/s
+  Power       = 1.791221e-05
+  Threshold   = 1.791221e-05
+valid files: 142
+fi: 146, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 143]
+=========================================================
+
+--- Timing ---
+  load               = 11.424 ms (0.011424416 sec)
+  compress (Core 1)  = 10.582 ms (0.010581640 sec)
+  compress (Core 2)  = 9.844 ms (0.009843764 sec)
+  compress           = 10.582 ms (0.010581640 sec)
+  transpose          = 7.325 ms (0.007325052 sec)
+  mti                = 5.141 ms (0.005140872 sec)
+  mtd                = 8.869 ms (0.008868906 sec)
+  cfar               = 6.572 ms (0.006571524 sec)
+  total              = 27.909 ms (0.027908651 sec)
+  algo_only          = 38.488 ms (0.038487994 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 104
+  Doppler bin = 341
+  Range       = 1558.92 m
+  Velocity    = 24.89 m/s
+  Power       = 1.569285e-05
+  Threshold   = 1.569285e-05
+valid files: 143
+fi: 147, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 144]
+=========================================================
+
+--- Timing ---
+  load               = 10.139 ms (0.010139153 sec)
+  compress (Core 1)  = 10.720 ms (0.010719637 sec)
+  compress (Core 2)  = 9.955 ms (0.009954887 sec)
+  compress           = 10.720 ms (0.010719637 sec)
+  transpose          = 8.088 ms (0.008088285 sec)
+  mti                = 5.466 ms (0.005465572 sec)
+  mtd                = 8.674 ms (0.008673705 sec)
+  cfar               = 6.572 ms (0.006571561 sec)
+  total              = 28.803 ms (0.028802974 sec)
+  algo_only          = 39.519 ms (0.039518760 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 103
+  Doppler bin = 341
+  Range       = 1543.93 m
+  Velocity    = 24.89 m/s
+  Power       = 1.712241e-05
+  Threshold   = 1.712241e-05
+valid files: 144
+fi: 148, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 145]
+=========================================================
+
+--- Timing ---
+  load               = 11.795 ms (0.011794746 sec)
+  compress (Core 1)  = 10.553 ms (0.010553417 sec)
+  compress (Core 2)  = 9.987 ms (0.009987018 sec)
+  compress           = 10.553 ms (0.010553417 sec)
+  transpose          = 7.495 ms (0.007495329 sec)
+  mti                = 5.110 ms (0.005109817 sec)
+  mtd                = 9.169 ms (0.009169163 sec)
+  cfar               = 6.848 ms (0.006848354 sec)
+  total              = 28.625 ms (0.028625458 sec)
+  algo_only          = 39.176 ms (0.039176080 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 103
+  Doppler bin = 341
+  Range       = 1543.93 m
+  Velocity    = 24.89 m/s
+  Power       = 1.562057e-05
+  Threshold   = 1.562057e-05
+valid files: 145
+fi: 149, raw data idx : 2
+
+=========================================================
+[FILE 146]
+=========================================================
+
+--- Timing ---
+  load               = 12.894 ms (0.012893643 sec)
+  compress (Core 1)  = 13.918 ms (0.013917940 sec)
+  compress (Core 2)  = 9.927 ms (0.009926840 sec)
+  compress           = 13.918 ms (0.013917940 sec)
+  transpose          = 7.197 ms (0.007197128 sec)
+  mti                = 4.948 ms (0.004947504 sec)
+  mtd                = 9.573 ms (0.009572603 sec)
+  cfar               = 6.987 ms (0.006987001 sec)
+  total              = 28.708 ms (0.028708309 sec)
+  algo_only          = 42.622 ms (0.042622176 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 103
+  Doppler bin = 341
+  Range       = 1543.93 m
+  Velocity    = 24.89 m/s
+  Power       = 1.716128e-05
+  Threshold   = 1.716128e-05
+valid files: 146
+cpu id: 1, done count: 512
+fi: 150, raw data idx : 0
+
+=========================================================
+[FILE 147]
+=========================================================
+
+--- Timing ---
+  load               = 15.186 ms (0.015186248 sec)
+  compress (Core 1)  = 11.745 ms (0.011745196 sec)
+  compress (Core 2)  = 9.454 ms (0.009454492 sec)
+  compress           = 11.745 ms (0.011745196 sec)
+  transpose          = 8.471 ms (0.008470725 sec)
+  mti                = 5.374 ms (0.005373869 sec)
+  mtd                = 9.561 ms (0.009560640 sec)
+  cfar               = 6.982 ms (0.006981852 sec)
+  total              = 30.391 ms (0.030390755 sec)
+  algo_only          = 42.132 ms (0.042132282 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 102
+  Doppler bin = 341
+  Range       = 1528.94 m
+  Velocity    = 24.89 m/s
+  Power       = 1.539898e-05
+  Threshold   = 1.539898e-05
+valid files: 147
+cpu id: 2, done count: 512
+fi: 151, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 148]
+=========================================================
+
+--- Timing ---
+  load               = 11.919 ms (0.011918819 sec)
+  compress (Core 1)  = 28.983 ms (0.028983178 sec)
+  compress (Core 2)  = 18.128 ms (0.018128102 sec)
+  compress           = 28.983 ms (0.028983178 sec)
+  transpose          = 8.087 ms (0.008087415 sec)
+  mti                = 5.227 ms (0.005226593 sec)
+  mtd                = 8.940 ms (0.008939628 sec)
+  cfar               = 6.772 ms (0.006771559 sec)
+  total              = 29.027 ms (0.029027380 sec)
+  algo_only          = 58.008 ms (0.058008373 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 102
+  Doppler bin = 341
+  Range       = 1528.94 m
+  Velocity    = 24.89 m/s
+  Power       = 1.722359e-05
+  Threshold   = 1.722359e-05
+valid files: 148
+fi: 152, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 149]
+=========================================================
+
+--- Timing ---
+  load               = 12.791 ms (0.012790588 sec)
+  compress (Core 1)  = 11.209 ms (0.011208893 sec)
+  compress (Core 2)  = 15.635 ms (0.015635111 sec)
+  compress           = 15.635 ms (0.015635111 sec)
+  transpose          = 6.586 ms (0.006586320 sec)
+  mti                = 4.707 ms (0.004706655 sec)
+  mtd                = 9.418 ms (0.009417883 sec)
+  cfar               = 7.041 ms (0.007040704 sec)
+  total              = 27.756 ms (0.027755856 sec)
+  algo_only          = 43.387 ms (0.043386673 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 101
+  Doppler bin = 341
+  Range       = 1513.95 m
+  Velocity    = 24.89 m/s
+  Power       = 1.985616e-05
+  Threshold   = 1.985616e-05
+valid files: 149
+fi: 153, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 150]
+=========================================================
+
+--- Timing ---
+  load               = 12.818 ms (0.012817606 sec)
+  compress (Core 1)  = 14.363 ms (0.014362802 sec)
+  compress (Core 2)  = 10.226 ms (0.010225912 sec)
+  compress           = 14.363 ms (0.014362802 sec)
+  transpose          = 6.816 ms (0.006815872 sec)
+  mti                = 4.995 ms (0.004994984 sec)
+  mtd                = 9.362 ms (0.009362327 sec)
+  cfar               = 7.522 ms (0.007521773 sec)
+  total              = 28.699 ms (0.028699384 sec)
+  algo_only          = 43.058 ms (0.043057758 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 101
+  Doppler bin = 341
+  Range       = 1513.95 m
+  Velocity    = 24.89 m/s
+  Power       = 1.760752e-05
+  Threshold   = 1.760752e-05
+valid files: 150
+fi: 154, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 151]
+=========================================================
+
+--- Timing ---
+  load               = 14.095 ms (0.014095222 sec)
+  compress (Core 1)  = 11.575 ms (0.011574767 sec)
+  compress (Core 2)  = 10.778 ms (0.010777765 sec)
+  compress           = 11.575 ms (0.011574767 sec)
+  transpose          = 7.513 ms (0.007512995 sec)
+  mti                = 4.933 ms (0.004933170 sec)
+  mtd                = 9.790 ms (0.009789527 sec)
+  cfar               = 7.428 ms (0.007428422 sec)
+  total              = 29.668 ms (0.029667651 sec)
+  algo_only          = 41.239 ms (0.041238881 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 101
+  Doppler bin = 341
+  Range       = 1513.95 m
+  Velocity    = 24.89 m/s
+  Power       = 1.917484e-05
+  Threshold   = 1.917484e-05
+valid files: 151
+fi: 155, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 152]
+=========================================================
+
+--- Timing ---
+  load               = 11.765 ms (0.011765154 sec)
+  compress (Core 1)  = 14.621 ms (0.014620861 sec)
+  compress (Core 2)  = 10.010 ms (0.010010110 sec)
+  compress           = 14.621 ms (0.014620861 sec)
+  transpose          = 7.470 ms (0.007470106 sec)
+  mti                = 5.146 ms (0.005145650 sec)
+  mtd                = 8.971 ms (0.008970888 sec)
+  cfar               = 6.658 ms (0.006657800 sec)
+  total              = 28.247 ms (0.028247425 sec)
+  algo_only          = 42.865 ms (0.042865305 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 100
+  Doppler bin = 341
+  Range       = 1498.96 m
+  Velocity    = 24.89 m/s
+  Power       = 1.764151e-05
+  Threshold   = 1.764151e-05
+valid files: 152
+fi: 156, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 153]
+=========================================================
+
+--- Timing ---
+  load               = 11.819 ms (0.011819060 sec)
+  compress (Core 1)  = 14.610 ms (0.014609910 sec)
+  compress (Core 2)  = 10.664 ms (0.010664494 sec)
+  compress           = 14.610 ms (0.014609910 sec)
+  transpose          = 7.311 ms (0.007311312 sec)
+  mti                = 5.339 ms (0.005339462 sec)
+  mtd                = 8.885 ms (0.008885258 sec)
+  cfar               = 6.779 ms (0.006778947 sec)
+  total              = 28.318 ms (0.028318054 sec)
+  algo_only          = 42.925 ms (0.042924889 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 100
+  Doppler bin = 341
+  Range       = 1498.96 m
+  Velocity    = 24.89 m/s
+  Power       = 1.933630e-05
+  Threshold   = 1.933630e-05
+valid files: 153
+fi: 157, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 154]
+=========================================================
+
+--- Timing ---
+  load               = 11.569 ms (0.011568527 sec)
+  compress (Core 1)  = 10.766 ms (0.010765838 sec)
+  compress (Core 2)  = 9.914 ms (0.009914120 sec)
+  compress           = 10.766 ms (0.010765838 sec)
+  transpose          = 8.075 ms (0.008075081 sec)
+  mti                = 5.879 ms (0.005879216 sec)
+  mtd                = 8.817 ms (0.008816537 sec)
+  cfar               = 8.206 ms (0.008205803 sec)
+  total              = 30.980 ms (0.030979638 sec)
+  algo_only          = 41.742 ms (0.041742475 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 99
+  Doppler bin = 341
+  Range       = 1483.97 m
+  Velocity    = 24.89 m/s
+  Power       = 1.726282e-05
+  Threshold   = 1.726282e-05
+valid files: 154
+fi: 158, raw data idx : 2
+
+=========================================================
+[FILE 155]
+=========================================================
+
+--- Timing ---
+  load               = 13.075 ms (0.013074696 sec)
+  compress (Core 1)  = 14.086 ms (0.014085845 sec)
+  compress (Core 2)  = 10.108 ms (0.010108468 sec)
+  compress           = 14.086 ms (0.014085845 sec)
+  transpose          = 7.495 ms (0.007494847 sec)
+  mti                = 5.278 ms (0.005277871 sec)
+  mtd                = 9.613 ms (0.009612677 sec)
+  cfar               = 8.464 ms (0.008463948 sec)
+  total              = 30.854 ms (0.030854250 sec)
+  algo_only          = 44.935 ms (0.044935188 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 99
+  Doppler bin = 341
+  Range       = 1483.97 m
+  Velocity    = 24.89 m/s
+  Power       = 1.936306e-05
+  Threshold   = 1.936306e-05
+valid files: 155
+cpu id: 1, done count: 512
+fi: 159, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 156]
+=========================================================
+
+--- Timing ---
+  load               = 13.781 ms (0.013780911 sec)
+  compress (Core 1)  = 10.774 ms (0.010774263 sec)
+  compress (Core 2)  = 15.449 ms (0.015448634 sec)
+  compress           = 15.449 ms (0.015448634 sec)
+  transpose          = 7.483 ms (0.007482754 sec)
+  mti                = 5.844 ms (0.005843680 sec)
+  mtd                = 9.529 ms (0.009529104 sec)
+  cfar               = 7.940 ms (0.007939935 sec)
+  total              = 30.798 ms (0.030798028 sec)
+  algo_only          = 46.244 ms (0.046244107 sec)
+  detections         = 311
+
+Strongest detection:
+  Range bin   = 98
+  Doppler bin = 341
+  Range       = 1468.98 m
+  Velocity    = 24.89 m/s
+  Power       = 2.215584e-05
+  Threshold   = 2.215584e-05
+valid files: 156
+fi: 160, raw data idx : 1
+
+=========================================================
+[FILE 157]
+=========================================================
+
+--- Timing ---
+  load               = 22.400 ms (0.022400080 sec)
+  compress (Core 1)  = 23.053 ms (0.023053004 sec)
+  compress (Core 2)  = 13.677 ms (0.013676883 sec)
+  compress           = 23.053 ms (0.023053004 sec)
+  transpose          = 5.939 ms (0.005938845 sec)
+  mti                = 3.628 ms (0.003627906 sec)
+  mtd                = 8.792 ms (0.008792408 sec)
+  cfar               = 10.323 ms (0.010323447 sec)
+  total              = 28.686 ms (0.028686180 sec)
+  algo_only          = 51.736 ms (0.051735610 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 98
+  Doppler bin = 341
+  Range       = 1468.98 m
+  Velocity    = 24.89 m/s
+  Power       = 1.984564e-05
+  Threshold   = 1.984564e-05
+valid files: 157
+cpu id: 2, done count: 512
+fi: 161, raw data idx : 2
+
+=========================================================
+[FILE 158]
+=========================================================
+
+--- Timing ---
+  load               = 15.349 ms (0.015348635 sec)
+  compress (Core 1)  = 11.661 ms (0.011660939 sec)
+  compress (Core 2)  = 11.614 ms (0.011613950 sec)
+  compress           = 11.661 ms (0.011660939 sec)
+  transpose          = 7.927 ms (0.007926546 sec)
+  mti                = 5.524 ms (0.005524220 sec)
+  mtd                = 9.924 ms (0.009923544 sec)
+  cfar               = 7.678 ms (0.007678030 sec)
+  total              = 31.056 ms (0.031056340 sec)
+  algo_only          = 42.713 ms (0.042713279 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 98
+  Doppler bin = 341
+  Range       = 1468.98 m
+  Velocity    = 24.89 m/s
+  Power       = 2.167426e-05
+  Threshold   = 2.167426e-05
+valid files: 158
+cpu id: 2, done count: 512
+fi: 162, raw data idx : 0
+
+=========================================================
+[FILE 159]
+=========================================================
+
+--- Timing ---
+  load               = 15.108 ms (0.015108304 sec)
+  compress (Core 1)  = 20.286 ms (0.020285578 sec)
+  compress (Core 2)  = 18.049 ms (0.018048700 sec)
+  compress           = 20.286 ms (0.020285578 sec)
+  transpose          = 5.744 ms (0.005744254 sec)
+  mti                = 4.912 ms (0.004912264 sec)
+  mtd                = 10.736 ms (0.010736368 sec)
+  cfar               = 7.049 ms (0.007049296 sec)
+  total              = 28.444 ms (0.028443738 sec)
+  algo_only          = 48.728 ms (0.048727760 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 97
+  Doppler bin = 341
+  Range       = 1453.99 m
+  Velocity    = 24.89 m/s
+  Power       = 2.052308e-05
+  Threshold   = 2.052308e-05
+valid files: 159
+cpu id: 2, done count: 512
+fi: 163, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 160]
+=========================================================
+
+--- Timing ---
+  load               = 12.053 ms (0.012053299 sec)
+  compress (Core 1)  = 15.422 ms (0.015421988 sec)
+  compress (Core 2)  = 15.630 ms (0.015630028 sec)
+  compress           = 15.630 ms (0.015630028 sec)
+  transpose          = 8.258 ms (0.008258191 sec)
+  mti                = 5.475 ms (0.005474739 sec)
+  mtd                = 9.091 ms (0.009090534 sec)
+  cfar               = 7.103 ms (0.007102814 sec)
+  total              = 29.930 ms (0.029929982 sec)
+  algo_only          = 45.556 ms (0.045556306 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 97
+  Doppler bin = 341
+  Range       = 1453.99 m
+  Velocity    = 24.89 m/s
+  Power       = 2.256310e-05
+  Threshold   = 2.256310e-05
+valid files: 160
+fi: 164, raw data idx : 2
+
+=========================================================
+[FILE 161]
+=========================================================
+
+--- Timing ---
+  load               = 18.519 ms (0.018518991 sec)
+  compress (Core 1)  = 13.222 ms (0.013221548 sec)
+  compress (Core 2)  = 28.350 ms (0.028350154 sec)
+  compress           = 28.350 ms (0.028350154 sec)
+  transpose          = 5.510 ms (0.005510331 sec)
+  mti                = 3.801 ms (0.003800515 sec)
+  mtd                = 11.556 ms (0.011556360 sec)
+  cfar               = 9.351 ms (0.009350828 sec)
+  total              = 30.221 ms (0.030220719 sec)
+  algo_only          = 58.568 ms (0.058568188 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 96
+  Doppler bin = 341
+  Range       = 1439.00 m
+  Velocity    = 24.89 m/s
+  Power       = 2.045678e-05
+  Threshold   = 2.045678e-05
+valid files: 161
+cpu id: 2, done count: 512
+fi: 165, raw data idx : 0
+
+=========================================================
+[FILE 162]
+=========================================================
+
+--- Timing ---
+  load               = 12.703 ms (0.012703200 sec)
+  compress (Core 1)  = 14.430 ms (0.014430186 sec)
+  compress (Core 2)  = 10.561 ms (0.010560854 sec)
+  compress           = 14.430 ms (0.014430186 sec)
+  transpose          = 8.452 ms (0.008451763 sec)
+  mti                = 5.977 ms (0.005976770 sec)
+  mtd                = 9.057 ms (0.009056812 sec)
+  cfar               = 7.180 ms (0.007180054 sec)
+  total              = 30.669 ms (0.030668529 sec)
+  algo_only          = 45.096 ms (0.045095585 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 96
+  Doppler bin = 341
+  Range       = 1439.00 m
+  Velocity    = 24.89 m/s
+  Power       = 2.270253e-05
+  Threshold   = 2.270253e-05
+valid files: 162
+cpu id: 2, done count: 512
+fi: 166, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 163]
+=========================================================
+
+--- Timing ---
+  load               = 13.150 ms (0.013150491 sec)
+  compress (Core 1)  = 11.301 ms (0.011300788 sec)
+  compress (Core 2)  = 23.725 ms (0.023725026 sec)
+  compress           = 23.725 ms (0.023725026 sec)
+  transpose          = 7.941 ms (0.007941009 sec)
+  mti                = 6.162 ms (0.006161583 sec)
+  mtd                = 13.776 ms (0.013776245 sec)
+  cfar               = 7.282 ms (0.007282293 sec)
+  total              = 35.164 ms (0.035163871 sec)
+  algo_only          = 58.886 ms (0.058886156 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 95
+  Doppler bin = 341
+  Range       = 1424.01 m
+  Velocity    = 24.89 m/s
+  Power       = 2.613692e-05
+  Threshold   = 2.613692e-05
+valid files: 163
+fi: 167, raw data idx : 2
+
+=========================================================
+[FILE 164]
+=========================================================
+
+--- Timing ---
+  load               = 14.806 ms (0.014805937 sec)
+  compress (Core 1)  = 11.509 ms (0.011509354 sec)
+  compress (Core 2)  = 26.165 ms (0.026165208 sec)
+  compress           = 26.165 ms (0.026165208 sec)
+  transpose          = 8.170 ms (0.008169933 sec)
+  mti                = 4.558 ms (0.004557785 sec)
+  mtd                = 9.509 ms (0.009509363 sec)
+  cfar               = 7.020 ms (0.007019797 sec)
+  total              = 29.259 ms (0.029259341 sec)
+  algo_only          = 55.422 ms (0.055422086 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 95
+  Doppler bin = 341
+  Range       = 1424.01 m
+  Velocity    = 24.89 m/s
+  Power       = 2.286177e-05
+  Threshold   = 2.286177e-05
+valid files: 164
+cpu id: 1, done count: 512
+fi: 168, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 165]
+=========================================================
+
+--- Timing ---
+  load               = 13.559 ms (0.013559265 sec)
+  compress (Core 1)  = 17.031 ms (0.017030976 sec)
+  compress (Core 2)  = 17.338 ms (0.017337713 sec)
+  compress           = 17.338 ms (0.017337713 sec)
+  transpose          = 7.594 ms (0.007594217 sec)
+  mti                = 5.106 ms (0.005106076 sec)
+  mtd                = 9.447 ms (0.009447030 sec)
+  cfar               = 6.732 ms (0.006732077 sec)
+  total              = 28.881 ms (0.028881067 sec)
+  algo_only          = 46.217 ms (0.046217113 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 94
+  Doppler bin = 341
+  Range       = 1409.02 m
+  Velocity    = 24.89 m/s
+  Power       = 2.500089e-05
+  Threshold   = 2.500089e-05
+valid files: 165
+fi: 169, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 166]
+=========================================================
+
+--- Timing ---
+  load               = 13.874 ms (0.013873872 sec)
+  compress (Core 1)  = 18.002 ms (0.018002011 sec)
+  compress (Core 2)  = 10.258 ms (0.010257653 sec)
+  compress           = 18.002 ms (0.018002011 sec)
+  transpose          = 7.726 ms (0.007726493 sec)
+  mti                = 4.938 ms (0.004937689 sec)
+  mtd                = 9.445 ms (0.009444993 sec)
+  cfar               = 6.656 ms (0.006656170 sec)
+  total              = 28.769 ms (0.028769123 sec)
+  algo_only          = 46.767 ms (0.046767356 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 94
+  Doppler bin = 341
+  Range       = 1409.02 m
+  Velocity    = 24.89 m/s
+  Power       = 2.295408e-05
+  Threshold   = 2.295408e-05
+valid files: 166
+fi: 170, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 167]
+=========================================================
+
+--- Timing ---
+  load               = 12.350 ms (0.012350314 sec)
+  compress (Core 1)  = 10.984 ms (0.010984190 sec)
+  compress (Core 2)  = 11.714 ms (0.011714283 sec)
+  compress           = 11.714 ms (0.011714283 sec)
+  transpose          = 6.894 ms (0.006894057 sec)
+  mti                = 4.948 ms (0.004947985 sec)
+  mtd                = 9.248 ms (0.009248421 sec)
+  cfar               = 6.798 ms (0.006797799 sec)
+  total              = 27.892 ms (0.027892318 sec)
+  algo_only          = 39.603 ms (0.039602545 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 94
+  Doppler bin = 341
+  Range       = 1409.02 m
+  Velocity    = 24.89 m/s
+  Power       = 2.533444e-05
+  Threshold   = 2.533444e-05
+valid files: 167
+fi: 171, raw data idx : 0
+
+=========================================================
+[FILE 168]
+=========================================================
+
+--- Timing ---
+  load               = 13.773 ms (0.013772577 sec)
+  compress (Core 1)  = 10.510 ms (0.010510178 sec)
+  compress (Core 2)  = 9.955 ms (0.009955048 sec)
+  compress           = 10.510 ms (0.010510178 sec)
+  transpose          = 6.983 ms (0.006982852 sec)
+  mti                = 4.601 ms (0.004600544 sec)
+  mtd                = 9.888 ms (0.009887637 sec)
+  cfar               = 7.124 ms (0.007123906 sec)
+  total              = 28.599 ms (0.028598662 sec)
+  algo_only          = 39.105 ms (0.039105117 sec)
+  detections         = 307
+
+Strongest detection:
+  Range bin   = 93
+  Doppler bin = 341
+  Range       = 1394.03 m
+  Velocity    = 24.89 m/s
+  Power       = 2.296566e-05
+  Threshold   = 2.296566e-05
+valid files: 168
+cpu id: 2, done count: 512
+fi: 172, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 169]
+=========================================================
+
+--- Timing ---
+  load               = 13.555 ms (0.013554988 sec)
+  compress (Core 1)  = 11.173 ms (0.011172726 sec)
+  compress (Core 2)  = 10.791 ms (0.010791040 sec)
+  compress           = 11.173 ms (0.011172726 sec)
+  transpose          = 7.941 ms (0.007940917 sec)
+  mti                = 5.242 ms (0.005242463 sec)
+  mtd                = 9.837 ms (0.009837304 sec)
+  cfar               = 6.961 ms (0.006960538 sec)
+  total              = 29.983 ms (0.029983166 sec)
+  algo_only          = 41.154 ms (0.041153948 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 93
+  Doppler bin = 341
+  Range       = 1394.03 m
+  Velocity    = 24.89 m/s
+  Power       = 2.556991e-05
+  Threshold   = 2.556991e-05
+valid files: 169
+fi: 173, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 170]
+=========================================================
+
+--- Timing ---
+  load               = 11.551 ms (0.011551490 sec)
+  compress (Core 1)  = 11.860 ms (0.011859781 sec)
+  compress (Core 2)  = 23.771 ms (0.023770679 sec)
+  compress           = 23.771 ms (0.023770679 sec)
+  transpose          = 7.676 ms (0.007676086 sec)
+  mti                = 5.284 ms (0.005284018 sec)
+  mtd                = 8.949 ms (0.008948536 sec)
+  cfar               = 6.768 ms (0.006767559 sec)
+  total              = 28.679 ms (0.028679125 sec)
+  algo_only          = 52.447 ms (0.052446878 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 92
+  Doppler bin = 341
+  Range       = 1379.05 m
+  Velocity    = 24.89 m/s
+  Power       = 2.962060e-05
+  Threshold   = 2.962060e-05
+valid files: 170
+fi: 174, raw data idx : 0
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 171]
+=========================================================
+
+--- Timing ---
+  load               = 13.167 ms (0.013167066 sec)
+  compress (Core 1)  = 11.562 ms (0.011561750 sec)
+  compress (Core 2)  = 10.093 ms (0.010093450 sec)
+  compress           = 11.562 ms (0.011561750 sec)
+  transpose          = 7.020 ms (0.007020056 sec)
+  mti                = 4.674 ms (0.004673932 sec)
+  mtd                = 10.841 ms (0.010840904 sec)
+  cfar               = 6.818 ms (0.006817855 sec)
+  total              = 29.357 ms (0.029357099 sec)
+  algo_only          = 40.914 ms (0.040914497 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 92
+  Doppler bin = 341
+  Range       = 1379.05 m
+  Velocity    = 24.89 m/s
+  Power       = 2.624326e-05
+  Threshold   = 2.624326e-05
+valid files: 171
+fi: 175, raw data idx : 1
+cpu id: 1, done count: 512
+
+=========================================================
+[FILE 172]
+=========================================================
+
+--- Timing ---
+  load               = 12.918 ms (0.012917605 sec)
+  compress (Core 1)  = 12.700 ms (0.012699729 sec)
+  compress (Core 2)  = 11.559 ms (0.011558792 sec)
+  compress           = 12.700 ms (0.012699729 sec)
+  transpose          = 7.189 ms (0.007189165 sec)
+  mti                = 4.865 ms (0.004864541 sec)
+  mtd                = 11.895 ms (0.011895486 sec)
+  cfar               = 7.090 ms (0.007090499 sec)
+  total              = 31.044 ms (0.031043507 sec)
+  algo_only          = 43.739 ms (0.043739420 sec)
+  detections         = 311
+
+Strongest detection:
+  Range bin   = 91
+  Doppler bin = 341
+  Range       = 1364.06 m
+  Velocity    = 24.89 m/s
+  Power       = 2.919336e-05
+  Threshold   = 2.919336e-05
+valid files: 172
+fi: 176, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 173]
+=========================================================
+
+--- Timing ---
+  load               = 12.613 ms (0.012612886 sec)
+  compress (Core 1)  = 12.964 ms (0.012963550 sec)
+  compress (Core 2)  = 10.530 ms (0.010530452 sec)
+  compress           = 12.964 ms (0.012963550 sec)
+  transpose          = 7.140 ms (0.007139999 sec)
+  mti                = 4.519 ms (0.004519175 sec)
+  mtd                = 9.322 ms (0.009321865 sec)
+  cfar               = 6.662 ms (0.006661708 sec)
+  total              = 27.646 ms (0.027645747 sec)
+  algo_only          = 40.606 ms (0.040606297 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 91
+  Doppler bin = 341
+  Range       = 1364.06 m
+  Velocity    = 24.89 m/s
+  Power       = 2.668771e-05
+  Threshold   = 2.668771e-05
+valid files: 173
+fi: 177, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 174]
+=========================================================
+
+--- Timing ---
+  load               = 13.112 ms (0.013112103 sec)
+  compress (Core 1)  = 15.910 ms (0.015910389 sec)
+  compress (Core 2)  = 12.792 ms (0.012791751 sec)
+  compress           = 15.910 ms (0.015910389 sec)
+  transpose          = 6.693 ms (0.006693077 sec)
+  mti                = 4.619 ms (0.004619229 sec)
+  mtd                = 9.510 ms (0.009509789 sec)
+  cfar               = 6.812 ms (0.006812003 sec)
+  total              = 27.636 ms (0.027635820 sec)
+  algo_only          = 43.544 ms (0.043544487 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 91
+  Doppler bin = 341
+  Range       = 1364.06 m
+  Velocity    = 24.89 m/s
+  Power       = 2.932688e-05
+  Threshold   = 2.932688e-05
+valid files: 174
+fi: 178, raw data idx : 1
+
+=========================================================
+[FILE 175]
+=========================================================
+
+--- Timing ---
+  load               = 13.119 ms (0.013119399 sec)
+  compress (Core 1)  = 10.489 ms (0.010489020 sec)
+  compress (Core 2)  = 9.894 ms (0.009893609 sec)
+  compress           = 10.489 ms (0.010489020 sec)
+  transpose          = 7.492 ms (0.007492254 sec)
+  mti                = 4.692 ms (0.004691617 sec)
+  mtd                = 9.515 ms (0.009514567 sec)
+  cfar               = 6.982 ms (0.006982148 sec)
+  total              = 28.683 ms (0.028682735 sec)
+  algo_only          = 39.170 ms (0.039169606 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 90
+  Doppler bin = 341
+  Range       = 1349.07 m
+  Velocity    = 24.89 m/s
+  Power       = 2.612924e-05
+  Threshold   = 2.612924e-05
+valid files: 175
+cpu id: 2, done count: 512
+fi: 179, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 176]
+=========================================================
+
+--- Timing ---
+  load               = 13.179 ms (0.013179491 sec)
+  compress (Core 1)  = 10.654 ms (0.010654047 sec)
+  compress (Core 2)  = 9.922 ms (0.009921972 sec)
+  compress           = 10.654 ms (0.010654047 sec)
+  transpose          = 5.942 ms (0.005941753 sec)
+  mti                = 5.001 ms (0.005000651 sec)
+  mtd                = 9.570 ms (0.009569659 sec)
+  cfar               = 6.959 ms (0.006959186 sec)
+  total              = 27.473 ms (0.027472656 sec)
+  algo_only          = 38.125 ms (0.038125296 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 90
+  Doppler bin = 341
+  Range       = 1349.07 m
+  Velocity    = 24.89 m/s
+  Power       = 2.926153e-05
+  Threshold   = 2.926153e-05
+valid files: 176
+fi: 180, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 177]
+=========================================================
+
+--- Timing ---
+  load               = 13.585 ms (0.013584524 sec)
+  compress (Core 1)  = 14.941 ms (0.014940766 sec)
+  compress (Core 2)  = 10.830 ms (0.010830323 sec)
+  compress           = 14.941 ms (0.014940766 sec)
+  transpose          = 7.133 ms (0.007132628 sec)
+  mti                = 4.392 ms (0.004391602 sec)
+  mtd                = 9.324 ms (0.009323791 sec)
+  cfar               = 6.900 ms (0.006899649 sec)
+  total              = 27.750 ms (0.027749894 sec)
+  algo_only          = 42.688 ms (0.042688436 sec)
+  detections         = 311
+
+Strongest detection:
+  Range bin   = 89
+  Doppler bin = 341
+  Range       = 1334.08 m
+  Velocity    = 24.89 m/s
+  Power       = 3.331552e-05
+  Threshold   = 3.331552e-05
+valid files: 177
+fi: 181, raw data idx : 1
+
+=========================================================
+[FILE 178]
+=========================================================
+
+--- Timing ---
+  load               = 14.529 ms (0.014529125 sec)
+  compress (Core 1)  = 10.752 ms (0.010751829 sec)
+  compress (Core 2)  = 10.434 ms (0.010434370 sec)
+  compress           = 10.752 ms (0.010751829 sec)
+  transpose          = 5.698 ms (0.005697551 sec)
+  mti                = 5.528 ms (0.005527627 sec)
+  mtd                = 11.274 ms (0.011273733 sec)
+  cfar               = 7.033 ms (0.007033204 sec)
+  total              = 29.534 ms (0.029533801 sec)
+  algo_only          = 40.284 ms (0.040283944 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 89
+  Doppler bin = 341
+  Range       = 1334.08 m
+  Velocity    = 24.89 m/s
+  Power       = 2.959312e-05
+  Threshold   = 2.959312e-05
+valid files: 178
+cpu id: 2, done count: 512
+fi: 182, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 179]
+=========================================================
+
+--- Timing ---
+  load               = 12.754 ms (0.012753717 sec)
+  compress (Core 1)  = 10.428 ms (0.010427572 sec)
+  compress (Core 2)  = 9.647 ms (0.009646734 sec)
+  compress           = 10.428 ms (0.010427572 sec)
+  transpose          = 6.992 ms (0.006991630 sec)
+  mti                = 5.124 ms (0.005124298 sec)
+  mtd                = 9.347 ms (0.009347384 sec)
+  cfar               = 6.728 ms (0.006728244 sec)
+  total              = 28.195 ms (0.028195074 sec)
+  algo_only          = 38.619 ms (0.038619128 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 89
+  Doppler bin = 341
+  Range       = 1334.08 m
+  Velocity    = 24.89 m/s
+  Power       = 3.242834e-05
+  Threshold   = 3.242834e-05
+valid files: 179
+fi: 183, raw data idx : 0
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 180]
+=========================================================
+
+--- Timing ---
+  load               = 10.614 ms (0.010614296 sec)
+  compress (Core 1)  = 11.479 ms (0.011478712 sec)
+  compress (Core 2)  = 13.729 ms (0.013729224 sec)
+  compress           = 13.729 ms (0.013729224 sec)
+  transpose          = 7.613 ms (0.007612531 sec)
+  mti                = 5.470 ms (0.005469905 sec)
+  mtd                = 8.721 ms (0.008721038 sec)
+  cfar               = 6.567 ms (0.006566505 sec)
+  total              = 28.374 ms (0.028373720 sec)
+  algo_only          = 42.099 ms (0.042099203 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 88
+  Doppler bin = 341
+  Range       = 1319.09 m
+  Velocity    = 24.89 m/s
+  Power       = 2.997268e-05
+  Threshold   = 2.997268e-05
+valid files: 180
+fi: 184, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 181]
+=========================================================
+
+--- Timing ---
+  load               = 12.594 ms (0.012593645 sec)
+  compress (Core 1)  = 10.909 ms (0.010909421 sec)
+  compress (Core 2)  = 10.247 ms (0.010246658 sec)
+  compress           = 10.909 ms (0.010909421 sec)
+  transpose          = 7.338 ms (0.007337516 sec)
+  mti                = 4.446 ms (0.004445824 sec)
+  mtd                = 9.242 ms (0.009241884 sec)
+  cfar               = 6.946 ms (0.006945520 sec)
+  total              = 27.974 ms (0.027973780 sec)
+  algo_only          = 38.880 ms (0.038880165 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 88
+  Doppler bin = 341
+  Range       = 1319.09 m
+  Velocity    = 24.89 m/s
+  Power       = 3.326342e-05
+  Threshold   = 3.326342e-05
+valid files: 181
+fi: 185, raw data idx : 2
+
+=========================================================
+[FILE 182]
+=========================================================
+
+--- Timing ---
+  load               = 12.103 ms (0.012103095 sec)
+  compress (Core 1)  = 10.591 ms (0.010591229 sec)
+  compress (Core 2)  = 10.117 ms (0.010117016 sec)
+  compress           = 10.591 ms (0.010591229 sec)
+  transpose          = 7.386 ms (0.007386274 sec)
+  mti                = 5.092 ms (0.005091891 sec)
+  mtd                = 8.542 ms (0.008542022 sec)
+  cfar               = 7.869 ms (0.007868954 sec)
+  total              = 28.893 ms (0.028893363 sec)
+  algo_only          = 39.480 ms (0.039480370 sec)
+  detections         = 308
+
+Strongest detection:
+  Range bin   = 87
+  Doppler bin = 341
+  Range       = 1304.10 m
+  Velocity    = 24.89 m/s
+  Power       = 2.997801e-05
+  Threshold   = 2.997801e-05
+valid files: 182
+cpu id: 2, done count: 512
+fi: 186, raw data idx : 0
+
+=========================================================
+[FILE 183]
+=========================================================
+
+--- Timing ---
+  load               = 12.331 ms (0.012331000 sec)
+  compress (Core 1)  = 10.651 ms (0.010651026 sec)
+  compress (Core 2)  = 10.781 ms (0.010781435 sec)
+  compress           = 10.781 ms (0.010781435 sec)
+  transpose          = 7.501 ms (0.007500736 sec)
+  mti                = 5.137 ms (0.005136964 sec)
+  mtd                = 9.169 ms (0.009169404 sec)
+  cfar               = 7.178 ms (0.007178387 sec)
+  total              = 28.987 ms (0.028987324 sec)
+  algo_only          = 39.767 ms (0.039766926 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 87
+  Doppler bin = 341
+  Range       = 1304.10 m
+  Velocity    = 24.89 m/s
+  Power       = 3.362806e-05
+  Threshold   = 3.362806e-05
+valid files: 183
+cpu id: 2, done count: 512
+fi: 187, raw data idx : 1
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 184]
+=========================================================
+
+--- Timing ---
+  load               = 13.040 ms (0.013040400 sec)
+  compress (Core 1)  = 10.778 ms (0.010777835 sec)
+  compress (Core 2)  = 12.210 ms (0.012210167 sec)
+  compress           = 12.210 ms (0.012210167 sec)
+  transpose          = 8.107 ms (0.008106767 sec)
+  mti                = 5.352 ms (0.005351925 sec)
+  mtd                = 9.187 ms (0.009187440 sec)
+  cfar               = 6.782 ms (0.006781928 sec)
+  total              = 29.431 ms (0.029431246 sec)
+  algo_only          = 41.638 ms (0.041638227 sec)
+  detections         = 311
+
+Strongest detection:
+  Range bin   = 86
+  Doppler bin = 341
+  Range       = 1289.11 m
+  Velocity    = 24.89 m/s
+  Power       = 3.740871e-05
+  Threshold   = 3.740871e-05
+valid files: 184
+fi: 188, raw data idx : 2
+cpu id: 2, done count: 512
+
+=========================================================
+[FILE 185]
+=========================================================
+
+--- Timing ---
+  load               = 11.028 ms (0.011028347 sec)
+  compress (Core 1)  = 11.099 ms (0.011099306 sec)
+  compress (Core 2)  = 18.083 ms (0.018083337 sec)
+  compress           = 18.083 ms (0.018083337 sec)
+  transpose          = 7.370 ms (0.007369793 sec)
+  mti                = 5.304 ms (0.005303871 sec)
+  mtd                = 8.814 ms (0.008813852 sec)
+  cfar               = 6.997 ms (0.006996834 sec)
+  total              = 28.488 ms (0.028488237 sec)
+  algo_only          = 46.568 ms (0.046567687 sec)
+  detections         = 309
+
+Strongest detection:
+  Range bin   = 86
+  Doppler bin = 341
+  Range       = 1289.11 m
+  Velocity    = 24.89 m/s
+  Power       = 3.363936e-05
+  Threshold   = 3.363936e-05
+valid files: 185
+fi: 189, raw data idx : 0
+🔥 [Worker 1] 내가 압축에 쓴 시간: 14.271041 ms
+remain: 1
+cpu id: 2, done count: 512
+🔥 [Worker 2] 내가 압축에 쓴 시간: 14.271041 ms
+remain: 0
+
+=========================================================
+[FILE 186]
+=========================================================
+
+--- Timing ---
+  load               = 11.313 ms (0.011313251 sec)
+  compress (Core 1)  = 14.271 ms (0.014271041 sec)
+  compress (Core 2)  = 10.919 ms (0.010918979 sec)
+  compress           = 14.271 ms (0.014271041 sec)
+  transpose          = 7.420 ms (0.007419626 sec)
+  mti                = 5.375 ms (0.005375129 sec)
+  mtd                = 8.907 ms (0.008907147 sec)
+  cfar               = 6.702 ms (0.006701689 sec)
+  total              = 28.409 ms (0.028408794 sec)
+  algo_only          = 42.675 ms (0.042674632 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 86
+  Doppler bin = 341
+  Range       = 1289.11 m
+  Velocity    = 24.89 m/s
+  Power       = 3.690345e-05
+  Threshold   = 3.690345e-05
+valid files: 186
+
+=========================================================
+[FILE 187]
+=========================================================
+
+--- Timing ---
+  load               = 0.000 ms (0.000000000 sec)
+  compress (Core 1)  = 13.572 ms (0.013571820 sec)
+  compress (Core 2)  = 10.800 ms (0.010799574 sec)
+  compress           = 13.572 ms (0.013571820 sec)
+  transpose          = 3.738 ms (0.003738035 sec)
+  mti                = 3.166 ms (0.003165948 sec)
+  mtd                = 7.302 ms (0.007301776 sec)
+  cfar               = 6.720 ms (0.006720059 sec)
+  total              = 20.927 ms (0.020927095 sec)
+  algo_only          = 34.498 ms (0.034497638 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 85
+  Doppler bin = 341
+  Range       = 1274.12 m
+  Velocity    = 24.89 m/s
+  Power       = 3.374693e-05
+  Threshold   = 3.374693e-05
+valid files: 187
+
+=========================================================
+[FILE 188]
+=========================================================
+
+--- Timing ---
+  load               = 0.000 ms (0.000000000 sec)
+  compress (Core 1)  = 12.853 ms (0.012852564 sec)
+  compress (Core 2)  = 10.810 ms (0.010809736 sec)
+  compress           = 12.853 ms (0.012852564 sec)
+  transpose          = 3.693 ms (0.003693128 sec)
+  mti                = 2.615 ms (0.002614806 sec)
+  mtd                = 7.434 ms (0.007433996 sec)
+  cfar               = 6.515 ms (0.006515283 sec)
+  total              = 20.259 ms (0.020258676 sec)
+  algo_only          = 33.110 ms (0.033109777 sec)
+  detections         = 310
+
+Strongest detection:
+  Range bin   = 85
+  Doppler bin = 341
+  Range       = 1274.12 m
+  Velocity    = 24.89 m/s
+  Power       = 3.927656e-05
+  Threshold   = 3.927656e-05
+valid files: 188
+
+
+#########################################################
+                TARGET TRAJECTORY SUMMARY                
+#########################################################
+Total Files Processed: 188
+
+Filename             | Range (m)    | Velocity (m/s) | Power          
+-----------------------------------------------------------------
+                     | 2458.30      | 24.89        | 2.53e-06       
+                     | 2443.31      | 24.89        | 2.78e-06       
+                     | 2443.31      | 24.89        | 2.46e-06       
+                     | 2443.31      | 24.89        | 2.64e-06       
+                     | 2428.32      | 24.89        | 2.38e-06       
+                     | 2428.32      | 24.89        | 2.59e-06       
+                     | 2413.33      | 24.89        | 2.31e-06       
+                     | 2413.33      | 24.89        | 2.54e-06       
+                     | 2398.34      | 24.89        | 2.73e-06       
+                     | 2398.34      | 24.89        | 2.43e-06       
+                     | 2398.34      | 24.89        | 2.65e-06       
+                     | 2383.35      | 24.89        | 2.44e-06       
+                     | 2383.35      | 24.89        | 2.70e-06       
+                     | 2368.36      | 24.89        | 3.11e-06       
+                     | 2368.36      | 24.89        | 2.72e-06       
+                     | 2353.37      | 24.89        | 3.02e-06       
+                     | 2353.37      | 24.89        | 2.75e-06       
+                     | 2353.37      | 24.89        | 2.99e-06       
+                     | 2338.38      | 24.89        | 2.56e-06       
+                     | 2338.38      | 24.89        | 2.85e-06       
+                     | 2323.39      | 24.89        | 3.22e-06       
+                     | 2323.39      | 24.89        | 2.85e-06       
+                     | 2308.40      | 24.89        | 3.15e-06       
+                     | 2308.40      | 24.89        | 2.96e-06       
+                     | 2308.40      | 24.89        | 3.28e-06       
+                     | 2293.41      | 24.89        | 3.01e-06       
+                     | 2293.41      | 24.89        | 3.34e-06       
+                     | 2278.42      | 24.89        | 3.56e-06       
+                     | 2278.42      | 24.89        | 3.13e-06       
+                     | 2278.42      | 24.89        | 3.36e-06       
+                     | 2263.43      | 24.89        | 3.00e-06       
+                     | 2263.43      | 24.89        | 3.34e-06       
+                     | 2248.44      | 24.89        | 4.00e-06       
+                     | 2248.44      | 24.89        | 3.50e-06       
+                     | 2248.44      | 24.89        | 3.77e-06       
+                     | 2233.45      | 24.89        | 3.33e-06       
+                     | 2233.45      | 24.89        | 3.64e-06       
+                     | 2218.46      | 24.89        | 3.35e-06       
+                     | 2218.46      | 24.89        | 3.72e-06       
+                     | 2203.47      | 24.89        | 4.25e-06       
+                     | 2203.47      | 24.89        | 3.73e-06       
+                     | 2203.47      | 24.89        | 4.02e-06       
+                     | 2188.48      | 24.89        | 3.63e-06       
+                     | 2188.48      | 24.89        | 3.98e-06       
+                     | 2173.50      | 24.89        | 3.62e-06       
+                     | 2173.50      | 24.89        | 4.01e-06       
+                     | 2158.51      | 24.89        | 4.49e-06       
+                     | 2158.51      | 24.89        | 3.94e-06       
+                     | 2158.51      | 24.89        | 4.25e-06       
+                     | 2143.52      | 24.89        | 3.79e-06       
+                     | 2143.52      | 24.89        | 4.20e-06       
+                     | 2128.53      | 24.89        | 3.89e-06       
+                     | 2128.53      | 24.89        | 4.36e-06       
+                     | 2113.54      | 24.89        | 4.74e-06       
+                     | 2113.54      | 24.89        | 4.29e-06       
+                     | 2113.54      | 24.89        | 4.66e-06       
+                     | 2098.55      | 24.89        | 4.29e-06       
+                     | 2098.55      | 24.89        | 4.77e-06       
+                     | 2083.56      | 24.89        | 5.48e-06       
+                     | 2083.56      | 24.89        | 4.74e-06       
+                     | 2083.56      | 24.89        | 5.05e-06       
+                     | 2068.57      | 24.89        | 4.50e-06       
+                     | 2068.57      | 24.89        | 4.91e-06       
+                     | 2053.58      | 24.89        | 4.43e-06       
+                     | 2053.58      | 24.89        | 4.95e-06       
+                     | 2038.59      | 24.89        | 5.58e-06       
+                     | 2038.59      | 24.89        | 4.98e-06       
+                     | 2038.59      | 24.89        | 5.45e-06       
+                     | 2023.60      | 24.89        | 4.98e-06       
+                     | 2023.60      | 24.89        | 5.49e-06       
+                     | 2008.61      | 24.89        | 4.91e-06       
+                     | 2008.61      | 24.89        | 5.49e-06       
+                     | 1993.62      | 24.89        | 6.00e-06       
+                     | 1993.62      | 24.89        | 5.39e-06       
+                     | 1993.62      | 24.89        | 5.89e-06       
+                     | 1978.63      | 24.89        | 5.31e-06       
+                     | 1978.63      | 24.89        | 5.86e-06       
+                     | 1963.64      | 24.89        | 6.53e-06       
+                     | 1963.64      | 24.89        | 5.73e-06       
+                     | 1948.65      | 24.89        | 6.38e-06       
+                     | 1948.65      | 24.89        | 6.00e-06       
+                     | 1948.65      | 24.89        | 6.70e-06       
+                     | 1933.66      | 24.89        | 6.23e-06       
+                     | 1933.66      | 24.89        | 6.90e-06       
+                     | 1918.67      | 24.89        | 7.40e-06       
+                     | 1918.67      | 24.89        | 6.51e-06       
+                     | 1918.67      | 24.89        | 6.98e-06       
+                     | 1903.68      | 24.89        | 6.33e-06       
+                     | 1903.68      | 24.89        | 6.95e-06       
+                     | 1888.69      | 24.89        | 6.34e-06       
+                     | 1888.69      | 24.89        | 7.07e-06       
+                     | 1873.70      | 24.89        | 7.90e-06       
+                     | 1873.70      | 24.89        | 7.06e-06       
+                     | 1873.70      | 24.89        | 7.74e-06       
+                     | 1858.71      | 24.89        | 7.18e-06       
+                     | 1858.71      | 24.89        | 7.98e-06       
+                     | 1843.72      | 24.89        | 7.23e-06       
+                     | 1843.72      | 24.89        | 8.05e-06       
+                     | 1843.72      | 24.89        | 8.62e-06       
+                     | 1828.73      | 24.89        | 7.65e-06       
+                     | 1828.73      | 24.89        | 8.34e-06       
+                     | 1813.74      | 24.89        | 7.64e-06       
+                     | 1813.74      | 24.89        | 8.54e-06       
+                     | 1798.75      | 24.89        | 1.00e-05       
+                     | 1798.75      | 24.89        | 8.90e-06       
+                     | 1798.75      | 24.89        | 9.61e-06       
+                     | 1783.77      | 24.89        | 8.51e-06       
+                     | 1783.77      | 24.89        | 9.29e-06       
+                     | 1768.78      | 24.89        | 8.29e-06       
+                     | 1768.78      | 24.89        | 9.27e-06       
+                     | 1753.79      | 24.89        | 1.06e-05       
+                     | 1753.79      | 24.89        | 9.61e-06       
+                     | 1753.79      | 24.89        | 1.05e-05       
+                     | 1738.80      | 24.89        | 9.82e-06       
+                     | 1738.80      | 24.89        | 1.08e-05       
+                     | 1723.81      | 24.89        | 9.60e-06       
+                     | 1723.81      | 24.89        | 1.06e-05       
+                     | 1708.82      | 24.89        | 1.17e-05       
+                     | 1708.82      | 24.89        | 1.03e-05       
+                     | 1708.82      | 24.89        | 1.12e-05       
+                     | 1693.83      | 24.89        | 1.02e-05       
+                     | 1693.83      | 24.89        | 1.13e-05       
+                     | 1678.84      | 24.89        | 1.30e-05       
+                     | 1678.84      | 24.89        | 1.14e-05       
+                     | 1663.85      | 24.89        | 1.28e-05       
+                     | 1663.85      | 24.89        | 1.16e-05       
+                     | 1663.85      | 24.89        | 1.26e-05       
+                     | 1648.86      | 24.89        | 1.14e-05       
+                     | 1648.86      | 24.89        | 1.26e-05       
+                     | 1633.87      | 24.89        | 1.43e-05       
+                     | 1633.87      | 24.89        | 1.26e-05       
+                     | 1633.87      | 24.89        | 1.37e-05       
+                     | 1618.88      | 24.89        | 1.26e-05       
+                     | 1618.88      | 24.89        | 1.39e-05       
+                     | 1603.89      | 24.89        | 1.25e-05       
+                     | 1603.89      | 24.89        | 1.40e-05       
+                     | 1588.90      | 24.89        | 1.59e-05       
+                     | 1588.90      | 24.89        | 1.42e-05       
+                     | 1588.90      | 24.89        | 1.55e-05       
+                     | 1573.91      | 24.89        | 1.39e-05       
+                     | 1573.91      | 24.89        | 1.55e-05       
+                     | 1558.92      | 24.89        | 1.79e-05       
+                     | 1558.92      | 24.89        | 1.57e-05       
+                     | 1543.93      | 24.89        | 1.71e-05       
+                     | 1543.93      | 24.89        | 1.56e-05       
+                     | 1543.93      | 24.89        | 1.72e-05       
+                     | 1528.94      | 24.89        | 1.54e-05       
+                     | 1528.94      | 24.89        | 1.72e-05       
+                     | 1513.95      | 24.89        | 1.99e-05       
+                     | 1513.95      | 24.89        | 1.76e-05       
+                     | 1513.95      | 24.89        | 1.92e-05       
+                     | 1498.96      | 24.89        | 1.76e-05       
+                     | 1498.96      | 24.89        | 1.93e-05       
+                     | 1483.97      | 24.89        | 1.73e-05       
+                     | 1483.97      | 24.89        | 1.94e-05       
+                     | 1468.98      | 24.89        | 2.22e-05       
+                     | 1468.98      | 24.89        | 1.98e-05       
+                     | 1468.98      | 24.89        | 2.17e-05       
+                     | 1453.99      | 24.89        | 2.05e-05       
+                     | 1453.99      | 24.89        | 2.26e-05       
+                     | 1439.00      | 24.89        | 2.05e-05       
+                     | 1439.00      | 24.89        | 2.27e-05       
+                     | 1424.01      | 24.89        | 2.61e-05       
+                     | 1424.01      | 24.89        | 2.29e-05       
+                     | 1409.02      | 24.89        | 2.50e-05       
+                     | 1409.02      | 24.89        | 2.30e-05       
+                     | 1409.02      | 24.89        | 2.53e-05       
+                     | 1394.03      | 24.89        | 2.30e-05       
+                     | 1394.03      | 24.89        | 2.56e-05       
+                     | 1379.05      | 24.89        | 2.96e-05       
+                     | 1379.05      | 24.89        | 2.62e-05       
+                     | 1364.06      | 24.89        | 2.92e-05       
+                     | 1364.06      | 24.89        | 2.67e-05       
+                     | 1364.06      | 24.89        | 2.93e-05       
+                     | 1349.07      | 24.89        | 2.61e-05       
+                     | 1349.07      | 24.89        | 2.93e-05       
+                     | 1334.08      | 24.89        | 3.33e-05       
+                     | 1334.08      | 24.89        | 2.96e-05       
+                     | 1334.08      | 24.89        | 3.24e-05       
+                     | 1319.09      | 24.89        | 3.00e-05       
+                     | 1319.09      | 24.89        | 3.33e-05       
+                     | 1304.10      | 24.89        | 3.00e-05       
+                     | 1304.10      | 24.89        | 3.36e-05       
+                     | 1289.11      | 24.89        | 3.74e-05       
+                     | 1289.11      | 24.89        | 3.36e-05       
+                     | 1289.11      | 24.89        | 3.69e-05       
+                     | 1274.12      | 24.89        | 3.37e-05       
+                     | 1274.12      | 24.89        | 3.93e-05       
+
+--- Trajectory Analysis ---
+Initial Position : 2458.30 m (File: )
+Final Position   : 1274.12 m (File: )
+Displacement     : -1184.18 m (Moving Toward)
+
+
+#########################################################
+         GLOBAL DIRECTORY AVERAGE (188 Files)        
+#########################################################
+  load               = 12.257 ms (0.012257463 sec)
+  pulse_total        = 13.056 ms (0.013055964 sec)
+  transpose          = 7.533 ms (0.007533185 sec)
+  mti                = 5.252 ms (0.005252181 sec)
+  mtd                = 9.280 ms (0.009280112 sec)
+  cfar               = 6.904 ms (0.006903787 sec)
+  total time         = 28.972 ms (0.028972468 sec)
+  algo_only          = 42.025 ms (0.042025229 sec)
+  detections         = 308.46
+#########################################################
+

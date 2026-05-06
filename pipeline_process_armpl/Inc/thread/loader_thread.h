@@ -14,11 +14,15 @@ typedef struct {
     
     double *buffer;
     int cpu_id;
-    const char *dat_path;
+    
+    struct dirent **file_list;   // 추가
+    const char *dir_path;
+    int num_files;      // 추가
+    int valid_files;
 } LoaderArgs;
 
 
-int loader_thread_init(const char *dat_path, const RadarMeta *meta, LoaderArgs *ld, Pipeline *pool);
+int loader_thread_init(const RadarMeta *meta, LoaderArgs *ld, Pipeline *pool);
 int loader_thread_destroy(LoaderArgs *ld);
 void *loader_thread_main(void *arg);
 

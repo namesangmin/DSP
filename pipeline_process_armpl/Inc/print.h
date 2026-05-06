@@ -5,6 +5,17 @@
 #include "common.h"
 #include "types.h"
 
+void print_file_result(
+    const PipelineTiming *timing,
+    const DetectionList  *det,
+    int                   file_num);
+
+void accumulate_result(
+    Accumulator          *acc,
+    const PipelineTiming *timing,
+    const DetectionList  *det,
+    Detection            *out_best);
+
 void print_metadata(const RadarMeta *meta);
 void print_average_line(const char *name, double avg_ms);
 long read_cpu_ticks(void);

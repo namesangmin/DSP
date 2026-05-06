@@ -27,7 +27,7 @@ int pulse_queue_push(PulseQueue *q, PulseJob job) {
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
         
-        usleep(3);
+        usleep(100);
     }
 
     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
@@ -61,7 +61,7 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
             return 0;
         }
 
-        usleep(3);
+        usleep(100);
     }
 }
 

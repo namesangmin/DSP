@@ -22,7 +22,12 @@ typedef struct {
     PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
 
     int cpu_id;
-    int status;    
+    int status;   
+    
+    Accumulator      *total_acc;   // 추가
+    DetectionList    *history;     // 추가
+    int              *valid_files; // 추가
+
 } PostArgs;
 
 void *post_thread_main(void *arg);

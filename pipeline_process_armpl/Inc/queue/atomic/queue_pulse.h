@@ -7,14 +7,27 @@
 #include <string.h>
 typedef struct {
     int pulse_idx;
+    int raw_idx;
+
 } PulseJob;
 
 typedef struct {
     PulseJob *buf;
     int cap;
-    atomic_int head;   // 빼는 쪽 (Consumer)
-    atomic_int tail;   // 넣는 쪽 (Producer)
-    atomic_int closed; // 종료 플래그
+
+    char pad0[64];
+
+    atomic_int head;
+
+    char pad1[64];
+
+    atomic_int tail;
+
+    char pad2[64];
+
+    atomic_int closed;
+
+    char pad3[64];
 } PulseQueue;
 
 int pulse_queue_init(PulseQueue *q, int cap);

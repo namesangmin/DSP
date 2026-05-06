@@ -8,7 +8,7 @@
 #include "queue_post.h"
 #include "queue_pulse.h"
 
-#define NUM_BUFFERS 3
+#define NUM_BUFFERS 11
 typedef enum {
     BUF_FREE = 0,       // 비어 있음
     BUF_FILLING = 1,    // 짝/홀 코어가 열심히 쓰는 중
@@ -30,18 +30,20 @@ typedef struct {
 typedef struct {
     atomic_int    current_write_idx;
     atomic_int    error;
-
+    atomic_int active_workers; // 워커 스레드 종료 체크용
+    double compress_times[NUM_BUFFERS][2];
+    
     PostQueue post_q;
     PulseQueue even_q;   // pulse 0~255
     PulseQueue odd_q;    // pulse 256~511
 
-    float complex *raw_data;
+    float complex *raw_data[NUM_BUFFERS];  // 단일 → 배열
     RdMapBuffer    rd_maps[NUM_BUFFERS];
     DopplerBuffer  doppler_maps[NUM_BUFFERS];
 } Pipeline;
 
 struct RadarMeta;
-int init_pipeline_pool(const char *dat_path, const RadarMeta *meta, Pipeline *pipe);
+int init_pipeline_pool(const RadarMeta *meta, Pipeline *pipe);
 void cleanup_pipeline_pool(Pipeline *pool);
 
 #endif

@@ -97,7 +97,7 @@ void print_trajectory_summary(DetectionList *history, int valid_files) {
 void print_global_average(const Accumulator *acc, int timing_files){
         if (timing_files > 0) {
             printf("\n\n#########################################################\n");
-            printf("         GLOBAL DIRECTORY AVERAGE (%d Files, excluding FILE 1)        \n", timing_files);
+            printf("         GLOBAL DIRECTORY AVERAGE (%d Files)        \n", timing_files);
             printf("#########################################################\n");
             print_average_line("load",          acc->load_ms          / timing_files);
             print_average_line("pulse_total",   acc->pulse_total_ms   / timing_files);
@@ -111,4 +111,81 @@ void print_global_average(const Accumulator *acc, int timing_files){
             printf("#########################################################\n\n");
         }
 }
+// print.c에 구현
+void print_file_result(
+    const PipelineTiming *timing,
+    const DetectionList  *det,
+    int                   file_num)
+{
+    double doppler_total_ms = timing->mtd_ms + timing->mti_ms;
+    double pulse_total_ms   = timing->compress_ms;
+    double algo_only_ms     = pulse_total_ms + doppler_total_ms
+                            + timing->cfar_ms + timing->transpose_ms;
+    double total_ms = algo_only_ms + timing->loader_ms;
+    printf("\n--- Timing ---\n");
+    print_average_line("load",      timing->loader_ms);
+    
+    print_average_line("compress (Core 1)",  timing->compress_core1_ms);
+    print_average_line("compress (Core 2)",  timing->compress_core2_ms);
 
+    print_average_line("compress",  pulse_total_ms);
+    print_average_line("transpose", timing->transpose_ms);
+    print_average_line("mti",       timing->mti_ms);
+    print_average_line("mtd",       timing->mtd_ms);
+    print_average_line("cfar",      timing->cfar_ms);
+    print_average_line("total",     total_ms);
+    print_average_line("algo_only", algo_only_ms);
+    printf("  %-18s = %d\n", "detections", det->count);
+
+    if (det->count > 0) {
+        Detection best = det->items[0];
+        for (int i = 1; i < det->count; i++) {
+            if (det->items[i].power > best.power)
+                best = det->items[i];
+        }
+        printf("\nStrongest detection:\n");
+        printf("  Range bin   = %d\n  Doppler bin = %d\n",
+               best.range_bin, best.doppler_bin);
+        printf("  Range       = %.2f m\n  Velocity    = %.2f m/s\n",
+               best.range_m, best.velocity_mps);
+        printf("  Power       = %.6e\n  Threshold   = %.6e\n",
+               best.power, best.threshold);
+    } else {
+        printf("\nNo CFAR detection found.\n");
+    }
+}
+
+void accumulate_result(
+    Accumulator          *acc,
+    const PipelineTiming *timing,
+    const DetectionList  *det,
+    Detection            *out_best)
+{
+    double doppler_total_ms = timing->mtd_ms + timing->mti_ms;
+    double pulse_total_ms   = timing->compress_ms;
+    double algo_only_ms     = pulse_total_ms + doppler_total_ms
+                            + timing->cfar_ms + timing->transpose_ms;
+    double total_ms = algo_only_ms + timing->loader_ms;
+
+    acc->load_ms          += timing->loader_ms;
+    acc->pulse_total_ms   += pulse_total_ms;
+    acc->mti_ms           += timing->mti_ms;
+    acc->mtd_ms           += timing->mtd_ms;
+    acc->doppler_total_ms += doppler_total_ms;
+    acc->cfar_ms          += timing->cfar_ms;
+    acc->transpose_ms     += timing->transpose_ms;
+    acc->total_time_ms    += total_ms;
+    acc->algo_only_ms     += algo_only_ms;
+    acc->detections       += det->count;
+
+    if (out_best) {
+        out_best->range_bin = -1;
+        if (det->count > 0) {
+            *out_best = det->items[0];
+            for (int i = 1; i < det->count; i++) {
+                if (det->items[i].power > out_best->power)
+                    *out_best = det->items[i];
+            }
+        }
+    }
+}

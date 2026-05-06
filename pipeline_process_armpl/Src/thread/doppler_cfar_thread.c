@@ -5,6 +5,7 @@
 #include "doppler_cfar_thread.h"
 #include "pulse.h"
 #include "timer.h"
+#include "print.h"
 
 void *post_thread_main(void *arg)
 {
@@ -13,20 +14,30 @@ void *post_thread_main(void *arg)
     
     pin_thread_to_cpu(a->cpu_id);
 
-    double total_transpose_ms = 0.0;
-    double total_cfar_ms = 0.0;
-
     while (post_queue_pop(&a->pipe->post_q, &job)) 
     {
         if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) 
         {
             break;
         }
-
         int idx = job.buffer_idx;
-        double execute_time = 0.0f;
+        double execute_time = 0.0;
+        
+a->timing->compress_core1_ms = a->pipe->compress_times[idx][0];
+a->timing->compress_core2_ms = a->pipe->compress_times[idx][1];
+a->pipe->compress_times[idx][0] = 0.0;
+a->pipe->compress_times[idx][1] = 0.0;
+
+// 실제 파이프라인 딜레이는 두 코어 중 "더 오래 걸린 놈"의 시간입니다.
+if (a->timing->compress_core1_ms > a->timing->compress_core2_ms) {
+    a->timing->compress_ms = a->timing->compress_core1_ms;
+} else {
+    a->timing->compress_ms = a->timing->compress_core2_ms;
+}
+
+        atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_PROCESSING, memory_order_release);
         // =========================================================
-        // 0. 도플러 처리 전, 1/2번 코어가 만든 rd_map을 Transpose!
+        // 0. Transpose
         // =========================================================
         if (transpose_rd_pulse_range_to_doppler_range_pulse(
                 &a->pipe->rd_maps[idx].data,
@@ -38,8 +49,7 @@ void *post_thread_main(void *arg)
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             break;
         }
-        
-        total_transpose_ms = execute_time;
+        a->timing->transpose_ms = execute_time;
 
         // =========================================================
         // 1. 도플러 처리
@@ -55,10 +65,10 @@ void *post_thread_main(void *arg)
             break;
         }
 
-        execute_time = 0.0f;
         // =========================================================
-        // 2. CFAR 처리 (미리 계산해둔 상수들을 파라미터로 넘김)
+        // 2. CFAR
         // =========================================================
+        execute_time = 0.0;
         int cfar_ret = cfar_detect(&a->pipe->doppler_maps[idx].data,
                            a->meta,
                            a->cfar_ws,
@@ -71,33 +81,48 @@ void *post_thread_main(void *arg)
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             break;
         }
-        
-        total_cfar_ms = execute_time;
+        a->timing->cfar_ms = execute_time;
 
         // =========================================================
-        // 3. 사용 완료된 rd_map 버퍼 즉시 반납
+        // 3. 버퍼 반납 + 인덱스 증가
         // =========================================================
         atomic_store_explicit(&a->pipe->rd_maps[idx].done_count, 0, memory_order_release);
         atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_FREE, memory_order_release);
+      
+        // =========================================================
+        // 4. 결과 출력 + 누적
+        // =========================================================
+        int fi = *a->valid_files;
 
+        // printf("\n=========================================================\n");
+        // printf("[FILE %d]\n", fi + 1);
+        // printf("=========================================================\n");
+
+       // print_file_result(a->timing, a->det, fi + 1);
+
+        Detection best = {0};
+        best.range_bin = -1;
+        accumulate_result(a->total_acc, a->timing, a->det, &best);
+
+        if (a->history && fi >= 0) {
+            a->history[fi].count = (best.range_bin != -1) ? 1 : 0;
+            if (a->history[fi].count > 0) {
+                a->history[fi].items = malloc(sizeof(Detection));
+                if (a->history[fi].items)
+                    a->history[fi].items[0] = best;
+            }
+        }
+
+        (*a->valid_files)++;
+       // printf("valid files: %d\n", *a->valid_files);
         // =========================================================
-        // 4. 탐지 결과 후처리 및 메모리 해제 [최적화 1 - 누수 방지]
+        // 5. 다음 파일 위한 리셋
         // =========================================================
-        // 여기에 타겟 정보를 외부로 전송하거나 화면에 띄우는 로직 작성
-        
-        // 데이터 전송이 끝났다면, 다음 루프를 위해 이번에 할당된 메모리를 반드시 날려야 합니다.
-        // if (a->det && a->det->items) {
-        //     free(a->det->items);
-        //     a->det->items = NULL;
-        //     a->det->count = 0;
-        // }
+        memset(a->timing, 0, sizeof(*a->timing));
+
+        a->det->items = NULL;
+        a->det->count = 0;
     }
 
-    if (a->timing) 
-    {
-        a->timing->cfar_ms = total_cfar_ms;
-        a->timing->transpose_ms = total_transpose_ms;
-    }
-    
-    return 0;
+    return NULL;
 }
