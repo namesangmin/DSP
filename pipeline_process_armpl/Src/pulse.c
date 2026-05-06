@@ -221,13 +221,13 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
                                         ctx->X,
                                         ctx->X,
                                         FFTW_FORWARD,
-                                        FFTW_ESTIMATE);
+                                        FFTW_MEASURE);
 
     ctx->inverse_plan = fftwf_plan_dft_1d(ctx->nfft,
                                         ctx->Y,
                                         ctx->Y,
                                         FFTW_BACKWARD,
-                                        FFTW_ESTIMATE);
+                                        FFTW_MEASURE);
 
     if (!ctx->forward_plan || !ctx->inverse_plan) {
         pulse_compress_ctx_destroy(ctx);
@@ -242,7 +242,7 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
                                         ctx->H,
                                         ctx->H,
                                         FFTW_FORWARD,
-                                        FFTW_ESTIMATE);
+                                        FFTW_MEASURE);
 
     if (!h_plan) {
         pulse_compress_ctx_destroy(ctx);

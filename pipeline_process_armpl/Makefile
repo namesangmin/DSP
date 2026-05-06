@@ -33,6 +33,8 @@ OBJS = \
     Src/cfar.o \
     Src/print.o \
     Src/cluster.o \
+    Src/udp.o \
+    Src/send_graph_data.o \
     Src/settings/core_set.o \
     Src/settings/pipeline_set.o \
     Src/thread/loader_thread.o \

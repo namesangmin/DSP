@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <stdatomic.h>
+#include <stdint.h>      // uint32_t 추가
 #include <fftw3.h>
 #include "types.h"
 #include "queue_post.h"
@@ -41,6 +42,7 @@ typedef struct {
     RdMapBuffer    rd_maps[NUM_BUFFERS];
     DopplerBuffer  doppler_maps[NUM_BUFFERS];
     char filenames[NUM_BUFFERS][256];
+    uint32_t dwell_ids[NUM_BUFFERS];
 
 } Pipeline;
 

@@ -32,6 +32,8 @@ int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler)
     // 타겟 유무만(0, 1) 빠르게 기록할 마스크 배열 할당 (uint8_t 사용)
     ws->det_mask = (uint8_t *)calloc((size_t)numRange * (size_t)numDoppler, sizeof(uint8_t));
 
+    ws->threshold_map = (float *)malloc((size_t)numRange * numDoppler * sizeof(float));
+
     if (!ws->powerMap || !ws->col_sum_outer || !ws->col_sum_guard || !ws->det_mask) {
         if (ws->powerMap) free(ws->powerMap);
         if (ws->col_sum_outer) free(ws->col_sum_outer);
@@ -208,7 +210,8 @@ int cfar_detect(const ComplexMatrix *doppler_map,
             float noise_sum = noise_outer - noise_guard;
             float threshold = final_scale * noise_sum;
             int idx = row_base + d;
-
+            
+            ws->threshold_map[idx] = threshold;
             det_mask[idx] = (powerMap[idx] > threshold) ? 1 : 0;
 
             // 가로 슬라이딩 갱신

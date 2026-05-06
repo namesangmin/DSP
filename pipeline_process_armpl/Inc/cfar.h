@@ -29,6 +29,7 @@ typedef struct {
     
     uint8_t *det_mask; 
     Detection *detBuf;
+    float *threshold_map;
 } CfarWorkspace;
 
 int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler);

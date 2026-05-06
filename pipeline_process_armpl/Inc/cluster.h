@@ -60,7 +60,6 @@ typedef struct {
     int min_pts;         // 최소 구성 셀 수 (이하면 노이즈로 제거)
     int max_targets;     // 최대 출력 타겟 수
     float power_ratio_min;  // 추가: 1위 대비 최소 power 비율
-
 } ClusterParams;
 
 // =========================================================

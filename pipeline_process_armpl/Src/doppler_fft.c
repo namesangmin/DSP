@@ -44,7 +44,7 @@ int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft)
         return -1;
     }   
     ws->mtd_plan = fftwf_plan_dft_1d(nfft, ws->plan_buf, ws->plan_buf,
-                                     FFTW_FORWARD, FFTW_ESTIMATE);
+                                     FFTW_FORWARD, FFTW_MEASURE);
     if (!ws->mtd_plan)
     {
         cleanup_doppler_workspace(ws); 

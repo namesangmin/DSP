@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>      // uint32_t 추가
 #include <stdatomic.h> // atomic 함수 사용을 위해 추가
 #include <fftw3.h>
 #include <complex.h>
@@ -32,6 +33,23 @@ int loader_thread_destroy(LoaderArgs *ld) {
     ld->buffer = NULL;
     
     return 0;
+}
+
+// DTT_PROC_DATA_430.dat → 430
+static uint32_t parse_dwell_id(const char *fname)
+{
+    // 마지막 '_' 이후 숫자 찾기
+    const char *p = fname;
+    const char *last_under = NULL;
+
+    while (*p) {
+        if (*p == '_') last_under = p;
+        p++;
+    }
+
+    if (!last_under) return 0;
+
+    return (uint32_t)atoi(last_under + 1); // '_' 다음부터 파싱, .dat는 atoi가 숫자에서 멈춤
 }
 
 void *loader_thread_main(void *arg)
@@ -90,7 +108,9 @@ void *loader_thread_main(void *arg)
         }
         fclose(fp);
         
-        snprintf(a->pipe->filenames[raw_idx], 256, "%s", fname);
+        // 변경
+        a->pipe->dwell_ids[raw_idx] = parse_dwell_id(fname);
+        snprintf(a->pipe->filenames[raw_idx], 256, "%s", fname); // 파일명은 그대로 유지
 
         double t1 = now_ms();
 

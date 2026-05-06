@@ -14,7 +14,6 @@ typedef struct {
     
     struct dirent **file_list;   // 추가
     const char *dir_path;
-    char (*filenames)[256];  // 파일명 배열 (num_files개)
     int num_files;      // 추가
     int valid_files;
 } LoaderArgs;

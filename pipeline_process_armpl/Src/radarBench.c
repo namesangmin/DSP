@@ -26,6 +26,8 @@
 #include "pulse_compress_thread.h"
 #include "print.h"
 #include "cluster.h"
+#include "udp.h"
+#include "send_graph_data.h"
 
 // =========================================================
 // 전역 상태 - init()에서 한 번만 초기화
@@ -194,6 +196,13 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     s->wk_odd.cpu_id   = 2;
     s->wk_odd.timing   = &s->timing;
 
+    s->cluster_params = (ClusterParams){
+        .range_radius   = 2,
+        .doppler_radius = 2,
+        .min_pts        = 3,
+        .max_targets    = 5,
+        .power_ratio_min = 0.1f,  // 1위의 10% 미만이면 사이드로브로 제거
+    };
     s->post.meta       = meta;
     s->post.pipe       = &s->pipe;
     s->post.det        = &s->det;
@@ -209,13 +218,12 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     s->post.valid_files = &s->valid_files;
     s->post.cluster_history = s->cluster_history;
 
-    s->cluster_params = (ClusterParams){
-        .range_radius   = 2,
-        .doppler_radius = 2,
-        .min_pts        = 3,
-        .max_targets    = 5,
-        .power_ratio_min = 0.1f,  // 1위의 10% 미만이면 사이드로브로 제거
-    };
+    // UDP
+    udp_init("127.0.0.1", 7777);
+
+    // TCP
+    send_graph_data_init("127.0.0.1", 9999, meta->num_fast_time_samples, meta->num_pulses);
+        
     return 0;
 }
 
