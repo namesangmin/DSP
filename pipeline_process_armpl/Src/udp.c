@@ -12,8 +12,7 @@
 
 // 최대 타겟 수 기준 최대 패킷 크기
 // header(8) + target * 12 * MAX_TARGETS
-#define UDP_MAX_TARGETS  (32)
-#define UDP_PACKET_SIZE  (8 + UDP_MAX_TARGETS * 12)
+#define UDP_PACKET_SIZE  (8 + MAX_TARGETS * 12)
 
 // =========================================================
 // private
@@ -75,7 +74,7 @@ int udp_loop(uint32_t dwell_id,
 {
     if (sock_fd < 0) return -1;
     if (!targets && target_num > 0) return -1;
-    if (target_num > UDP_MAX_TARGETS) target_num = UDP_MAX_TARGETS;
+    if (target_num > MAX_TARGETS) target_num = MAX_TARGETS;
 
     int offset = 0;
 
