@@ -68,7 +68,6 @@ void *loader_thread_main(void *arg)
             break;
         }
 
-        // 버퍼를 확보했으니 '사용 중(BUF_BUSY)' 상태로 변경 (다른 스레드가 건들지 못하게)
         atomic_store_explicit(&a->pipe->rd_maps[raw_idx].state, BUF_FILLING, memory_order_release);
         // =================================================================
 
@@ -90,6 +89,8 @@ void *loader_thread_main(void *arg)
             break;
         }
         fclose(fp);
+        
+        snprintf(a->pipe->filenames[raw_idx], 256, "%s", fname);
 
         double t1 = now_ms();
 

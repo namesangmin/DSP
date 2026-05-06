@@ -32,6 +32,7 @@ OBJS = \
     Src/doppler_fft.o \
     Src/cfar.o \
     Src/print.o \
+    Src/cluster.o \
     Src/settings/core_set.o \
     Src/settings/pipeline_set.o \
     Src/thread/loader_thread.o \

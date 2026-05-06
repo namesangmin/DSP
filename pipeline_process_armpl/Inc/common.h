@@ -10,6 +10,7 @@ typedef struct {
     double doppler_total_ms;
     double cfar_ms;
     double transpose_ms;
+    double cluster_ms;
     double total_time_ms;
     double algo_only_ms;
     int detections;
@@ -28,6 +29,7 @@ typedef struct {
     double mti_ms;
     double mtd_ms;
     double cfar_ms;
+    double cluster_ms;
 } PipelineTiming;
 
 #define CMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])

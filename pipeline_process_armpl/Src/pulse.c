@@ -257,6 +257,7 @@ int pulse_compress_ctx_init(const RadarMeta *meta, PulseCompressCtx *ctx)
     for (int i = 0; i < ctx->nfft; ++i) {
         ctx->H[i] *= inv_n;
     }
+
     return 0;
 }
 
@@ -284,6 +285,7 @@ int pulse_compress_one(PulseCompressCtx *ctx,
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
     long sec, nsec;
+
     if (!ctx) {
         fprintf(stderr, "pulse_compress_one: ctx is NULL\n");
         return -1;
@@ -306,13 +308,12 @@ int pulse_compress_one(PulseCompressCtx *ctx,
         return -1;
     }
     
-    const int inc = 1;
+    //const int inc = 1;
     
     //ccopy_(&ctx->input_len, (float complex *)raw_pulse, &inc, ctx->X, &inc);
     memcpy(ctx->X, raw_pulse, (size_t)ctx->input_len * sizeof(float complex));
 
-    memset(ctx->X + ctx->input_len, 0,
-        (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
+    memset(ctx->X + ctx->input_len, 0, (size_t)(ctx->nfft - ctx->input_len) * sizeof(float complex));
 
     fftwf_execute(ctx->forward_plan);
 

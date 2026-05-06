@@ -25,11 +25,13 @@
 #include "loader_thread.h"
 #include "pulse_compress_thread.h"
 #include "print.h"
+#include "cluster.h"
 
 // =========================================================
 // 전역 상태 - init()에서 한 번만 초기화
 // =========================================================
 typedef struct {
+    int valid_files;
     Pipeline        pipe;
 
     LoaderArgs      ld;
@@ -44,8 +46,12 @@ typedef struct {
     PipelineTiming  timing;
     Accumulator total_acc;
     DetectionList *history;
-    int valid_files;
 
+    ClusterWorkspace cluster_ws;   // 추가
+    ClusterParams    cluster_params; // 추가
+    ClusterList      clusters;     // 추가
+    ClusterList *cluster_history;  // 추가
+    
     pthread_t th_loader;
     pthread_t th_even;
     pthread_t th_odd;
@@ -142,9 +148,28 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
         return -1;
     }
 
-    // =========================================================
-    // args 초기화 - 한 번만
-    // =========================================================
+    if (init_cluster_workspace(&s->cluster_ws,
+                            meta->num_fast_time_samples,
+                            meta->num_pulses,
+                            (float)meta->fs_hz,
+                            299792458.0f,
+                            (float)meta->prf_hz,
+                            (float)meta->fc_hz,
+                            meta->num_pulses) != 0) {
+        fprintf(stderr, "init_cluster_workspace failed\n");
+        cleanup_doppler_workspace(&s->doppler_ws);
+        cleanup_cfar_workspace(&s->cfar_ws);
+        pulse_compress_ctx_destroy(&s->wk_even.ctx);
+        pulse_compress_ctx_destroy(&s->wk_odd.ctx);
+        loader_thread_destroy(&s->ld);
+        post_queue_destroy(&s->pipe.post_q);
+        pulse_queue_destroy(&s->pipe.even_q);
+        pulse_queue_destroy(&s->pipe.odd_q);
+        cleanup_pipeline_pool(&s->pipe);
+        return -1;
+    }
+
+    s->cluster_history = calloc(num_files, sizeof(ClusterList));
     s->history = calloc(num_files, sizeof(DetectionList));
     s->valid_files = 0;
     s->total_acc = (Accumulator){0};
@@ -174,12 +199,23 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     s->post.det        = &s->det;
     s->post.cfar_ws    = &s->cfar_ws;
     s->post.doppler_ws = &s->doppler_ws;
+    s->post.cluster_ws     = &s->cluster_ws;
+    s->post.clusters       = &s->clusters;
+    s->post.cluster_params = &s->cluster_params;
     s->post.cpu_id     = 3;
     s->post.timing     = &s->timing;
     s->post.total_acc   = &s->total_acc;
     s->post.history     = s->history;
     s->post.valid_files = &s->valid_files;
+    s->post.cluster_history = s->cluster_history;
 
+    s->cluster_params = (ClusterParams){
+        .range_radius   = 2,
+        .doppler_radius = 2,
+        .min_pts        = 3,
+        .max_targets    = 5,
+        .power_ratio_min = 0.1f,  // 1위의 10% 미만이면 사이드로브로 제거
+    };
     return 0;
 }
 
@@ -196,6 +232,7 @@ static void app_cleanup(void) {
     pulse_compress_ctx_destroy(&g_state.wk_odd.ctx);
     cleanup_cfar_workspace(&g_state.cfar_ws);
     cleanup_doppler_workspace(&g_state.doppler_ws);
+    cleanup_cluster_workspace(&g_state.cluster_ws);
     free_detection_list(&g_state.det);
 }
 
@@ -239,7 +276,7 @@ static int process_directory(const char *dir_path, const char *metadata_path) {
     pthread_join(s->th_post,   NULL);
    
     if (s->valid_files > 0) {
-        print_trajectory_summary(s->history, s->valid_files);
+        print_trajectory_summary(s->history, s->cluster_history, s->valid_files);
         print_global_average(&s->total_acc,
                              s->valid_files);
     }

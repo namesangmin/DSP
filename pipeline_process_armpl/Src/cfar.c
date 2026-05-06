@@ -73,7 +73,6 @@ void free_detection_list(DetectionList *list)
 {
     if (!list) return;
 
-    //if (list->items) free(list->items);
     list->items = NULL;
     list->count = 0;
 }
@@ -133,7 +132,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
     const int numTrainD = 4;
     const int numGuardR = 1;
     const int numGuardD = 1;
-    const float scale = 8.0f;
+    const float scale = 12.0f;
 
     int winR = numTrainR + numGuardR;
     int winD = numTrainD + numGuardD;

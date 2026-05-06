@@ -40,6 +40,8 @@ typedef struct {
     float complex *raw_data[NUM_BUFFERS];  // 단일 → 배열
     RdMapBuffer    rd_maps[NUM_BUFFERS];
     DopplerBuffer  doppler_maps[NUM_BUFFERS];
+    char filenames[NUM_BUFFERS][256];
+
 } Pipeline;
 
 struct RadarMeta;

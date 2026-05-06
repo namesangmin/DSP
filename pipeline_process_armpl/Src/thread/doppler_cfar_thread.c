@@ -23,17 +23,18 @@ void *post_thread_main(void *arg)
         int idx = job.buffer_idx;
         double execute_time = 0.0;
         
-a->timing->compress_core1_ms = a->pipe->compress_times[idx][0];
-a->timing->compress_core2_ms = a->pipe->compress_times[idx][1];
-a->pipe->compress_times[idx][0] = 0.0;
-a->pipe->compress_times[idx][1] = 0.0;
+        a->timing->compress_core1_ms = a->pipe->compress_times[idx][0];
+        a->timing->compress_core2_ms = a->pipe->compress_times[idx][1];
+        a->pipe->compress_times[idx][0] = 0.0;
+        a->pipe->compress_times[idx][1] = 0.0;
 
-// 실제 파이프라인 딜레이는 두 코어 중 "더 오래 걸린 놈"의 시간입니다.
-if (a->timing->compress_core1_ms > a->timing->compress_core2_ms) {
-    a->timing->compress_ms = a->timing->compress_core1_ms;
-} else {
-    a->timing->compress_ms = a->timing->compress_core2_ms;
-}
+        // 실제 파이프라인 딜레이는 두 코어 중 "더 오래 걸린 놈"의 시간입니다.
+        if (a->timing->compress_core1_ms > a->timing->compress_core2_ms) {
+            a->timing->compress_ms = a->timing->compress_core1_ms;
+        } 
+        else {
+            a->timing->compress_ms = a->timing->compress_core2_ms;
+        }
 
         atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_PROCESSING, memory_order_release);
         // =========================================================
@@ -84,21 +85,40 @@ if (a->timing->compress_core1_ms > a->timing->compress_core2_ms) {
         a->timing->cfar_ms = execute_time;
 
         // =========================================================
-        // 3. 버퍼 반납 + 인덱스 증가
+        // 3. Clustering
+        // =========================================================
+        execute_time = 0.0;
+        cluster_detections(a->cfar_ws->det_mask,    // cfar_ws 안에 있음
+                        a->cfar_ws->powerMap,     // cfar_ws 안에 있음
+                        a->cluster_params,
+                        a->cluster_ws,
+                        a->clusters,
+                        &execute_time);
+        a->timing->cluster_ms = execute_time;
+
+        // cluster history 저장
+        int fi = *a->valid_files;
+
+        if (a->cluster_history && a->clusters->count > 0) {
+            a->cluster_history[fi].count = a->clusters->count;
+            a->cluster_history[fi].items = malloc(a->clusters->count * sizeof(ClusterResult));
+            if (a->cluster_history[fi].items) {
+                memcpy(a->cluster_history[fi].items, a->clusters->items,
+                    a->clusters->count * sizeof(ClusterResult));
+            }
+        }
+        // =========================================================
+        // 4. 버퍼 반납 + 인덱스 증가
         // =========================================================
         atomic_store_explicit(&a->pipe->rd_maps[idx].done_count, 0, memory_order_release);
         atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_FREE, memory_order_release);
       
         // =========================================================
-        // 4. 결과 출력 + 누적
+        // 5. 결과 출력 + 누적
         // =========================================================
-        int fi = *a->valid_files;
-
-        // printf("\n=========================================================\n");
-        // printf("[FILE %d]\n", fi + 1);
-        // printf("=========================================================\n");
-
-       // print_file_result(a->timing, a->det, fi + 1);
+        snprintf(a->history[fi].filename, 256, "%s", a->pipe->filenames[idx]);
+       
+        print_file_result(a->timing, a->det, a->clusters, fi);
 
         Detection best = {0};
         best.range_bin = -1;
@@ -114,7 +134,7 @@ if (a->timing->compress_core1_ms > a->timing->compress_core2_ms) {
         }
 
         (*a->valid_files)++;
-       // printf("valid files: %d\n", *a->valid_files);
+        
         // =========================================================
         // 5. 다음 파일 위한 리셋
         // =========================================================

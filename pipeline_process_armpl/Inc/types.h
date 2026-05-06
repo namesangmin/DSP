@@ -22,10 +22,4 @@ typedef struct {
     float complex *data;
 } ComplexMatrix;
 
-// RawIQSample은 아래에서 따로 설명
-// typedef struct {
-//     double i;
-//     double q;
-// } RawIQSample;
-
 #endif
