@@ -2,6 +2,8 @@
 #define UDP_H
 
 #include <stdint.h>
+#include "common.h"
+
 #define MAX_TARGETS (32)   // 추가
 
 // =========================================================
@@ -19,12 +21,20 @@
 typedef struct {
     uint32_t dwell_id;
     uint32_t target_num;
+    float theta;
+    float phi;
+    double compress_ms;
+    double transpose_ms;
+    double mti_ms;
+    double mtd_ms;
+    double cfar_ms;
+    double cluster_ms;
 } udp_header_t;
 
 typedef struct {
-    float range_m;
-    float velocity_mps;
-    float peak_power;
+    float distance;
+    float speed;
+    //float peak_power;
 } udp_target_t;
 
 // =========================================================
@@ -32,8 +42,10 @@ typedef struct {
 // =========================================================
 int  udp_init(const char *dst_ip, uint16_t dst_port);
 int  udp_loop(uint32_t dwell_id,
-              uint32_t target_num,
-              const udp_target_t *targets);
+            uint32_t target_num,
+            const udp_target_t *targets,
+            float angle,    
+            PipelineTiming *timing);
 void udp_destroy(void);
 
 #endif /* UDP_H */

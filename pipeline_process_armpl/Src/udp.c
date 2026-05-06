@@ -36,6 +36,50 @@ static void write_f32(uint8_t *buf, float val)
     write_u32(buf, u);
 }
 
+/* uint64_t를 big-endian 버퍼에 씀 */
+static void write_u64(uint8_t *buf, uint64_t val)
+{
+    buf[0] = (val >> 56) & 0xFF;
+    buf[1] = (val >> 48) & 0xFF;
+    buf[2] = (val >> 40) & 0xFF;
+    buf[3] = (val >> 32) & 0xFF;
+    buf[4] = (val >> 24) & 0xFF;
+    buf[5] = (val >> 16) & 0xFF;
+    buf[6] = (val >>  8) & 0xFF;
+    buf[7] = (val      ) & 0xFF;
+}
+
+/* double을 big-endian 버퍼에 씀 */
+static void write_f64(uint8_t *buf, double val)
+{
+    uint64_t tmp;
+    memcpy(&tmp, &val, sizeof(uint64_t));
+    write_u64(buf, tmp);
+}
+
+
+static int serialize_meta(const udp_header_t *meta, uint8_t *buf, int start_offset)
+{
+    int offset = start_offset;
+    write_u32(buf + offset, meta->dwell_id);   offset += 4;
+    write_u32(buf + offset, meta->target_num); offset += 4;
+    write_f32(buf + offset, meta->theta);      offset += 4;
+    write_f32(buf + offset, meta->phi);        offset += 4;
+    write_f64(buf + offset, meta->compress_ms + meta->transpose_ms);   offset += 8;
+    write_f64(buf + offset, meta->mti_ms); offset += 8;
+    write_f64(buf + offset, meta->mtd_ms);   offset += 8;
+    write_f64(buf + offset, meta->cfar_ms); offset += 8;
+    write_f64(buf + offset, meta->cluster_ms);   offset += 8;
+    return offset;
+}
+
+static int serialize_data(const udp_target_t *data, uint8_t *buf, int offset)
+{
+    write_f32(buf + offset, data->distance);    offset += 4;
+    write_f32(buf + offset, data->speed);       offset += 4;
+
+    return offset;
+}
 // =========================================================
 // public
 // =========================================================
@@ -69,31 +113,43 @@ int udp_init(const char *dst_ip, uint16_t dst_port)
 }
 
 int udp_loop(uint32_t dwell_id,
-             uint32_t target_num,
-             const udp_target_t *targets)
+            uint32_t target_num,
+            const udp_target_t *targets,
+            float angle,
+            PipelineTiming *timing)
 {
     if (sock_fd < 0) return -1;
-    if (!targets && target_num > 0) return -1;
+    if (!targets && target_num > 0) return -2;
     if (target_num > MAX_TARGETS) target_num = MAX_TARGETS;
 
-    int offset = 0;
+    int len = 0;
+    udp_header_t meta;
 
-    // Header
-    write_u32(pkt_buf + offset, dwell_id);    offset += 4;
-    write_u32(pkt_buf + offset, target_num);  offset += 4;
+    meta.dwell_id = (uint32_t)dwell_id;
+    meta.target_num = (uint32_t)target_num;
+    meta.theta = 45.0f;
+    meta.phi = angle;
+    meta.compress_ms = timing->compress_ms;
+    meta.transpose_ms = timing->transpose_ms;
+    meta.mti_ms = timing->mti_ms;
+    meta.mtd_ms = timing->mtd_ms;
+    meta.cfar_ms = timing->cfar_ms;
+    meta.cluster_ms = timing->cluster_ms;
 
-    // Per target
-    for (uint32_t i = 0; i < target_num; i++) {
-        write_f32(pkt_buf + offset, targets[i].range_m);      offset += 4;
-        write_f32(pkt_buf + offset, targets[i].velocity_mps); offset += 4;
-        write_f32(pkt_buf + offset, targets[i].peak_power);   offset += 4;
+    len = serialize_meta(&meta, pkt_buf, len);
+    for (int i = 0; i < target_num; i++) {
+        len = serialize_data(targets + i, pkt_buf, len);
     }
 
-    ssize_t sent = sendto(sock_fd, pkt_buf, (size_t)offset, 0,
+    ssize_t sent = sendto(sock_fd, pkt_buf, (size_t)len, 0,
                           (struct sockaddr *)&dst_addr, sizeof(dst_addr));
     if (sent < 0) {
         perror("udp: sendto");
-        return -2;
+        return -3;
+    }
+
+    if(sent != len){
+        return -4;
     }
 
     return 0;

@@ -114,33 +114,24 @@ void *post_thread_main(void *arg)
         // 4. 그래프 + 표적 정보 보냄
         // =========================================================
         uint32_t dwell_id = a->pipe->dwell_ids[idx];
-       
-        // UDP - 표적 정보
+        uint32_t channel = (dwell_id - 126) % 7;
+        float phi = channel * (180.0f / 7.0f);
+        
         udp_target_t targets[MAX_TARGETS];
         for (int i = 0; i < a->clusters->count; i++) {
-            targets[i].range_m      = a->clusters->items[i].range_m;
-            targets[i].velocity_mps = a->clusters->items[i].velocity_mps;
-            targets[i].peak_power   = a->clusters->items[i].peak_power;
+            targets[i].distance = a->clusters->items[i].range_m;
+            targets[i].speed = a->clusters->items[i].velocity_mps;
         }
-        udp_loop(dwell_id, (uint32_t)a->clusters->count, targets);
+        udp_loop(dwell_id, (uint32_t)a->clusters->count, targets, phi, a->timing);
 
-        // TCP - 그래프 데이터
-        graph_timing_t gt = {
-            .compress_ms  = a->timing->compress_ms,
-            .transpose_ms = a->timing->transpose_ms,
-            .mti_ms       = a->timing->mti_ms,
-            .mtd_ms       = a->timing->mtd_ms,
-            .cfar_ms      = a->timing->cfar_ms,
-            .cluster_ms   = a->timing->cluster_ms,
-        };
-        send_graph_data_loop(dwell_id,
+        send_graph_data(dwell_id,
             a->meta->num_fast_time_samples, a->meta->num_pulses,
             a->pipe->raw_data[idx],              // rxsig
             a->pipe->rd_maps[idx].data.data,     // pc_map
             a->cfar_ws->powerMap,
             a->cfar_ws->threshold_map,
-            a->cfar_ws->det_mask,
-            &gt);
+            a->cfar_ws->det_mask);
+            
         // =========================================================
         // 5. 버퍼 반납 + 인덱스 증가
         // =========================================================

@@ -1,5 +1,5 @@
-//#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -7,28 +7,19 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <complex.h>
-#include <math.h>
+#include <fftw3.h>
+#include <time.h>
 
 #include "send_graph_data.h"
 
 #define MAGIC        (0xDEADBEEFu)
-#define HEADER_SIZE  (16)   // magic + dwell_id + num_fasttime + num_pulses
-#define MAP_COUNT    (5)    // rxsig, pc_map, power_map, threshold, det_mask
-#define TIMING_COUNT (6)    // compress, transpose, mti, mtd, cfar, cluster
+#define HEADER_SIZE  (16)
 
-// 전체 패킷 크기 계산
-// float map 4개 + uint8 map 1개 + timing 6 * double
-#define TX_MAP_CELLS  (TX_FASTTIME * TX_PULSES)
-#define PAYLOAD_SIZE  (TX_MAP_CELLS * 4u * 4u   \
-                     + TX_MAP_CELLS * 1u         \
-                     + TIMING_COUNT * 8u)
-
-// =========================================================
-// private
-// =========================================================
-static int               sock_fd    = -1;
-static uint8_t          *pkt_buf    = NULL;  // header + payload
-static float complex    *transpose_buf = NULL; // transpose 작업용
+/* private */
+static int sock_fd = -1;
+static uint8_t *tmp = NULL;
+static fftwf_complex *rxsig_transpose = NULL;
+static uint8_t header[HEADER_SIZE];
 
 static void write_u32(uint8_t *buf, uint32_t val)
 {
@@ -41,185 +32,317 @@ static void write_u32(uint8_t *buf, uint32_t val)
 static void write_f32(uint8_t *buf, float val)
 {
     uint32_t u;
+
     memcpy(&u, &val, sizeof(uint32_t));
     write_u32(buf, u);
 }
 
-static void write_f64(uint8_t *buf, double val)
+static void write_i32(uint8_t *buf, int val)
 {
-    uint64_t u;
-    memcpy(&u, &val, sizeof(uint64_t));
-    buf[0] = (u >> 56) & 0xFF;
-    buf[1] = (u >> 48) & 0xFF;
-    buf[2] = (u >> 40) & 0xFF;
-    buf[3] = (u >> 32) & 0xFF;
-    buf[4] = (u >> 24) & 0xFF;
-    buf[5] = (u >> 16) & 0xFF;
-    buf[6] = (u >>  8) & 0xFF;
-    buf[7] = (u      ) & 0xFF;
+    uint32_t u;
+
+    memcpy(&u, &val, sizeof(uint32_t));
+    write_u32(buf, u);
 }
 
 static int send_all(int fd, const uint8_t *buf, size_t len)
 {
-    size_t  total = 0;
+    size_t total = 0;
     ssize_t n;
 
     while (total < len) {
         n = send(fd, buf + total, len - total, 0);
+
         if (n < 0) {
-            if (errno == EINTR) continue;
-            perror("tcp: send");
+            if (errno == EINTR) {
+                continue;
+            }
+
+            perror("send");
             return -1;
         }
+
         if (n == 0) {
-            fprintf(stderr, "tcp: send returned 0\n");
+            fprintf(stderr, "send returned 0\n");
             return -1;
         }
+
         total += (size_t)n;
     }
+
     return 0;
 }
 
-// =========================================================
-// 다운샘플 헬퍼
-// =========================================================
-
-// [pulse][range] 배치 복소수 → transpose → power 평균
-static float pooled_complex_power(uint32_t dst_ft, uint32_t dst_pl,
-                                   uint32_t dst_fasttime, uint32_t dst_pulses,
-                                   uint32_t src_fasttime, uint32_t src_pulses,
-                                   const float complex *src_range_pulse)
+static int serialize_header(uint8_t *buf, uint32_t dwell_id)
 {
-    // src: [range][pulse] 배치 (transpose 완료 상태)
-    uint32_t ft_s = (uint64_t)dst_ft * src_fasttime / dst_fasttime;
-    uint32_t ft_e = (uint64_t)(dst_ft + 1) * src_fasttime / dst_fasttime;
-    uint32_t pl_s = (uint64_t)dst_pl * src_pulses / dst_pulses;
-    uint32_t pl_e = (uint64_t)(dst_pl + 1) * src_pulses / dst_pulses;
+    int offset = 0;
 
-    if (ft_e <= ft_s) ft_e = ft_s + 1;
-    if (pl_e <= pl_s) pl_e = pl_s + 1;
-    if (ft_e > src_fasttime) ft_e = src_fasttime;
-    if (pl_e > src_pulses)   pl_e = src_pulses;
+    /*
+     * TCP header format
+     *
+     * magic       uint32
+     * dwell_id    uint32
+     * fasttime    uint32
+     * pulses      uint32
+     */
+    write_u32(buf + offset, MAGIC);        offset += 4;
+    write_u32(buf + offset, dwell_id);     offset += 4;
+    write_u32(buf + offset, TX_FASTTIME);  offset += 4;
+    write_u32(buf + offset, TX_PULSES);    offset += 4;
 
-    double sum   = 0.0;
-    uint32_t cnt = 0;
-
-    for (uint32_t ft = ft_s; ft < ft_e; ft++) {
-        for (uint32_t pl = pl_s; pl < pl_e; pl++) {
-            float complex v = src_range_pulse[ft * src_pulses + pl];
-            float re = crealf(v), im = cimagf(v);
-            sum += (double)(re * re + im * im);
-            cnt++;
-        }
-    }
-    return (cnt > 0) ? (float)(sum / cnt) : 0.0f;
+    return offset;
 }
 
-// float map 평균 ([range][doppler] 배치)
-static float pooled_float(uint32_t dst_ft, uint32_t dst_pl,
-                           uint32_t dst_fasttime, uint32_t dst_pulses,
-                           uint32_t src_fasttime, uint32_t src_pulses,
-                           const float *src)
+static inline float calc_power_from_rxsig(const fftwf_complex x)
 {
-    uint32_t ft_s = (uint64_t)dst_ft * src_fasttime / dst_fasttime;
-    uint32_t ft_e = (uint64_t)(dst_ft + 1) * src_fasttime / dst_fasttime;
-    uint32_t pl_s = (uint64_t)dst_pl * src_pulses / dst_pulses;
-    uint32_t pl_e = (uint64_t)(dst_pl + 1) * src_pulses / dst_pulses;
+    const float re = creal(x);
+    const float im = cimag(x);
 
-    if (ft_e <= ft_s) ft_e = ft_s + 1;
-    if (pl_e <= pl_s) pl_e = pl_s + 1;
-    if (ft_e > src_fasttime) ft_e = src_fasttime;
-    if (pl_e > src_pulses)   pl_e = src_pulses;
-
-    double   sum = 0.0;
-    uint32_t cnt = 0;
-
-    for (uint32_t ft = ft_s; ft < ft_e; ft++) {
-        for (uint32_t pl = pl_s; pl < pl_e; pl++) {
-            sum += (double)src[ft * src_pulses + pl];
-            cnt++;
-        }
-    }
-    return (cnt > 0) ? (float)(sum / cnt) : 0.0f;
+    return re * re + im * im;
 }
 
-// uint8 OR ([range][doppler] 배치)
-static uint8_t pooled_mask(uint32_t dst_ft, uint32_t dst_pl,
-                            uint32_t dst_fasttime, uint32_t dst_pulses,
-                            uint32_t src_fasttime, uint32_t src_pulses,
-                            const uint8_t *src)
+static inline void get_src_block_range(
+    uint32_t dst_ft,
+    uint32_t dst_pl,
+    uint32_t dst_fasttime,
+    uint32_t dst_pulses,
+    uint32_t src_fasttime,
+    uint32_t src_pulses,
+    uint32_t *ft_start,
+    uint32_t *ft_end,
+    uint32_t *pl_start,
+    uint32_t *pl_end
+)
 {
-    uint32_t ft_s = (uint64_t)dst_ft * src_fasttime / dst_fasttime;
-    uint32_t ft_e = (uint64_t)(dst_ft + 1) * src_fasttime / dst_fasttime;
-    uint32_t pl_s = (uint64_t)dst_pl * src_pulses / dst_pulses;
-    uint32_t pl_e = (uint64_t)(dst_pl + 1) * src_pulses / dst_pulses;
+    *ft_start = (uint64_t)dst_ft * src_fasttime / dst_fasttime;
+    *ft_end = (uint64_t)(dst_ft + 1) * src_fasttime / dst_fasttime;
+    *pl_start = (uint64_t)dst_pl * src_pulses / dst_pulses;
+    *pl_end = (uint64_t)(dst_pl + 1) * src_pulses / dst_pulses;
 
-    if (ft_e <= ft_s) ft_e = ft_s + 1;
-    if (pl_e <= pl_s) pl_e = pl_s + 1;
-    if (ft_e > src_fasttime) ft_e = src_fasttime;
-    if (pl_e > src_pulses)   pl_e = src_pulses;
+    if (*ft_end <= *ft_start) {
+        *ft_end = *ft_start + 1;
+    }
 
-    for (uint32_t ft = ft_s; ft < ft_e; ft++) {
-        for (uint32_t pl = pl_s; pl < pl_e; pl++) {
-            if (src[ft * src_pulses + pl]) return 1;
+    if (*pl_end <= *pl_start) {
+        *pl_end = *pl_start + 1;
+    }
+
+    if (*ft_end > src_fasttime) {
+        *ft_end = src_fasttime;
+    }
+
+    if (*pl_end > src_pulses) {
+        *pl_end = src_pulses;
+    }
+}
+
+static float pooled_rxsig_power_mean(
+    uint32_t dst_ft,
+    uint32_t dst_pl,
+    uint32_t dst_fasttime,
+    uint32_t dst_pulses,
+    uint32_t src_fasttime,
+    uint32_t src_pulses,
+    const fftwf_complex *rxsig
+)
+{
+    uint32_t ft_start, ft_end, pl_start, pl_end;
+    uint32_t count;
+    uint32_t idx;
+    uint32_t sft, spl;
+    double sum;
+
+    get_src_block_range(
+        dst_ft,
+        dst_pl,
+        dst_fasttime,
+        dst_pulses,
+        src_fasttime,
+        src_pulses,
+        &ft_start,
+        &ft_end,
+        &pl_start,
+        &pl_end
+    );
+
+    sum = 0.0;
+    count = 0;
+
+    for (sft = ft_start; sft < ft_end; ++sft) {
+        for (spl = pl_start; spl < pl_end; ++spl) {
+            idx = sft * src_pulses + spl;
+            sum += (double)calc_power_from_rxsig(rxsig[idx]);
+            ++count;
         }
     }
+
+    return (count > 0) ? (float)(sum / (double)count) : 0.0f;
+}
+
+static float pooled_f32_mean(
+    uint32_t dst_ft,
+    uint32_t dst_pl,
+    uint32_t dst_fasttime,
+    uint32_t dst_pulses,
+    uint32_t src_fasttime,
+    uint32_t src_pulses,
+    const float *src
+)
+{
+    uint32_t ft_start, ft_end, pl_start, pl_end;
+    uint32_t count;
+    uint32_t idx;
+    uint32_t sft, spl;
+    double sum;
+
+    get_src_block_range(
+        dst_ft,
+        dst_pl,
+        dst_fasttime,
+        dst_pulses,
+        src_fasttime,
+        src_pulses,
+        &ft_start,
+        &ft_end,
+        &pl_start,
+        &pl_end
+    );
+
+    sum = 0.0;
+    count = 0;
+
+    for (sft = ft_start; sft < ft_end; ++sft) {
+        for (spl = pl_start; spl < pl_end; ++spl) {
+            idx = sft * src_pulses + spl;
+            sum += (double)src[idx];
+            ++count;
+        }
+    }
+
+    return (count > 0) ? (float)(sum / (double)count) : 0.0f;
+}
+
+static int pooled_det_mask_value(
+    uint32_t dst_ft,
+    uint32_t dst_pl,
+    uint32_t dst_fasttime,
+    uint32_t dst_pulses,
+    uint32_t src_fasttime,
+    uint32_t src_pulses,
+    const uint8_t *det_mask
+)
+{
+    uint32_t ft_start, ft_end, pl_start, pl_end;
+    uint32_t idx;
+    uint32_t sft, spl;
+
+    get_src_block_range(
+        dst_ft,
+        dst_pl,
+        dst_fasttime,
+        dst_pulses,
+        src_fasttime,
+        src_pulses,
+        &ft_start,
+        &ft_end,
+        &pl_start,
+        &pl_end
+    );
+
+    for (sft = ft_start; sft < ft_end; ++sft) {
+        for (spl = pl_start; spl < pl_end; ++spl) {
+            idx = sft * src_pulses + spl;
+
+            if (det_mask[idx] != 0) {
+                return 1;
+            }
+        }
+    }
+
     return 0;
 }
 
-// =========================================================
-// public
-// =========================================================
-int send_graph_data_init(const char *dst_ip, uint16_t dst_port,
-                                 int num_fasttime, int num_pulses)
+/* public */
+int send_graph_data_init(
+    const char *dst_ip,
+    uint16_t dst_port,
+    int fasttime,
+    int num_pulses
+)
 {
     struct sockaddr_in addr;
+    uint32_t tx_map_count;
+    int tcp_prio;
+    int snd;
+    int rcv;
 
-    if (!dst_ip) return -1;
+    tcp_prio = 0;
+    snd = 1073741824;
+    rcv = 1073741824;
+    tx_map_count = TX_FASTTIME * TX_PULSES;
 
     sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_fd < 0) {
-        perror("tcp: socket");
+        perror("socket");
         return -1;
     }
 
-    int snd = 1 << 20; // 1MB send buffer
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY,
+                   &tcp_prio, sizeof(tcp_prio)) < 0) {
+        perror("setsockopt SO_PRIORITY tcp");
+    }
+
     setsockopt(sock_fd, SOL_SOCKET, SO_SNDBUF, &snd, sizeof(snd));
+    setsockopt(sock_fd, SOL_SOCKET, SO_RCVBUF, &rcv, sizeof(rcv));
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_port   = htons(dst_port);
+    addr.sin_port = htons(dst_port);
 
     if (inet_pton(AF_INET, dst_ip, &addr.sin_addr) <= 0) {
-        perror("tcp: inet_pton");
+        perror("inet_pton");
         close(sock_fd);
         sock_fd = -1;
         return -2;
     }
 
     if (connect(sock_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("tcp: connect");
+        perror("connect");
         close(sock_fd);
         sock_fd = -1;
         return -3;
     }
 
-    // 패킷 버퍼 할당
-    pkt_buf = (uint8_t *)malloc(HEADER_SIZE + PAYLOAD_SIZE);
-    if (!pkt_buf) {
-        perror("tcp: malloc pkt_buf");
+    /*
+     * TCP payload:
+     *
+     * 1. rxsig power map
+     * 2. pc_map power map
+     * 3. power_map
+     * 4. threshold_map
+     * 5. det_mask
+     *
+     * 각 map 크기:
+     * TX_FASTTIME * TX_PULSES * 4 bytes
+     */
+    tmp = (uint8_t *)malloc((size_t)tx_map_count * 4u * 5u);
+    if (!tmp) {
+        perror("malloc");
         close(sock_fd);
         sock_fd = -1;
         return -4;
     }
 
-    // transpose 작업 버퍼: [range][pulse]
-    transpose_buf = (float complex *)malloc(
-        (size_t)num_fasttime * (size_t)num_pulses * sizeof(float complex));
-    if (!transpose_buf) {
-        perror("tcp: malloc transpose_buf");
-        free(pkt_buf);
-        pkt_buf = NULL;
+    rxsig_transpose = (fftwf_complex *)fftwf_malloc(
+        sizeof(fftwf_complex) *
+        (size_t)fasttime *
+        (size_t)num_pulses
+    );
+
+    if (!rxsig_transpose) {
+        perror("fftwf_malloc");
+        free(tmp);
+        tmp = NULL;
         close(sock_fd);
         sock_fd = -1;
         return -5;
@@ -228,127 +351,167 @@ int send_graph_data_init(const char *dst_ip, uint16_t dst_port,
     return 0;
 }
 
-int send_graph_data_loop(uint32_t              dwell_id,
-                          uint32_t              num_fasttime,
-                          uint32_t              num_pulses,
-                          const void           *rxsig,
-                          const void           *pc_map,
-                          const float          *power_map,
-                          const float          *threshold_map,
-                          const uint8_t        *det_mask,
-                          const graph_timing_t *timing)
+int send_graph_data(
+    uint32_t dwell_id,
+    uint32_t num_fasttime,
+    uint32_t num_pulses,
+    const void *rxsig,
+    const void *pc_map,
+    const float *power_map,
+    const float *threshold_map,
+    const uint8_t *det_mask)
 {
-    if (sock_fd < 0)                                         return -1;
-    if (!rxsig || !pc_map || !power_map ||
-        !threshold_map || !det_mask || !timing)              return -1;
+#ifdef DEBUG
+    struct timespec start, end;
+    long sec, nsec;
+    double elapsed;
 
-    const float complex *rxsig_fc  = (const float complex *)rxsig;
-    const float complex *pc_map_fc = (const float complex *)pc_map;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+#endif
 
-    int offset = 0;
+    uint32_t src_fasttime;
+    uint32_t src_pulses;
+    uint32_t tx_map_count;
+    uint32_t ft;
+    uint32_t pl;
+    uint32_t dst_idx;
 
-    // =========================================================
-    // Header
-    // =========================================================
-    write_u32(pkt_buf + offset, MAGIC);        offset += 4;
-    write_u32(pkt_buf + offset, dwell_id);     offset += 4;
-    write_u32(pkt_buf + offset, TX_FASTTIME);  offset += 4;
-    write_u32(pkt_buf + offset, TX_PULSES);    offset += 4;
+    uint8_t *buf_rxsig;
+    uint8_t *buf_pc;
+    uint8_t *buf_power;
+    uint8_t *buf_thresh;
+    uint8_t *buf_det;
 
-    // =========================================================
-    // rxsig: [pulse][range] → transpose → [range][pulse] → power 다운샘플
-    // =========================================================
-    for (uint32_t r = 0; r < num_fasttime; r++) {
-        for (uint32_t p = 0; p < num_pulses; p++) {
-            transpose_buf[r * num_pulses + p] = rxsig_fc[p * num_fasttime + r];
-        }
-    }
-    for (uint32_t ft = 0; ft < TX_FASTTIME; ft++) {
-        for (uint32_t pl = 0; pl < TX_PULSES; pl++) {
-            float v = pooled_complex_power(ft, pl,
-                          TX_FASTTIME, TX_PULSES,
-                          num_fasttime, num_pulses,
-                          transpose_buf);
-            write_f32(pkt_buf + offset, v);
-            offset += 4;
-        }
+    if (sock_fd < 0) {
+        return -1;
     }
 
-    // =========================================================
-    // pc_map: 동일하게 [pulse][range] → transpose → power 다운샘플
-    // =========================================================
-    for (uint32_t r = 0; r < num_fasttime; r++) {
-        for (uint32_t p = 0; p < num_pulses; p++) {
-            transpose_buf[r * num_pulses + p] = pc_map_fc[p * num_fasttime + r];
-        }
-    }
-    for (uint32_t ft = 0; ft < TX_FASTTIME; ft++) {
-        for (uint32_t pl = 0; pl < TX_PULSES; pl++) {
-            float v = pooled_complex_power(ft, pl,
-                          TX_FASTTIME, TX_PULSES,
-                          num_fasttime, num_pulses,
-                          transpose_buf);
-            write_f32(pkt_buf + offset, v);
-            offset += 4;
-        }
+    if (!rxsig || !pc_map || !power_map || !threshold_map || !det_mask) {
+        return -1;
     }
 
-    // =========================================================
-    // power_map: [range][doppler] → 다운샘플
-    // =========================================================
-    for (uint32_t ft = 0; ft < TX_FASTTIME; ft++) {
-        for (uint32_t pl = 0; pl < TX_PULSES; pl++) {
-            float v = pooled_float(ft, pl,
-                          TX_FASTTIME, TX_PULSES,
-                          num_fasttime, num_pulses,
-                          power_map);
-            write_f32(pkt_buf + offset, v);
-            offset += 4;
-        }
-    }
+    src_fasttime = num_fasttime;
+    src_pulses = num_pulses;
+    tx_map_count = TX_FASTTIME * TX_PULSES;
 
-    // =========================================================
-    // threshold_map: [range][doppler] → 다운샘플
-    // =========================================================
-    for (uint32_t ft = 0; ft < TX_FASTTIME; ft++) {
-        for (uint32_t pl = 0; pl < TX_PULSES; pl++) {
-            float v = pooled_float(ft, pl,
-                          TX_FASTTIME, TX_PULSES,
-                          num_fasttime, num_pulses,
-                          threshold_map);
-            write_f32(pkt_buf + offset, v);
-            offset += 4;
-        }
-    }
+    buf_rxsig = tmp + tx_map_count * 4u * 0u;
+    buf_pc = tmp + tx_map_count * 4u * 1u;
+    buf_power = tmp + tx_map_count * 4u * 2u;
+    buf_thresh = tmp + tx_map_count * 4u * 3u;
+    buf_det = tmp + tx_map_count * 4u * 4u;
 
-    // =========================================================
-    // det_mask: [range][doppler] → OR 다운샘플 (bool)
-    // =========================================================
-    for (uint32_t ft = 0; ft < TX_FASTTIME; ft++) {
-        for (uint32_t pl = 0; pl < TX_PULSES; pl++) {
-            pkt_buf[offset++] = pooled_mask(ft, pl,
-                                    TX_FASTTIME, TX_PULSES,
-                                    num_fasttime, num_pulses,
-                                    det_mask);
-        }
-    }
+    serialize_header(header, dwell_id);
 
-    // =========================================================
-    // Timing
-    // =========================================================
-    write_f64(pkt_buf + offset, timing->compress_ms);  offset += 8;
-    write_f64(pkt_buf + offset, timing->transpose_ms); offset += 8;
-    write_f64(pkt_buf + offset, timing->mti_ms);       offset += 8;
-    write_f64(pkt_buf + offset, timing->mtd_ms);       offset += 8;
-    write_f64(pkt_buf + offset, timing->cfar_ms);      offset += 8;
-    write_f64(pkt_buf + offset, timing->cluster_ms);   offset += 8;
-
-    // =========================================================
-    // 전송
-    // =========================================================
-    if (send_all(sock_fd, pkt_buf, (size_t)offset) < 0) {
+    if (send_all(sock_fd, header, HEADER_SIZE) < 0) {
         return -2;
     }
+
+    /*
+     * rxsig 입력은 [pulse][fasttime] 구조.
+     * Helix 그래프 송신은 [fasttime][pulse] 구조로 맞추기 위해 transpose.
+     */
+    for (ft = 0; ft < src_fasttime; ++ft) {
+        for (pl = 0; pl < src_pulses; ++pl) {
+            size_t dst = (size_t)ft * (size_t)src_pulses + (size_t)pl;
+            size_t src = (size_t)pl * (size_t)src_fasttime + (size_t)ft;
+
+            rxsig_transpose[dst] = ((fftwf_complex *)rxsig)[src];
+        }
+    }
+
+    /*
+     * 원본 로직 유지:
+     *
+     * rxsig        : transpose 후 power pooling
+     * pc_map       : 그대로 power pooling
+     * power_map    : 그대로 mean pooling
+     * thresholdMap : 그대로 mean pooling
+     * det_mask     : block 안에 탐지 있으면 1
+     */
+    for (ft = 0; ft < TX_FASTTIME; ++ft) {
+        for (pl = 0; pl < TX_PULSES; ++pl) {
+            dst_idx = ft * TX_PULSES + pl;
+
+            write_f32(
+                buf_rxsig + dst_idx * 4u,
+                pooled_rxsig_power_mean(
+                    ft,
+                    pl,
+                    TX_FASTTIME,
+                    TX_PULSES,
+                    src_fasttime,
+                    src_pulses,
+                    rxsig_transpose
+                )
+            );
+
+            write_f32(
+                buf_pc + dst_idx * 4u,
+                pooled_rxsig_power_mean(
+                    ft,
+                    pl,
+                    TX_FASTTIME,
+                    TX_PULSES,
+                    src_fasttime,
+                    src_pulses,
+                    (fftwf_complex *)pc_map
+                )
+            );
+
+            write_f32(
+                buf_power + dst_idx * 4u,
+                pooled_f32_mean(
+                    ft,
+                    pl,
+                    TX_FASTTIME,
+                    TX_PULSES,
+                    src_fasttime,
+                    src_pulses,
+                    power_map
+                )
+            );
+
+            write_f32(
+                buf_thresh + dst_idx * 4u,
+                pooled_f32_mean(
+                    ft,
+                    pl,
+                    TX_FASTTIME,
+                    TX_PULSES,
+                    src_fasttime,
+                    src_pulses,
+                    threshold_map
+                )
+            );
+
+            write_i32(
+                buf_det + dst_idx * 4u,
+                pooled_det_mask_value(
+                    ft,
+                    pl,
+                    TX_FASTTIME,
+                    TX_PULSES,
+                    src_fasttime,
+                    src_pulses,
+                    det_mask
+                )
+            );
+        }
+    }
+
+    if (send_all(sock_fd, tmp, (size_t)tx_map_count * 4u * 5u) < 0) {
+        return -3;
+    }
+
+#ifdef DEBUG
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    sec = end.tv_sec - start.tv_sec;
+    nsec = end.tv_nsec - start.tv_nsec;
+    elapsed = (double)sec + (double)nsec * 1e-9;
+
+    printf("TCP Send Time: %.9f sec\n", elapsed);
+#endif
 
     return 0;
 }
@@ -359,8 +522,14 @@ void send_graph_data_destroy(void)
         close(sock_fd);
         sock_fd = -1;
     }
-    free(pkt_buf);
-    pkt_buf = NULL;
-    free(transpose_buf);
-    transpose_buf = NULL;
+
+    if (tmp) {
+        free(tmp);
+        tmp = NULL;
+    }
+
+    if (rxsig_transpose) {
+        fftwf_free(rxsig_transpose);
+        rxsig_transpose = NULL;
+    }
 }

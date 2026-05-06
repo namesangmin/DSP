@@ -5,6 +5,7 @@
 //#include <complex.h>
 #include <stddef.h>
 #include <stdatomic.h>
+#include <stdint.h>
 #include <complex.h>
 typedef struct {
     double fc_hz;
@@ -12,8 +13,8 @@ typedef struct {
     double prf_hz;
     double pulse_width_s;
     double sweep_bandwidth_hz;
-    int num_pulses;
-    int num_fast_time_samples;
+    uint32_t num_pulses;
+    uint32_t num_fast_time_samples;
 } RadarMeta;
 
 typedef struct {
