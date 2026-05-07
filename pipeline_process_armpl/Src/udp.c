@@ -17,9 +17,9 @@
 // =========================================================
 // private
 // =========================================================
-static int               sock_fd  = -1;
+static int sock_fd  = -1;
 static struct sockaddr_in dst_addr;
-static uint8_t           pkt_buf[UDP_PACKET_SIZE];
+static uint8_t pkt_buf[UDP_PACKET_SIZE];
 
 static void write_u32(uint8_t *buf, uint32_t val)
 {
@@ -80,6 +80,7 @@ static int serialize_data(const udp_target_t *data, uint8_t *buf, int offset)
 
     return offset;
 }
+
 // =========================================================
 // public
 // =========================================================

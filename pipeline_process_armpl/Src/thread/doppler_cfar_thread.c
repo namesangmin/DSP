@@ -142,7 +142,7 @@ void *post_thread_main(void *arg)
         // =========================================================
         snprintf(a->history[fi].filename, 256, "%s", a->pipe->filenames[idx]);
        
-        //print_file_result(a->timing, a->det, a->clusters, fi);
+        print_file_result(a->timing, a->det, a->clusters, fi);
 
         Detection best = {0};
         best.range_bin = -1;
