@@ -1,8 +1,8 @@
 #include "queue_pulse.h"
 #include <unistd.h>
 // 임시 디버그용
-static atomic_int pop_sleep_count = 0;
-static atomic_int push_sleep_count = 0;
+atomic_int pop_sleep_count = 0;
+atomic_int push_sleep_count = 0;
 int pulse_queue_init(PulseQueue *q, int cap) {
     memset(q, 0, sizeof(*q));
     q->cap = cap + 1; 
@@ -28,8 +28,8 @@ int pulse_queue_push(PulseQueue *q, PulseJob job) {
     // 꽉 찼으면 빈 자리가 날 때까지 대기 (Pure Spin-wait)
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
+        
         atomic_fetch_add(&push_sleep_count, 1);
-
         usleep(100);
     }
 
@@ -63,16 +63,13 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) {
             return 0;
         }
-atomic_fetch_add(&pop_sleep_count, 1);
 
-        usleep(100);
+        atomic_fetch_add(&pop_sleep_count, 1);
+        usleep(1000);
     }
 }
 
-// queue_pulse.c에 추가
 void pulse_queue_close(PulseQueue *q) {
-//    atomic_store_explicit(&q->head,   1, memory_order_relaxed);
-//    atomic_store_explicit(&q->tail,   1, memory_order_relaxed);
     atomic_store_explicit(&q->closed, 1, memory_order_release);
 }
 

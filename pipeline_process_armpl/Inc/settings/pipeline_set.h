@@ -9,7 +9,7 @@
 #include "queue_post.h"
 #include "queue_pulse.h"
 
-#define NUM_BUFFERS 11
+#define NUM_BUFFERS 3
 typedef enum {
     BUF_FREE = 0,       // 비어 있음
     BUF_FILLING = 1,    // 짝/홀 코어가 열심히 쓰는 중
@@ -17,6 +17,15 @@ typedef enum {
     BUF_PROCESSING = 3  // 도플러/CFAR 코어가 처리 중
 } BufferState;
 
+// Pipeline 구조체나 전역에 추가
+typedef struct {
+    double wait_ms;      // 큐/버퍼 대기 시간
+    double work_ms;      // 실제 처리 시간
+    long   sleep_count;  // sleep 횟수
+} ThreadTiming;
+// 전역
+extern ThreadTiming pc_timing[2];
+extern ThreadTiming post_timing;
 typedef struct {
     ComplexMatrix data;
     atomic_int    state;

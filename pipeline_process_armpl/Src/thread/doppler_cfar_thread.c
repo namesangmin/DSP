@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h> // free 사용
+#include <stdlib.h>
 #include "core_set.h"
 #include "doppler_cfar_thread.h"
 #include "pulse.h"
@@ -16,12 +16,24 @@ void *post_thread_main(void *arg)
     
     pin_thread_to_cpu(a->cpu_id);
 
-    while (post_queue_pop(&a->pipe->post_q, &job)) 
-    {
+    while (1) {
+        // 대기 시간 측정 (post_queue_pop 내부 usleep 포함)
+        double wait_start = now_ms();
+
+        int got = post_queue_pop(&a->pipe->post_q, &job);
+
+        post_timing.wait_ms += now_ms() - wait_start;
+
+        if (!got) break;
+
         if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) 
         {
             break;
         }
+
+        // 실제 처리 시간 측정 시작
+        double work_start = now_ms();
+
         int idx = job.buffer_idx;
         double execute_time = 0.0;
         
@@ -39,6 +51,7 @@ void *post_thread_main(void *arg)
         }
 
         atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_PROCESSING, memory_order_release);
+
         // =========================================================
         // 0. Transpose
         // =========================================================
@@ -90,8 +103,8 @@ void *post_thread_main(void *arg)
         // 3. Clustering
         // =========================================================
         execute_time = 0.0;
-        cluster_detections(a->cfar_ws->det_mask,    // cfar_ws 안에 있음
-                        a->cfar_ws->powerMap,     // cfar_ws 안에 있음
+        cluster_detections(a->cfar_ws->det_mask,
+                        a->cfar_ws->powerMap,
                         a->cluster_params,
                         a->cluster_ws,
                         a->clusters,
@@ -125,11 +138,14 @@ void *post_thread_main(void *arg)
 
         send_graph_data(dwell_id,
             a->meta->num_fast_time_samples, a->meta->num_pulses,
-            a->pipe->raw_data[idx],              // rxsig
-            a->pipe->rd_maps[idx].data.data,     // pc_map
+            a->pipe->raw_data[idx],
+            a->pipe->rd_maps[idx].data.data,
             a->cfar_ws->powerMap,
             a->cfar_ws->threshold_map,
             a->cfar_ws->det_mask);
+
+        // 처리 시간 측정 종료
+        post_timing.work_ms += now_ms() - work_start;
 
         // =========================================================
         // 5. 버퍼 반납 + 인덱스 증가
@@ -138,7 +154,7 @@ void *post_thread_main(void *arg)
         atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_FREE, memory_order_release);
       
         // =========================================================
-        // 5. 결과 출력 + 누적
+        // 6. 결과 출력 + 누적
         // =========================================================
         snprintf(a->history[fi].filename, 256, "%s", a->pipe->filenames[idx]);
        
@@ -160,7 +176,7 @@ void *post_thread_main(void *arg)
         (*a->valid_files)++;
         
         // =========================================================
-        // 5. 다음 파일 위한 리셋
+        // 7. 다음 파일 위한 리셋
         // =========================================================
         memset(a->timing, 0, sizeof(*a->timing));
 

@@ -64,7 +64,25 @@ typedef struct {
 } AppState;
 
 static AppState g_state;
+extern atomic_int pop_sleep_count;
+extern atomic_int push_sleep_count;
+extern atomic_int post_pop_sleep_count;
+extern atomic_int post_push_sleep_count;
+// main.c 또는 pipelineset.c
+ThreadTiming pc_timing[2] = {0};
+ThreadTiming post_timing  = {0};
 
+
+void handle_sigint(int sig) {
+    printf("\n[DEBUG] pop  sleep: %d\n", atomic_load(&pop_sleep_count));
+    printf("[DEBUG] push sleep: %d\n", atomic_load(&push_sleep_count));
+
+    printf("\n[DEBUG] post pop  sleep: %d\n", atomic_load(&post_pop_sleep_count));
+    printf("[DEBUG] post push sleep: %d\n", atomic_load(&post_push_sleep_count));
+
+    print_global_average(&g_state.total_acc, g_state.valid_files);
+    exit(0);
+}
 // =========================================================
 // init - 프로그램 시작 시 한 번만
 // =========================================================
@@ -453,6 +471,8 @@ static int process_directory(const char *dir_path, const char *metadata_path) {
     pulse_queue_open(&s->pipe.odd_q);
     post_queue_open(&s->pipe.post_q);
 
+    double frame_start = now_ms();
+
     // 스레드 한 번만 생성
     pthread_create(&s->th_loader, NULL, loader_thread_main, &s->ld);
     pthread_create(&s->th_even,   NULL, worker_thread_main, &s->wk_even);
@@ -463,7 +483,10 @@ static int process_directory(const char *dir_path, const char *metadata_path) {
     pthread_join(s->th_even,   NULL);
     pthread_join(s->th_odd,    NULL);
     pthread_join(s->th_post,   NULL);
-   
+    
+    double frame_total = now_ms() - frame_start;
+    printf("total time: %lf\n", frame_total/188);
+
     if (s->valid_files > 0) {
         print_trajectory_summary(s->history, s->cluster_history, s->valid_files);
         print_global_average(&s->total_acc,
@@ -488,6 +511,7 @@ static int process_directory(const char *dir_path, const char *metadata_path) {
 // =========================================================
 int main(int argc, char **argv) {
     signal(SIGPIPE, SIG_IGN);
+    signal(SIGINT, handle_sigint);  // Ctrl+C 잡음
 
     if (argc < 2) {
         print_usage(argv[0]);
@@ -515,7 +539,31 @@ int main(int argc, char **argv) {
 
     if (S_ISDIR(st.st_mode)) {
         printf("Target is a DIRECTORY. Batch processing...\n");
-        return process_directory(argv[2], argv[1]);
+        int ret = process_directory(argv[2], argv[1]);
+        printf("[DEBUG] pop  sleep: %d\n", atomic_load(&pop_sleep_count));
+        printf("[DEBUG] push sleep: %d\n", atomic_load(&push_sleep_count));
+
+        printf("\n[DEBUG] post pop  sleep: %d\n", atomic_load(&post_pop_sleep_count));
+        printf("[DEBUG] post push sleep: %d\n", atomic_load(&post_push_sleep_count));
+
+        // process_directory 끝난 후
+        int n = 188;
+        printf("\n========== Thread Timing (total) ==========\n");
+        printf("[PC thread 0] wait: %.1f ms | work: %.1f ms\n",
+            pc_timing[0].wait_ms, pc_timing[0].work_ms);
+        printf("[PC thread 1] wait: %.1f ms | work: %.1f ms\n",
+            pc_timing[1].wait_ms, pc_timing[1].work_ms);
+        printf("[post thread] wait: %.1f ms | work: %.1f ms\n",
+            post_timing.wait_ms, post_timing.work_ms);
+
+        printf("\n========== Thread Timing (per file avg) ==========\n");
+        printf("[PC thread 0] wait: %.2f ms | work: %.2f ms\n",
+            pc_timing[0].wait_ms / n, pc_timing[0].work_ms / n);
+        printf("[PC thread 1] wait: %.2f ms | work: %.2f ms\n",
+            pc_timing[1].wait_ms / n, pc_timing[1].work_ms / n);
+        printf("[post thread] wait: %.2f ms | work: %.2f ms\n",
+            post_timing.wait_ms / n, post_timing.work_ms / n);
+        return ret;
     }
 
     fprintf(stderr, "target must be a directory\n");

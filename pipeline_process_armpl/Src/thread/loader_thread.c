@@ -21,10 +21,9 @@ static uint32_t offset[6];
 static int sock_fd = -1;
 static const uint32_t header_size = sizeof(packet_header_t);
 static ICDHeader_t *icd_data;
-
+static double t0;
+#if 1
 int loader_thread_init(const RadarMeta *meta,  LoaderArgs *ld, Pipeline* pool, uint16_t rx_port) {
-    // int ret;
-    // size_t total_count;
     struct sockaddr_in rxaddr;
 
     sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -97,6 +96,8 @@ static int load_bin_to_float_array(float *out_buf,
     size_t total_expected_bytes = count * sizeof(float); // 512 * 1001 * 8
 
     printf("\n[DEBUG] 수신 시작: 기대 데이터 총량: %zu bytes\n", total_expected_bytes);
+    
+    int isFirstGetData = 0;
 
     while (1) {
         ssize_t n = recvfrom(sock_fd, packet_raw, sizeof(packet_raw), 0, 
@@ -105,6 +106,10 @@ static int load_bin_to_float_array(float *out_buf,
             if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
             perror("[ERROR] recvfrom failed");
             return -1;
+        }
+        if(!isFirstGetData){
+            isFirstGetData = 1;
+            t0 = now_ms();
         }
 
         // 1. 헤더 파싱 (헤더는 송신측에서 htonl로 보냈으므로 ntohl 필수)
@@ -115,7 +120,7 @@ static int load_bin_to_float_array(float *out_buf,
         uint32_t curr_count   = ntohl(header_ptr[2]);
         uint32_t curr_payload = ntohl(header_ptr[3]);
         uint32_t curr_fsize   = ntohl(header_ptr[4]);
-        uint32_t curr_reserved   = ntohl(header_ptr[5]);
+        //uint32_t curr_reserved   = ntohl(header_ptr[5]);
         
         offset[0] = curr_dwell_id;
         offset[1] = curr_id;
@@ -208,7 +213,7 @@ void *loader_thread_main(void *arg)
         atomic_store_explicit(&a->pipe->rd_maps[raw_idx].state, BUF_FILLING, memory_order_release);
         // =================================================================
         // UDP로 받는 시간 측정
-        double t0 = now_ms();
+        //double t0 = now_ms();
 
         if(load_bin_to_float_array(a->buffer, total_count, 232) < 0){
             atomic_store(&a->pipe->error, 1);
@@ -216,9 +221,7 @@ void *loader_thread_main(void *arg)
         }
         
         a->pipe->dwell_ids[raw_idx] = icd_data->DwellId;
-        a->pipe->phi[raw_idx] = icd_data->Phi;  // Pipeline 구조체에 추가
-
-        double t1 = now_ms();
+        a->pipe->phi[raw_idx] = icd_data->Phi; 
 
         for (int p = 0; p < cols; p++) {
             for (int s = 0; s < rows; s++) {
@@ -227,10 +230,12 @@ void *loader_thread_main(void *arg)
                 a->pipe->raw_data[raw_idx][idx] =
                     a->buffer[bidx] + a->buffer[bidx + 1] * I;
             }
-
+        }
+        
+        for (int p = 0; p < cols; p++) {
             PulseJob job = { .pulse_idx = p, .raw_idx = raw_idx };
             PulseQueue *q = (p < half) ? &a->pipe->even_q : &a->pipe->odd_q;
-
+            
             if (pulse_queue_push(q, job) != 0) {
                 fprintf(stderr, "[Loader ERROR] 큐 Push 실패: pulse_idx=%d\n", p);
                 atomic_store(&a->pipe->error, 1);
@@ -240,6 +245,8 @@ void *loader_thread_main(void *arg)
         }
         
         if (push_err) break;
+
+        double t1 = now_ms();
 
         if (a->timing) {
             a->timing->loader_ms = t1 - t0;
@@ -251,9 +258,10 @@ void *loader_thread_main(void *arg)
     
     return NULL;
 }
+#endif
 
 #if 0
-int loader_thread_init(const RadarMeta *meta,  LoaderArgs *ld, Pipeline* pool) {
+int loader_thread_init(const RadarMeta *meta,  LoaderArgs *ld, Pipeline* pool, uint16_t rx_port) {
     size_t total_doubles = (size_t)meta->num_pulses * meta->num_fast_time_samples *2u;
    
     ld->buffer = (double*)malloc(total_doubles * sizeof(double));
