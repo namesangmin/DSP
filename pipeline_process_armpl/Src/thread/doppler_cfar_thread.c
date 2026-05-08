@@ -12,7 +12,7 @@
 void *post_thread_main(void *arg)
 {
     PostArgs *a = (PostArgs *)arg;
-    PostJob job;
+    PostJob job; 
     
     pin_thread_to_cpu(a->cpu_id);
 
@@ -35,26 +35,25 @@ void *post_thread_main(void *arg)
         double work_start = now_ms();
 
         int idx = job.buffer_idx;
-        double execute_time = 0.0;
         
         a->timing->compress_core1_ms = a->pipe->compress_times[idx][0];
         a->timing->compress_core2_ms = a->pipe->compress_times[idx][1];
         a->pipe->compress_times[idx][0] = 0.0;
         a->pipe->compress_times[idx][1] = 0.0;
 
-        // 실제 파이프라인 딜레이는 두 코어 중 "더 오래 걸린 놈"의 시간입니다.
         if (a->timing->compress_core1_ms > a->timing->compress_core2_ms) {
             a->timing->compress_ms = a->timing->compress_core1_ms;
         } 
         else {
             a->timing->compress_ms = a->timing->compress_core2_ms;
         }
-
+ 
         atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_PROCESSING, memory_order_release);
 
         // =========================================================
         // 0. Transpose
         // =========================================================
+        double execute_time = 0.0;
         if (transpose_rd_pulse_range_to_doppler_range_pulse(
                 &a->pipe->rd_maps[idx].data,
                 &a->pipe->doppler_maps[idx].data,
@@ -70,10 +69,12 @@ void *post_thread_main(void *arg)
         // =========================================================
         // 1. 도플러 처리
         // =========================================================
-        if (doppler_fft_processing(&a->pipe->doppler_maps[idx].data,
+        int doppler_ret = doppler_fft_processing(&a->pipe->doppler_maps[idx].data,
                                 a->meta->num_pulses,
                                 a->timing,
-                                a->doppler_ws) != 0) 
+                                a->doppler_ws);
+
+        if ( doppler_ret != 0) 
         {
             fprintf(stderr, "post: doppler_fft_processing failed: buffer_idx=%d\n", idx);
             a->status = -1;
@@ -134,8 +135,8 @@ void *post_thread_main(void *arg)
             targets[i].distance = a->clusters->items[i].range_m;
             targets[i].speed = a->clusters->items[i].velocity_mps;
         }
-        udp_loop(dwell_id, (uint32_t)a->clusters->count, targets, phi, a->timing);
 
+        udp_loop(dwell_id, (uint32_t)a->clusters->count, targets, phi, a->timing);
         send_graph_data(dwell_id,
             a->meta->num_fast_time_samples, a->meta->num_pulses,
             a->pipe->raw_data[idx],

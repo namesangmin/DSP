@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sched.h>
-#include <math.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <pthread.h>
 #include <stdatomic.h>
+#include <dirent.h>
+#include <pthread.h>
 #include <complex.h>
 #include <signal.h>  
+#include <sys/types.h>
+#include <sys/stat.h>
+//#include <math.h>
+//#include <unistd.h>
 
 #include "timer.h"
 #include "loader.h"
@@ -30,6 +29,8 @@
 #include "udp.h"
 #include "send_graph_data.h"
 
+#define MAX_UDP_FRAMES 100000
+
 // =========================================================
 // 전역 상태 - init()에서 한 번만 초기화
 // =========================================================
@@ -42,19 +43,19 @@ typedef struct {
     WorkerArgs      wk_odd;
     PostArgs        post;
 
-    CfarWorkspace   cfar_ws;
+    CfarWorkspace    cfar_ws;
     DopplerWorkspace doppler_ws;
-    DetectionList   det;
+    DetectionList    det;
 
     PipelineTiming  timing;
-    Accumulator total_acc;
-    DetectionList *history;
+    Accumulator     total_acc;
+    DetectionList   *history;
 
-    ClusterWorkspace cluster_ws;   // 추가
-    ClusterParams    cluster_params; // 추가
-    ClusterList      clusters;     // 추가
-    ClusterList *cluster_history;  // 추가
-    
+    ClusterWorkspace cluster_ws;
+    ClusterParams    cluster_params;
+    ClusterList      clusters;
+    ClusterList     *cluster_history;
+
     pthread_t th_loader;
     pthread_t th_even;
     pthread_t th_odd;
@@ -72,7 +73,6 @@ extern atomic_int post_push_sleep_count;
 ThreadTiming pc_timing[2] = {0};
 ThreadTiming post_timing  = {0};
 
-
 void handle_sigint(int sig) {
     printf("\n[DEBUG] pop  sleep: %d\n", atomic_load(&pop_sleep_count));
     printf("[DEBUG] push sleep: %d\n", atomic_load(&push_sleep_count));
@@ -81,33 +81,70 @@ void handle_sigint(int sig) {
     printf("[DEBUG] post push sleep: %d\n", atomic_load(&post_push_sleep_count));
 
     print_global_average(&g_state.total_acc, g_state.valid_files);
+    print_trajectory_summary(g_state.history, g_state.cluster_history, g_state.valid_files);
+
+    printf("[DEBUG] pulse pop  sleep: %d\n", atomic_load(&pop_sleep_count));
+    printf("[DEBUG] pulse push sleep: %d\n", atomic_load(&push_sleep_count));
+
+    printf("\n[DEBUG] post pop  sleep: %d\n", atomic_load(&post_pop_sleep_count));
+    printf("[DEBUG] post push sleep: %d\n", atomic_load(&post_push_sleep_count));
+
+
+    // main.c process_directory 끝난 후 또는 시그널 핸들러에서
+    for (int i = 0; i < NUM_BUFFERS; i++) {
+        printf("[DEBUG] buf[%d] used: %d\n", i,
+            atomic_load(&g_state.pipe.buf_use_count[i]));
+    }
+
+    // process_directory 끝난 후
+    int n = 188;
+    printf("\n========== Thread Timing (total) ==========\n");
+    printf("[PC thread 0] wait: %.1f ms | work: %.1f ms\n",
+        pc_timing[0].wait_ms, pc_timing[0].work_ms);
+    printf("[PC thread 1] wait: %.1f ms | work: %.1f ms\n",
+        pc_timing[1].wait_ms, pc_timing[1].work_ms);
+    printf("[post thread] wait: %.1f ms | work: %.1f ms\n",
+        post_timing.wait_ms, post_timing.work_ms);
+
+    printf("\n========== Thread Timing (per file avg) ==========\n");
+    printf("[PC thread 0] wait: %.2f ms | work: %.2f ms\n",
+        pc_timing[0].wait_ms / n, pc_timing[0].work_ms / n);
+    printf("[PC thread 1] wait: %.2f ms | work: %.2f ms\n",
+        pc_timing[1].wait_ms / n, pc_timing[1].work_ms / n);
+    printf("[post thread] wait: %.2f ms | work: %.2f ms\n",
+        post_timing.wait_ms / n, post_timing.work_ms / n);
     exit(0);
 }
 // =========================================================
 // init - 프로그램 시작 시 한 번만
 // =========================================================
 static int app_init(const char *dir_path, const RadarMeta *meta,
-                    struct dirent **namelist, int num_files) {
+                    struct dirent **namelist, int num_files) 
+    {
     AppState *s = &g_state;
     memset(s, 0, sizeof(*s));
 
     s->meta = meta;
     
     // 파이프라인 초기화
-    if (init_pipeline_pool(meta, &s->pipe) != 0) {
+    if (init_pipeline_pool(meta, &s->pipe) != 0) 
+    {
         fprintf(stderr, "init_pipeline failed\n");
         return -1;
     }
-    size_t q_size = (meta->num_pulses / 2 + 1) * NUM_BUFFERS;
+    
     // 큐 초기화
+    size_t q_size = (meta->num_pulses / 2 + 1) * NUM_BUFFERS;
     if (pulse_queue_init(&s->pipe.even_q, q_size) != 0 ||
-        pulse_queue_init(&s->pipe.odd_q,  q_size) != 0) {
+        pulse_queue_init(&s->pipe.odd_q,  q_size) != 0) 
+    {
         fprintf(stderr, "pulse_queue_init failed\n");
         cleanup_pipeline_pool(&s->pipe);
         return -1;
     }
 
-    if (post_queue_init(&s->pipe.post_q, NUM_BUFFERS) != 0) {
+    if (post_queue_init(&s->pipe.post_q, NUM_BUFFERS) != 0) 
+    {
         fprintf(stderr, "post_queue_init failed\n");
         pulse_queue_destroy(&s->pipe.even_q);
         pulse_queue_destroy(&s->pipe.odd_q);
@@ -116,7 +153,8 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     }
 
     // loader 초기화
-    if (loader_thread_init(meta, &s->ld, &s->pipe, 5555) != 0) {
+    if (loader_thread_init(meta, &s->ld, &s->pipe, 5555) != 0) 
+    {
         fprintf(stderr, "loader_thread_init failed\n");
         post_queue_destroy(&s->pipe.post_q);
         pulse_queue_destroy(&s->pipe.even_q);
@@ -127,7 +165,8 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
 
     // 펄스 압축 컨텍스트
     if (pulse_compress_ctx_init(meta, &s->wk_even.ctx) != 0 ||
-        pulse_compress_ctx_init(meta, &s->wk_odd.ctx)  != 0) {
+        pulse_compress_ctx_init(meta, &s->wk_odd.ctx)  != 0) 
+    {
         fprintf(stderr, "pulse_compress_ctx_init failed\n");
         pulse_compress_ctx_destroy(&s->wk_even.ctx);
         pulse_compress_ctx_destroy(&s->wk_odd.ctx);
@@ -141,8 +180,9 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
 
     // CFAR, Doppler 워크스페이스
     if (init_cfar_workspace(&s->cfar_ws,
-                            meta->num_fast_time_samples,
-                            meta->num_pulses) != 0) {
+    meta->num_fast_time_samples,
+    meta->num_pulses) != 0) 
+    {
         fprintf(stderr, "init_cfar_workspace failed\n");
         pulse_compress_ctx_destroy(&s->wk_even.ctx);
         pulse_compress_ctx_destroy(&s->wk_odd.ctx);
@@ -155,8 +195,9 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     }
 
     if (init_doppler_workspace(&s->doppler_ws,
-                               meta->num_pulses,
-                               meta->num_pulses) != 0) {
+        meta->num_pulses,
+        meta->num_pulses) != 0) 
+    {
         fprintf(stderr, "init_doppler_workspace failed\n");
         cleanup_cfar_workspace(&s->cfar_ws);
         pulse_compress_ctx_destroy(&s->wk_even.ctx);
@@ -170,13 +211,14 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     }
 
     if (init_cluster_workspace(&s->cluster_ws,
-                            meta->num_fast_time_samples,
-                            meta->num_pulses,
-                            (float)meta->fs_hz,
-                            299792458.0f,
-                            (float)meta->prf_hz,
-                            (float)meta->fc_hz,
-                            meta->num_pulses) != 0) {
+        meta->num_fast_time_samples,
+        meta->num_pulses,
+        (float)meta->fs_hz,
+        299792458.0f,
+        (float)meta->prf_hz,
+        (float)meta->fc_hz,
+        meta->num_pulses) != 0) 
+    {
         fprintf(stderr, "init_cluster_workspace failed\n");
         cleanup_doppler_workspace(&s->doppler_ws);
         cleanup_cfar_workspace(&s->cfar_ws);
@@ -215,13 +257,15 @@ static int app_init(const char *dir_path, const RadarMeta *meta,
     s->wk_odd.cpu_id   = 2;
     s->wk_odd.timing   = &s->timing;
 
-    s->cluster_params = (ClusterParams){
+    s->cluster_params = (ClusterParams)
+    {
         .range_radius   = 2,
         .doppler_radius = 2,
         .min_pts        = 3,
         .max_targets    = 5,
         .power_ratio_min = 0.1f,  // 1위의 10% 미만이면 사이드로브로 제거
     };
+
     s->post.meta       = meta;
     s->post.pipe       = &s->pipe;
     s->post.det        = &s->det;
@@ -253,20 +297,23 @@ static int app_init_udp(const RadarMeta *meta)
     memset(s, 0, sizeof(*s));
     s->meta = meta;
 
-    if (init_pipeline_pool(meta, &s->pipe) != 0) {
+    if (init_pipeline_pool(meta, &s->pipe) != 0) 
+    {
         fprintf(stderr, "init_pipeline failed\n");
         return -1;
     }
 
     size_t q_size = (meta->num_pulses / 2 + 1) * NUM_BUFFERS;
     if (pulse_queue_init(&s->pipe.even_q, q_size) != 0 ||
-        pulse_queue_init(&s->pipe.odd_q,  q_size) != 0) {
+        pulse_queue_init(&s->pipe.odd_q,  q_size) != 0) 
+    {
         fprintf(stderr, "pulse_queue_init failed\n");
         cleanup_pipeline_pool(&s->pipe);
         return -1;
     }
 
-    if (post_queue_init(&s->pipe.post_q, NUM_BUFFERS) != 0) {
+    if (post_queue_init(&s->pipe.post_q, NUM_BUFFERS) != 0) 
+    {
         fprintf(stderr, "post_queue_init failed\n");
         pulse_queue_destroy(&s->pipe.even_q);
         pulse_queue_destroy(&s->pipe.odd_q);
@@ -274,7 +321,8 @@ static int app_init_udp(const RadarMeta *meta)
         return -1;
     }
 
-    if (loader_thread_init(meta, &s->ld, &s->pipe, 5555) != 0) {
+    if (loader_thread_init(meta, &s->ld, &s->pipe, 9000) != 0) 
+    {
         fprintf(stderr, "loader_thread_init failed\n");
         post_queue_destroy(&s->pipe.post_q);
         pulse_queue_destroy(&s->pipe.even_q);
@@ -284,7 +332,8 @@ static int app_init_udp(const RadarMeta *meta)
     }
 
     if (pulse_compress_ctx_init(meta, &s->wk_even.ctx) != 0 ||
-        pulse_compress_ctx_init(meta, &s->wk_odd.ctx)  != 0) {
+        pulse_compress_ctx_init(meta, &s->wk_odd.ctx)  != 0) 
+    {
         fprintf(stderr, "pulse_compress_ctx_init failed\n");
         pulse_compress_ctx_destroy(&s->wk_even.ctx);
         pulse_compress_ctx_destroy(&s->wk_odd.ctx);
@@ -297,8 +346,9 @@ static int app_init_udp(const RadarMeta *meta)
     }
 
     if (init_cfar_workspace(&s->cfar_ws,
-                            meta->num_fast_time_samples,
-                            meta->num_pulses) != 0) {
+        meta->num_fast_time_samples,
+        meta->num_pulses) != 0) 
+    {
         fprintf(stderr, "init_cfar_workspace failed\n");
         pulse_compress_ctx_destroy(&s->wk_even.ctx);
         pulse_compress_ctx_destroy(&s->wk_odd.ctx);
@@ -311,8 +361,9 @@ static int app_init_udp(const RadarMeta *meta)
     }
 
     if (init_doppler_workspace(&s->doppler_ws,
-                               meta->num_pulses,
-                               meta->num_pulses) != 0) {
+        meta->num_pulses,
+        meta->num_pulses) != 0) 
+    {
         fprintf(stderr, "init_doppler_workspace failed\n");
         cleanup_cfar_workspace(&s->cfar_ws);
         pulse_compress_ctx_destroy(&s->wk_even.ctx);
@@ -326,13 +377,14 @@ static int app_init_udp(const RadarMeta *meta)
     }
 
     if (init_cluster_workspace(&s->cluster_ws,
-                               meta->num_fast_time_samples,
-                               meta->num_pulses,
-                               (float)meta->fs_hz,
-                               299792458.0f,
-                               (float)meta->prf_hz,
-                               (float)meta->fc_hz,
-                               meta->num_pulses) != 0) {
+        meta->num_fast_time_samples,
+        meta->num_pulses,
+        (float)meta->fs_hz,
+        299792458.0f,
+        (float)meta->prf_hz,
+        (float)meta->fc_hz,
+        meta->num_pulses) != 0) 
+    {
         fprintf(stderr, "init_cluster_workspace failed\n");
         cleanup_doppler_workspace(&s->doppler_ws);
         cleanup_cfar_workspace(&s->cfar_ws);
@@ -347,7 +399,6 @@ static int app_init_udp(const RadarMeta *meta)
     }
 
     // UDP 모드는 프레임 수를 모르므로 최대값으로 잡음
-#define MAX_UDP_FRAMES 100000
     s->history         = calloc(MAX_UDP_FRAMES, sizeof(DetectionList));
     s->cluster_history = calloc(MAX_UDP_FRAMES, sizeof(ClusterList));
     s->valid_files = 0;
@@ -405,7 +456,8 @@ static int app_init_udp(const RadarMeta *meta)
 // =========================================================
 // cleanup - 프로그램 종료 시 한 번만
 // =========================================================
-static void app_cleanup(void) {
+static void app_cleanup(void) 
+{
     cleanup_pipeline_pool (&g_state.pipe);
     pulse_queue_destroy(&g_state.pipe.even_q);
     pulse_queue_destroy(&g_state.pipe.odd_q);
@@ -446,9 +498,11 @@ static int process_udp(const RadarMeta *meta)
 // =========================================================
 // 디렉토리 순회
 // =========================================================
-static int process_directory(const char *dir_path, const char *metadata_path) {
+static int process_directory(const char *dir_path, const char *metadata_path) 
+{
     RadarMeta meta = {0};
-    if (load_metadata(metadata_path, &meta) != 0) {
+    if (load_metadata(metadata_path, &meta) != 0) 
+    {
         fprintf(stderr, "failed to read metadata\n");
         return -1;
     }
@@ -456,12 +510,14 @@ static int process_directory(const char *dir_path, const char *metadata_path) {
 
     struct dirent **namelist;
     int num_files = scandir(dir_path, &namelist, NULL, versionsort);
-    if (num_files < 0) {
+    if (num_files < 0) 
+    {
         perror("scandir failed");
         return -1;
     }
     
-    if (app_init(dir_path, &meta, namelist, num_files) != 0) {
+    if (app_init(dir_path, &meta, namelist, num_files) != 0) 
+    {
         return -1;
     }
     AppState *s = &g_state;
@@ -487,19 +543,22 @@ static int process_directory(const char *dir_path, const char *metadata_path) {
     double frame_total = now_ms() - frame_start;
     printf("total time: %lf\n", frame_total/188);
 
-    if (s->valid_files > 0) {
+    if (s->valid_files > 0) 
+    {
         print_trajectory_summary(s->history, s->cluster_history, s->valid_files);
-        print_global_average(&s->total_acc,
-                             s->valid_files);
+        print_global_average(&s->total_acc, s->valid_files);
     }
 
     for (int i = 0; i < s->valid_files; i++)
+    {
         free_detection_list(&s->history[i]);
+    }
     free(s->history);
     s->history = NULL;
 
-    for (int i = 0; i < num_files; i++)
+    for (int i = 0; i < num_files; i++){
         free(namelist[i]);
+    }
     free(namelist);
 
     app_cleanup();
@@ -509,60 +568,43 @@ static int process_directory(const char *dir_path, const char *metadata_path) {
 // =========================================================
 // main
 // =========================================================
-int main(int argc, char **argv) {
+int main(int argc, char **argv) 
+{
     signal(SIGPIPE, SIG_IGN);
     signal(SIGINT, handle_sigint);  // Ctrl+C 잡음
 
-    if (argc < 2) {
+    if (argc < 2) 
+    {
         print_usage(argv[0]);
         return 1;
     }
 
     RadarMeta meta = {0};
-    if (load_metadata(argv[1], &meta) != 0) {
+    if (load_metadata(argv[1], &meta) != 0) 
+    {
         fprintf(stderr, "failed to read metadata\n");
         return 1;
     }
     print_metadata(&meta);
 
-    if (argc == 2) {
+    if (argc == 2) 
+    {
         printf("UDP 모드: 포트 5555에서 수신 대기\n");
         return process_udp(&meta);
     }
 
     // 파일 모드
     struct stat st;
-    if (stat(argv[2], &st) != 0) {
+    if (stat(argv[2], &st) != 0) 
+    {
         perror("stat failed");
         return 1;
     }
 
-    if (S_ISDIR(st.st_mode)) {
+    if (S_ISDIR(st.st_mode)) 
+    {
         printf("Target is a DIRECTORY. Batch processing...\n");
         int ret = process_directory(argv[2], argv[1]);
-        printf("[DEBUG] pop  sleep: %d\n", atomic_load(&pop_sleep_count));
-        printf("[DEBUG] push sleep: %d\n", atomic_load(&push_sleep_count));
-
-        printf("\n[DEBUG] post pop  sleep: %d\n", atomic_load(&post_pop_sleep_count));
-        printf("[DEBUG] post push sleep: %d\n", atomic_load(&post_push_sleep_count));
-
-        // process_directory 끝난 후
-        int n = 188;
-        printf("\n========== Thread Timing (total) ==========\n");
-        printf("[PC thread 0] wait: %.1f ms | work: %.1f ms\n",
-            pc_timing[0].wait_ms, pc_timing[0].work_ms);
-        printf("[PC thread 1] wait: %.1f ms | work: %.1f ms\n",
-            pc_timing[1].wait_ms, pc_timing[1].work_ms);
-        printf("[post thread] wait: %.1f ms | work: %.1f ms\n",
-            post_timing.wait_ms, post_timing.work_ms);
-
-        printf("\n========== Thread Timing (per file avg) ==========\n");
-        printf("[PC thread 0] wait: %.2f ms | work: %.2f ms\n",
-            pc_timing[0].wait_ms / n, pc_timing[0].work_ms / n);
-        printf("[PC thread 1] wait: %.2f ms | work: %.2f ms\n",
-            pc_timing[1].wait_ms / n, pc_timing[1].work_ms / n);
-        printf("[post thread] wait: %.2f ms | work: %.2f ms\n",
-            post_timing.wait_ms / n, post_timing.work_ms / n);
         return ret;
     }
 

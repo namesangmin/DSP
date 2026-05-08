@@ -23,27 +23,27 @@ void print_average_line(const char *name, double avg_ms) {
     printf("  %-18s = %.3f ms (%.9f sec)\n", name, avg_ms, avg_ms / 1000.0);
 }
 
-long read_cpu_ticks(void) {
-    FILE *f = fopen("/proc/self/stat", "r");
-    if (!f) return 0;
+// long read_cpu_ticks(void) {
+//     FILE *f = fopen("/proc/self/stat", "r");
+//     if (!f) return 0;
 
-    unsigned long utime = 0, stime = 0;
-    int   f1;
-    char  f2[256], f3;
-    int   f4, f5, f6, f7, f8;
-    unsigned long f9, f10, f11, f12, f13;
+//     unsigned long utime = 0, stime = 0;
+//     int   f1;
+//     char  f2[256], f3;
+//     int   f4, f5, f6, f7, f8;
+//     unsigned long f9, f10, f11, f12, f13;
 
-    fscanf(f,
-        "%d %s %c %d %d %d %d %d "
-        "%lu %lu %lu %lu %lu "
-        "%lu %lu",
-        &f1, f2, &f3, &f4, &f5, &f6, &f7, &f8,
-        &f9, &f10, &f11, &f12, &f13,
-        &utime, &stime);
+//     fscanf(f,
+//         "%d %s %c %d %d %d %d %d "
+//         "%lu %lu %lu %lu %lu "
+//         "%lu %lu",
+//         &f1, f2, &f3, &f4, &f5, &f6, &f7, &f8,
+//         &f9, &f10, &f11, &f12, &f13,
+//         &utime, &stime);
 
-    fclose(f);
-    return (long)(utime + stime);
-}
+//     fclose(f);
+//     return (long)(utime + stime);
+// }
 
 void print_usage(const char *prog) {
     fprintf(stderr,

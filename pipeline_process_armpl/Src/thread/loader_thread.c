@@ -106,7 +106,8 @@ static int load_bin_to_float_array(float *out_buf,
             if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
             perror("[ERROR] recvfrom failed");
             return -1;
-        }
+        } 
+        
         if(!isFirstGetData){
             isFirstGetData = 1;
             t0 = now_ms();
@@ -211,6 +212,8 @@ void *loader_thread_main(void *arg)
         }
 
         atomic_store_explicit(&a->pipe->rd_maps[raw_idx].state, BUF_FILLING, memory_order_release);
+        atomic_fetch_add(&a->pipe->buf_use_count[raw_idx], 1);  // ← 여기
+
         // =================================================================
         // UDP로 받는 시간 측정
         //double t0 = now_ms();

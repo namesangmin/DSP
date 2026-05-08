@@ -54,6 +54,8 @@ typedef struct {
 
     uint32_t dwell_ids[NUM_BUFFERS];
     float    phi[NUM_BUFFERS];  
+    atomic_int buf_use_count[NUM_BUFFERS];
+
 } Pipeline;
 
 struct RadarMeta;
