@@ -2,6 +2,7 @@
 #define CFAR_H
 
 #include "loader.h"
+#include "common.h"
 
 typedef struct {
     int range_bin;
@@ -13,15 +14,38 @@ typedef struct {
 } Detection;
 
 typedef struct {
+    char filename[256];
+    int detected;
+    Detection det;
+} TrackPoint;
+
+typedef struct {
     int count;
     Detection *items;
 } DetectionList;
+
+typedef struct {
+    int numRange;
+    int numDoppler;
+
+    int ii_rows;
+    int ii_cols;
+
+    double *powerMap;
+    double *ii;
+
+    Detection *detBuf;
+    int detCapacity;
+} CfarWorkspace;
+int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler);
+void cleanup_cfar_workspace(CfarWorkspace *ws);
 
 int cfar_detect(const ComplexMatrix *doppler_map,
                 const RadarMeta *meta,
                 int numTrainR, int numTrainD,
                 int numGuardR, int numGuardD,
                 int rankIdx, double scale,
+                CfarWorkspace *ws,
                 DetectionList *out);
 
 void free_detection_list(DetectionList *list);

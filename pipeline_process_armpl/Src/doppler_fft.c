@@ -1,8 +1,7 @@
-#define _GNU_SOURCE
-#define _POSIX_C_SOURCE 200809L
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
+#include <string.h>
 #include "doppler_fft.h"
 #include "timer.h"
 
@@ -10,181 +9,175 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-static int is_power_of_two(int n) {
-    return (n > 0) && ((n & (n - 1)) == 0);
+static void make_hamming_window(int N, float *w)
+{
+    if (!w || N <= 0) return;
+    if (N == 1) { w[0] = 1.0f; return; }
+    for (int n = 0; n < N; ++n)
+        w[n] = 0.54f - 0.46f * cosf((2.0f * M_PI * (float)n) / (float)(N - 1));
 }
 
-static void bit_reverse_permute(double complex *x, int n) {
-    int i, j, bit;
-    for (i = 1, j = 0; i < n; ++i) {
-        bit = n >> 1;
-        while (j & bit) {
-            j ^= bit;
-            bit >>= 1;
-        }
-        j ^= bit;
-        if (i < j) {
-            double complex tmp = x[i];
-            x[i] = x[j];
-            x[j] = tmp;
-        }
+int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft)
+{
+    if (!ws || pulses <= 0 || nfft < pulses) return -1;
+
+    memset(ws, 0, sizeof(*ws));
+    ws->pulses = pulses;
+    ws->nfft   = nfft;
+
+    ws->hamming_win = (float *)malloc((size_t)pulses * sizeof(float));
+    if (!ws->hamming_win) { cleanup_doppler_workspace(ws); return -1; }
+    
+    make_hamming_window(pulses, ws->hamming_win);
+
+    ws->plan_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));
+    if (!ws->plan_buf) 
+    { 
+        cleanup_doppler_workspace(ws); 
+        return -1;
     }
-}
 
-static void fft_inplace(double complex *x, int n) {
-    int len, i, j;
-
-    bit_reverse_permute(x, n);
-
-    for (len = 2; len <= n; len <<= 1) {
-        double angle = -2.0 * M_PI / (double)len;
-        double complex wlen = cos(angle) + I * sin(angle);
-
-        for (i = 0; i < n; i += len) {
-            double complex w = 1.0 + I * 0.0;
-            for (j = 0; j < len / 2; ++j) {
-                double complex u = x[i + j];
-                double complex v = x[i + j + len / 2] * w;
-                x[i + j] = u + v;
-                x[i + j + len / 2] = u - v;
-                w *= wlen;
-            }
-        }
+    ws->local_buf = (float complex *)fftwf_malloc((size_t)nfft * sizeof(float complex));
+     if (!ws->local_buf) 
+    { 
+        cleanup_doppler_workspace(ws); 
+        return -1;
+    }   
+    ws->mtd_plan = fftwf_plan_dft_1d(nfft, ws->plan_buf, ws->plan_buf,
+                                     FFTW_FORWARD, FFTW_MEASURE);
+    if (!ws->mtd_plan)
+    {
+        cleanup_doppler_workspace(ws); 
+        return -1; 
     }
+
+    return 0;
 }
 
-static void fftshift_1d(double complex *x, int n) {
-    int half = n / 2;
-    for (int i = 0; i < half; ++i) {
-        double complex tmp = x[i];
-        x[i] = x[i + half];
-        x[i + half] = tmp;
-    }
+void cleanup_doppler_workspace(DopplerWorkspace *ws)
+{
+    if (!ws) return;
+    if (ws->mtd_plan) fftwf_destroy_plan(ws->mtd_plan);
+    if (ws->plan_buf) fftwf_free(ws->plan_buf);
+    if(ws->local_buf) fftwf_free(ws->local_buf);
+    free(ws->hamming_win);
+    memset(ws, 0, sizeof(*ws));
 }
 
-static int apply_mti(const ComplexMatrix *x, int order, ComplexMatrix *y) {
-    int rows = x->rows;
-    int cols = x->cols;
+/* in-place MTI: 뒤에서 앞으로 순회해서 임시 버퍼 없이 처리 */
+static int apply_mti(ComplexMatrix *map, int order)
+{
+    if (!map || !map->data) return -1;
 
-    if (alloc_complex_matrix(rows, cols, y) != 0) return -1;
+    int rows = map->rows;
+    int cols = map->cols;
 
     if (order == 1) {
-        for (int r = 0; r < rows; ++r) {
-            CMAT_AT(y, r, 0) = 0.0 + I * 0.0;
-            for (int c = 1; c < cols; ++c) {
-                CMAT_AT(y, r, c) = CMAT_AT(x, r, c) - CMAT_AT(x, r, c - 1);
-            }
+        for (int r = 0; r < rows; r++) {
+            float complex *row = &CMAT_AT(map, r, 0);
+            for (int c = cols - 1; c >= 1; --c)
+                row[c] = row[c] - row[c - 1];
+            row[0] = 0.0f + 0.0f * I;
         }
-    } else if (order == 2) {
-        for (int r = 0; r < rows; ++r) {
-            CMAT_AT(y, r, 0) = 0.0 + I * 0.0;
-            if (cols > 1) CMAT_AT(y, r, 1) = 0.0 + I * 0.0;
-            for (int c = 2; c < cols; ++c) {
-                CMAT_AT(y, r, c) =
-                    CMAT_AT(x, r, c)
-                    - 2.0 * CMAT_AT(x, r, c - 1)
-                    + CMAT_AT(x, r, c - 2);
-            }
+    }
+    else if (order == 2) {
+        for (int r = 0; r < rows; r++) {
+            float complex *row = &CMAT_AT(map, r, 0);
+            for (int c = cols - 1; c >= 2; --c)
+                row[c] = row[c] - 2.0f * row[c - 1] + row[c - 2];
+            if (cols > 1) row[1] = 0.0f + 0.0f * I;
+            row[0] = 0.0f + 0.0f * I;
         }
-    } else {
-        free_complex_matrix(y);
+    }
+    else {
         return -1;
     }
 
     return 0;
 }
 
-static void make_hamming_window(int N, double *w) {
-    if (N <= 1) {
-        if (N == 1) w[0] = 1.0;
-        return;
-    }
+static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWorkspace *ws)
+{
+    if (!doppler_map || !doppler_map->data || !ws ||
+        !ws->hamming_win || !ws->plan_buf || !ws->mtd_plan)
+        return -1;
 
-    for (int n = 0; n < N; ++n) {
-        w[n] = 0.54 - 0.46 * cos(2.0 * M_PI * n / (double)(N - 1));
-    }
-}
+    if (pulses <= 0 || nfft <= 0 || nfft < pulses) return -1;
 
-double get_velocity_from_bin(int doppler_bin, int nfft, double prf_hz, double fc_hz) {
-    const double c = 299792458.0;
-    double lambda = c / fc_hz;
-    double fd = ((double)doppler_bin - (double)(nfft / 2)) * (prf_hz / (double)nfft);
-    return fd * lambda / 2.0;
-}
-
-double get_range_from_bin(int range_bin, double fs_hz) {
-    const double c = 299792458.0;
-    return ((double)range_bin) * c / (2.0 * fs_hz);
-}
-
-int doppler_fft_processing_ex(const ComplexMatrix *rxsig_pc, const RadarMeta *meta, int nfft,
-                              ComplexMatrix *doppler_map, DopplerFftTiming *timing) {
-    ComplexMatrix mti = {0};
-    double *win = NULL;
-    double complex *buf = NULL;
-    int rows = rxsig_pc->rows;
-    int pulses = rxsig_pc->cols;
-    double t0, t1;
-
-    if (timing) {
-        timing->mti_ms = 0.0;
-        timing->mtd_ms = 0.0;
-    }
-
-    if (nfft <= 0) nfft = pulses;
-    if (!is_power_of_two(nfft)) return -1;
-
-    t0 = now_ms();
-    if (apply_mti(rxsig_pc, 1, &mti) != 0) return -1;
-    t1 = now_ms();
-    if (timing) timing->mti_ms = t1 - t0;
-
-    if (alloc_complex_matrix(rows, nfft, doppler_map) != 0) {
-        free_complex_matrix(&mti);
+    if (ws->pulses != pulses || ws->nfft != nfft) {
+        fprintf(stderr,
+                "apply_mtd: workspace mismatch ws_pulses=%d ws_nfft=%d pulses=%d nfft=%d\n",
+                ws->pulses, ws->nfft, pulses, nfft);
         return -1;
     }
 
-    win = (double *)calloc((size_t)pulses, sizeof(double));
-    buf = (double complex *)calloc((size_t)nfft, sizeof(double complex));
-    if (!win || !buf) {
-        free(win);
-        free(buf);
-        free_complex_matrix(&mti);
-        free_complex_matrix(doppler_map);
+    if (doppler_map->cols < nfft) {
+        fprintf(stderr, "apply_mtd: doppler cols too small cols=%d nfft=%d\n",
+                doppler_map->cols, nfft);
         return -1;
     }
 
-    t0 = now_ms();
+    int rows        = doppler_map->rows;
+    float *win      = ws->hamming_win;
 
-    make_hamming_window(pulses, win);
+    //#pragma omp parallel num_threads(2)
+    {
+        //#pragma omp for schedule(static)
+        for (int r = 0; r < rows; ++r) {
+            float complex *row = &CMAT_AT(doppler_map, r, 0);
 
-    for (int r = 0; r < rows; ++r) {
-        for (int i = 0; i < nfft; ++i) {
-            buf[i] = 0.0 + I * 0.0;
-        }
+            // 1. 윈도우 적용
+            for (int p = 0; p < pulses; ++p) {
+                ws->local_buf[p] = row[p] * win[p];
+            }
 
-        for (int p = 0; p < pulses && p < nfft; ++p) {
-            buf[p] = CMAT_AT(&mti, r, p) * win[p];
-        }
+            // 2. Zero-padding
+            if (nfft > pulses) {
+                memset(&ws->local_buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
+            }
 
-        fft_inplace(buf, nfft);
-        fftshift_1d(buf, nfft);
+            // 3. FFT 실행 (ws->mtd_plan 대신 개별 plan 또는 전용 실행 함수 필요)
+            // fftwf_execute_dft를 쓰면 버퍼를 지정해서 실행 가능합니다.
+            fftwf_execute_dft(ws->mtd_plan, ws->local_buf, ws->local_buf);
 
-        for (int k = 0; k < nfft; ++k) {
-            CMAT_AT(doppler_map, r, k) = buf[k];
+            // 4. Shift 및 복사
+            int half = nfft / 2;
+            for (int i = 0; i < half; ++i) {
+                row[i] = ws->local_buf[i + half];
+                row[i + half] = ws->local_buf[i];
+            }
         }
     }
 
-    t1 = now_ms();
-    if (timing) timing->mtd_ms = t1 - t0;
-
-    free(win);
-    free(buf);
-    free_complex_matrix(&mti);
-    (void)meta;
     return 0;
 }
 
-int doppler_fft_processing(const ComplexMatrix *rxsig_pc, const RadarMeta *meta, int nfft, ComplexMatrix *doppler_map) {
-    return doppler_fft_processing_ex(rxsig_pc, meta, nfft, doppler_map, NULL);
+int doppler_fft_processing(ComplexMatrix *doppler_map,
+                           int nfft,
+                           PipelineTiming *timing,
+                           DopplerWorkspace *ws)
+{
+    if (!doppler_map || !doppler_map->data || !timing || !ws)
+        return -1;
+
+    int pulses = doppler_map->cols;
+
+    if (nfft < pulses) return -1;
+
+    if (doppler_map->cols < nfft) {
+        fprintf(stderr,
+                "doppler_fft_processing: shape mismatch dop=%dx%d nfft=%d\n",
+                doppler_map->rows, doppler_map->cols, nfft);
+        return -1;
+    }
+    
+    double t0 = now_ms();
+    if (apply_mti(doppler_map, 1) != 0) return -1;
+    timing->mti_ms = now_ms() - t0;
+
+    t0 = now_ms();
+    if (apply_mtd(doppler_map, pulses, nfft, ws) != 0) return -1;
+    timing->mtd_ms = now_ms() - t0;
+
+    return 0;
 }

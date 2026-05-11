@@ -4,11 +4,12 @@
 #include <ctype.h>
 #include <complex.h>
 #include <sys/stat.h>
-
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
 #include <errno.h>
+
+// mmap 사용할 때
+// #include <fcntl.h>
+// #include <unistd.h>
+// #include <sys/mman.h>
 
 #include "loader.h"
 
@@ -35,24 +36,16 @@ int alloc_complex_matrix(int rows, int cols, ComplexMatrix *m) {
     return (m->data != NULL) ? 0 : -1;
 }
 
-int alloc_real_matrix(int rows, int cols, RealMatrix *m) {
-    if (!m || rows <= 0 || cols <= 0) return -1;
+// int alloc_real_matrix(int rows, int cols, RealMatrix *m) {
+//     if (!m || rows <= 0 || cols <= 0) return -1;
 
-    m->rows = rows;
-    m->cols = cols;
-    m->data = (double *)calloc((size_t)rows * (size_t)cols, sizeof(double));
-    return (m->data != NULL) ? 0 : -1;
-}
+//     m->rows = rows;
+//     m->cols = cols;
+//     m->data = (double *)calloc((size_t)rows * (size_t)cols, sizeof(double));
+//     return (m->data != NULL) ? 0 : -1;
+// }
 
 void free_complex_matrix(ComplexMatrix *m) {
-    if (!m) return;
-    free(m->data);
-    m->data = NULL;
-    m->rows = 0;
-    m->cols = 0;
-}
-
-void free_real_matrix(RealMatrix *m) {
     if (!m) return;
     free(m->data);
     m->data = NULL;
@@ -99,11 +92,6 @@ int load_metadata(const char *path, RadarMeta *meta) {
         else if (strcmp(key, "SweepBandwidth_Hz") == 0) meta->sweep_bandwidth_hz = atof(val);
         else if (strcmp(key, "NumPulses") == 0) meta->num_pulses = atoi(val);
         else if (strcmp(key, "NumFastTimeSamples") == 0) meta->num_fast_time_samples = atoi(val);
-
-        /* 필요하면 아래도 구조체에 추가해서 받을 수 있음
-        else if (strcmp(key, "MaxUnambiguousRange_m") == 0) meta->max_unambiguous_range_m = atof(val);
-        else if (strcmp(key, "Lambda_m") == 0) meta->lambda_m = atof(val);
-        */
     }
 
     fclose(fp);
@@ -121,182 +109,140 @@ int load_metadata(const char *path, RadarMeta *meta) {
     return 0;
 }
 
-static int load_real_csv_matrix(const char *path, int rows, int cols, double *out) {
-    FILE *fp;
-    char line[16384];
-    int r = 0;
 
-    fp = fopen(path, "r");
-    if (!fp) return -1;
-
-    while (r < rows && fgets(line, sizeof(line), fp)) {
-        char *p = line;
-        int c = 0;
-
-        while (c < cols) {
-            char *endptr;
-            double v;
-
-            while (*p == ' ' || *p == '\t') p++;
-            v = strtod(p, &endptr);
-            if (p == endptr) break;
-
-            out[(size_t)r * (size_t)cols + (size_t)c] = v;
-            c++;
-
-            p = endptr;
-            while (*p == ' ' || *p == '\t') p++;
-            if (*p == ',') p++;
-        }
-
-        if (c != cols) {
-            fclose(fp);
-            return -1;
-        }
-
-        r++;
-    }
-
-    fclose(fp);
-    return (r == rows) ? 0 : -1;
-}
-
-int load_complex_csv_pair(const char *real_path,
-                          const char *imag_path,
-                          int rows, int cols,
-                          ComplexMatrix *out) {
-    double *real_buf = NULL;
-    double *imag_buf = NULL;
-
-    if (alloc_complex_matrix(rows, cols, out) != 0) return -1;
-
-    real_buf = (double *)calloc((size_t)rows * (size_t)cols, sizeof(double));
-    imag_buf = (double *)calloc((size_t)rows * (size_t)cols, sizeof(double));
-    if (!real_buf || !imag_buf) {
-        free(real_buf);
-        free(imag_buf);
-        free_complex_matrix(out);
-        return -1;
-    }
-
-    if (load_real_csv_matrix(real_path, rows, cols, real_buf) != 0 ||
-        load_real_csv_matrix(imag_path, rows, cols, imag_buf) != 0) {
-        free(real_buf);
-        free(imag_buf);
-        free_complex_matrix(out);
-        return -1;
-    }
-
-    for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < cols; ++c) {
-            size_t idx = (size_t)r * (size_t)cols + (size_t)c;
-            out->data[idx] = real_buf[idx] + I * imag_buf[idx];
-        }
-    }
-
-    free(real_buf);
-    free(imag_buf);
-    return 0;
-}
-
-static int load_real_bin_matrix_matlab_colmajor(const char *path,
-                                                int rows, int cols,
-                                                double *out) {
+int load_complex_bin_all_fread(const char *path, 
+                               int num_pulses, 
+                               int num_fast_time_samples, 
+                               size_t header_offset, 
+                               ComplexMatrix *out) 
+{
     FILE *fp = NULL;
-    double *tmp = NULL;
-    size_t total = (size_t)rows * (size_t)cols;
-    size_t nread;
-    long file_size;
+    struct stat st;
+    size_t expected_size;
+    const size_t total_elements =
+        (size_t)num_pulses * (size_t)num_fast_time_samples;
 
-    if (!path || !out || rows <= 0 || cols <= 0) return -1;
-
-    fp = fopen(path, "rb");
-    if (!fp) return -2;
-
-    if (fseek(fp, 0, SEEK_END) != 0) {
-        fclose(fp);
-        return -3;
+    if (!path || !out || num_pulses <= 0 || num_fast_time_samples <= 0) {
+        fprintf(stderr, "load_complex_bin_all_fread: invalid args\n");
+        return -1;
     }
 
-    file_size = ftell(fp);
-    if (file_size < 0) {
-        fclose(fp);
-        return -4;
-    }
+    memset(out, 0, sizeof(*out));
 
-    if ((size_t)file_size != total * sizeof(double)) {
-        fclose(fp);
-        return -5;
-    }
-
-    rewind(fp);
-
-    tmp = (double *)malloc(total * sizeof(double));
-    if (!tmp) {
-        fclose(fp);
-        return -6;
-    }
-
-    nread = fread(tmp, sizeof(double), total, fp);
-    fclose(fp);
-
-    if (nread != total) {
-        free(tmp);
-        return -7;
-    }
-
-    /* MATLAB fwrite 기준: column-major -> C row-major */
-    for (int c = 0; c < cols; ++c) {
-        for (int r = 0; r < rows; ++r) {
-            size_t file_idx = (size_t)c * (size_t)rows + (size_t)r;
-            size_t idx = (size_t)r * (size_t)cols + (size_t)c;
-            out[idx] = tmp[file_idx];
-        }
-    }
-
-    free(tmp);
-    return 0;
-}
-
-int load_complex_bin_pair_matlab(const char *real_path,
-                                 const char *imag_path,
-                                 int rows, int cols,
-                                 ComplexMatrix *out) {
-    double *real_buf = NULL;
-    double *imag_buf = NULL;
-    size_t total = (size_t)rows * (size_t)cols;
-
-    if (alloc_complex_matrix(rows, cols, out) != 0) return -1;
-
-    real_buf = (double *)malloc(total * sizeof(double));
-    imag_buf = (double *)malloc(total * sizeof(double));
-    if (!real_buf || !imag_buf) {
-        free(real_buf);
-        free(imag_buf);
-        free_complex_matrix(out);
+    if (stat(path, &st) != 0) {
+        perror("stat");
         return -2;
     }
 
-    if (load_real_bin_matrix_matlab_colmajor(real_path, rows, cols, real_buf) != 0 ||
-        load_real_bin_matrix_matlab_colmajor(imag_path, rows, cols, imag_buf) != 0) {
-        free(real_buf);
-        free(imag_buf);
-        free_complex_matrix(out);
+    /*
+     * 파일 구조:
+     * header_offset bytes header
+     * 이후 RawIQSample 1001 * 512개
+     *
+     * RawIQSample:
+     *   double i;
+     *   double q;
+     *
+     * 1 sample = 16 bytes
+     */
+    expected_size = header_offset + total_elements * sizeof(RawIQSample);
+
+    if ((size_t)st.st_size != expected_size) {
+        fprintf(stderr,
+                "load_complex_bin_all_fread: file size mismatch "
+                "(actual=%lld, expected=%zu)\n",
+                (long long)st.st_size,
+                expected_size);
         return -3;
     }
 
-    for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < cols; ++c) {
-            size_t idx = (size_t)r * (size_t)cols + (size_t)c;
-            out->data[idx] = real_buf[idx] + I * imag_buf[idx];
+    /*
+     * 중요:
+     * 이제 raw_data는 transpose하지 않고 파일 순서 그대로 저장한다.
+     *
+     * raw_data.rows = num_pulses              = 512
+     * raw_data.cols = num_fast_time_samples   = 1001
+     *
+     * 즉:
+     * raw_data[pulse][fast_time]
+     */
+    if (alloc_complex_matrix(num_pulses, num_fast_time_samples, out) != 0) {
+        fprintf(stderr, "load_complex_bin_all_fread: alloc failed\n");
+        return -4;
+    }
+
+    fp = fopen(path, "rb");
+    if (!fp) {
+        perror("fopen");
+        free_complex_matrix(out);
+        return -5;
+    }
+
+    if (fseek(fp, (long)header_offset, SEEK_SET) != 0) {
+        perror("fseek");
+        fclose(fp);
+        free_complex_matrix(out);
+        return -6;
+    }
+
+    /*
+     * 펄스 하나 = fast-time sample 1001개
+     * 파일은 pulse 단위로 연속 저장되어 있다고 가정.
+     */
+    RawIQSample *pulse_buffer =
+        (RawIQSample *)malloc((size_t)num_fast_time_samples *
+                              sizeof(RawIQSample));
+
+    if (!pulse_buffer) {
+        fprintf(stderr, "load_complex_bin_all_fread: pulse buffer alloc failed\n");
+        fclose(fp);
+        free_complex_matrix(out);
+        return -7;
+    }
+
+    for (int p = 0; p < num_pulses; ++p) {
+        size_t read_count = fread(pulse_buffer,
+                                  sizeof(RawIQSample),
+                                  (size_t)num_fast_time_samples,
+                                  fp);
+
+        if (read_count != (size_t)num_fast_time_samples) {
+            fprintf(stderr,
+                    "load_complex_bin_all_fread: fread failed "
+                    "pulse=%d read=%zu expected=%d pos=%ld\n",
+                    p,
+                    read_count,
+                    num_fast_time_samples,
+                    ftell(fp));
+
+            free(pulse_buffer);
+            fclose(fp);
+            free_complex_matrix(out);
+            return -8;
+        }
+
+        /*
+         * transpose 안 함.
+         *
+         * 기존:
+         *   out->data[c * num_pulses + p] = ...
+         *
+         * 수정:
+         *   out[p][c] = ...
+         */
+        for (int c = 0; c < num_fast_time_samples; ++c) {
+            CMAT_AT(out, p, c) =
+                pulse_buffer[c].i + pulse_buffer[c].q * I;
         }
     }
 
-    free(real_buf);
-    free(imag_buf);
+    free(pulse_buffer);
+    fclose(fp);
+
     return 0;
 }
 
+#if 0
 int load_complex_bin_single(const char *path, int rows, int cols, ComplexMatrix *out) {
     FILE *fp = NULL;
     struct stat st;
@@ -372,3 +318,4 @@ int load_complex_bin_single(const char *path, int rows, int cols, ComplexMatrix 
     fclose(fp);
     return 0;
 }
+#endif
