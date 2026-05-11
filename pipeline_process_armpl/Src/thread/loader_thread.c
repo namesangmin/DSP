@@ -216,8 +216,6 @@ void *loader_thread_main(void *arg)
 
         // =================================================================
         // UDP로 받는 시간 측정
-        //double t0 = now_ms();
-
         if(load_bin_to_float_array(a->buffer, total_count, 232) < 0){
             atomic_store(&a->pipe->error, 1);
             break;
@@ -249,6 +247,7 @@ void *loader_thread_main(void *arg)
         
         if (push_err) break;
 
+        frame_idx++;  // ← 여기 추가
         double t1 = now_ms();
 
         if (a->timing) {
