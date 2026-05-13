@@ -17,17 +17,3 @@ void pin_thread_to_cpu(int cpu_id)
         perror("pthread_setaffinity_np");
     }
 }
-
-void pin_to_cpu0(void)
-{
-    cpu_set_t set;
-    CPU_ZERO(&set);
-    CPU_SET(0, &set);
-    CPU_SET(1, &set);
-    CPU_SET(2, &set);
-    CPU_SET(3, &set);
-
-    if (sched_setaffinity(0, sizeof(set), &set) != 0) {
-        perror("sched_setaffinity");
-    }
-}

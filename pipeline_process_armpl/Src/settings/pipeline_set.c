@@ -13,14 +13,20 @@ int init_pipeline_pool(const RadarMeta *meta, Pipeline *pool)
             return -1;
         }
 
-        if (alloc_complex_matrix(meta->num_pulses, meta->num_fast_time_samples,
-                                 &pool->rd_maps[i].data) != 0) return -1;
-        atomic_init(&pool->rd_maps[i].state, BUF_FREE);
-        atomic_init(&pool->rd_maps[i].done_count, 0);
+        if (alloc_complex_matrix(meta->num_pulses, meta->num_fast_time_samples, &pool->pulse_compress_map[i].data) != 0) 
+        {
+            return -1;
+        }
 
-        if (alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses,
-                                 &pool->doppler_maps[i].data) != 0) return -1;
-        atomic_init(&pool->doppler_maps[i].state, BUF_FREE);
+        atomic_init(&pool->pulse_compress_map[i].state, BUF_FREE);
+        atomic_init(&pool->pulse_compress_map[i].done_count, 0);
+
+        if (alloc_complex_matrix(meta->num_fast_time_samples, meta->num_pulses, &pool->doppler_map[i].data) != 0) 
+        {
+            return -1;
+        }
+
+        atomic_init(&pool->doppler_map[i].state, BUF_FREE);
     }
 
     atomic_init(&pool->current_write_idx, 0);
@@ -35,12 +41,13 @@ void cleanup_pipeline_pool(Pipeline *pool)
     
     for (int i = 0; i < NUM_BUFFERS; i++) 
     {
-        if (pool->raw_data[i]) {
+        if (pool->raw_data[i]) 
+        {
             fftwf_free(pool->raw_data[i]);
             pool->raw_data[i] = NULL;
         }
         
-        free_complex_matrix(&pool->rd_maps[i].data);
-        free_complex_matrix(&pool->doppler_maps[i].data);
+        free_complex_matrix(&pool->pulse_compress_map[i].data);
+        free_complex_matrix(&pool->doppler_map[i].data);
     }
 }

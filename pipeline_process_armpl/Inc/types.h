@@ -8,11 +8,11 @@
 #include <stdint.h>
 #include <complex.h>
 typedef struct {
-    double fc_hz;
-    double fs_hz;
-    double prf_hz;
-    double pulse_width_s;
-    double sweep_bandwidth_hz;
+    float fc_hz;
+    float fs_hz;
+    float prf_hz;
+    float pulse_width_s;
+    float sweep_bandwidth_hz;
     uint32_t num_pulses;
     uint32_t num_fast_time_samples;
 } RadarMeta;

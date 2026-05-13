@@ -82,15 +82,15 @@ void free_detection_list(DetectionList *list)
 // =========================================================
 // 수학 연산 헬퍼 함수
 // =========================================================
-float get_range_from_bin(int range_bin, double fs_hz) {
+float get_range_from_bin(int range_bin, float fs_hz) {
     const float c = 299792458.0f;
     return ((float)range_bin) * c / (2.0f * (float)fs_hz);
 }
 
-float get_velocity_from_bin(int doppler_bin, int nfft, double prf_hz, double fc_hz) {
+float get_velocity_from_bin(int doppler_bin, int nfft, float prf_hz, float fc_hz) {
     const float c = 299792458.0f;
     float lambda = c / (float)fc_hz;
-    float fd = ((float)doppler_bin - (float)(nfft / 2)) * ((float)prf_hz / (float)nfft);
+    float fd = ((float)doppler_bin - (float)(nfft / 2)) * (prf_hz / (float)nfft);
     return fd * lambda / 2.0f;
 }
 
@@ -148,9 +148,6 @@ int cfar_detect(const ComplexMatrix *doppler_map,
     // 나눗셈을 단 한 번의 곱셈으로 치환
     float final_scale = scale / (float)training_cells;
 
-    // 마스크 배열 초기화 (이전 루프의 흔적 지우기)
-    memset(det_mask, 0, (size_t)numRange * numDoppler * sizeof(uint8_t));
-
     // ---------------------------------------------------------
     // 단계 1. 파워맵 생성
     // ---------------------------------------------------------
@@ -168,9 +165,6 @@ int cfar_detect(const ComplexMatrix *doppler_map,
     // ---------------------------------------------------------
     int or1 = 0, or2 = 2 * winR;
     int gr1 = winR - numGuardR, gr2 = winR + numGuardR;
-
-    memset(col_sum_outer, 0, (size_t)numDoppler * sizeof(float));
-    memset(col_sum_guard, 0, (size_t)numDoppler * sizeof(float));
 
     for (int d = 0; d < numDoppler; ++d) {
         float sum_o = 0.0f, sum_g = 0.0f;

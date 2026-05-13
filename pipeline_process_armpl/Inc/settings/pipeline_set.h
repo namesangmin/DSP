@@ -3,29 +3,20 @@
 
 #include <pthread.h>
 #include <stdatomic.h>
-#include <stdint.h>      // uint32_t 추가
+#include <stdint.h>
 #include <fftw3.h>
 #include "types.h"
 #include "queue_post.h"
 #include "queue_pulse.h"
 
-#define NUM_BUFFERS 3
+#define NUM_BUFFERS 2
 typedef enum {
     BUF_FREE = 0,       // 비어 있음
     BUF_FILLING = 1,    // 짝/홀 코어가 열심히 쓰는 중
-    BUF_READY = 2,      // 압축 완료! (도플러로 넘길 준비)
+    BUF_READY = 2,      // 압축 완료 (도플러로 넘길 준비)
     BUF_PROCESSING = 3  // 도플러/CFAR 코어가 처리 중
 } BufferState;
 
-// Pipeline 구조체나 전역에 추가
-typedef struct {
-    double wait_ms;      // 큐/버퍼 대기 시간
-    double work_ms;      // 실제 처리 시간
-    long   sleep_count;  // sleep 횟수
-} ThreadTiming;
-// 전역
-extern ThreadTiming pc_timing[2];
-extern ThreadTiming post_timing;
 typedef struct {
     ComplexMatrix data;
     atomic_int    state;
@@ -48,8 +39,8 @@ typedef struct {
     PulseQueue odd_q;    // pulse 256~511
 
     float complex *raw_data[NUM_BUFFERS];  // 단일 → 배열
-    RdMapBuffer    rd_maps[NUM_BUFFERS];
-    DopplerBuffer  doppler_maps[NUM_BUFFERS];
+    RdMapBuffer    pulse_compress_map[NUM_BUFFERS];
+    DopplerBuffer  doppler_map[NUM_BUFFERS];
     char filenames[NUM_BUFFERS][256];
 
     uint32_t dwell_ids[NUM_BUFFERS];
@@ -58,7 +49,16 @@ typedef struct {
 
 } Pipeline;
 
+typedef struct {
+    double wait_ms;      // 큐/버퍼 대기 시간
+    double work_ms;      // 실제 처리 시간
+    long   sleep_count;  // sleep 횟수
+} ThreadTiming;
+
+extern ThreadTiming pc_timing[2];
+extern ThreadTiming post_timing;
 struct RadarMeta;
+
 int init_pipeline_pool(const RadarMeta *meta, Pipeline *pipe);
 void cleanup_pipeline_pool(Pipeline *pool);
 

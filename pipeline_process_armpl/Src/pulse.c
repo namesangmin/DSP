@@ -65,10 +65,10 @@ int transpose_rd_pulse_range_to_doppler_range_pulse(
 static int make_lfm_pulse(const RadarMeta *meta, ComplexMatrix *pls) 
 {
     int n;
-    double fs = meta->fs_hz;
-    double pw = meta->pulse_width_s;
-    double bw = meta->sweep_bandwidth_hz;
-    double k = bw / pw;
+    float fs = meta->fs_hz;
+    float pw = meta->pulse_width_s;
+    float bw = meta->sweep_bandwidth_hz;
+    float k = bw / pw;
     int N = (int)llround(fs * pw);
 
     if (N <= 0) return -1;

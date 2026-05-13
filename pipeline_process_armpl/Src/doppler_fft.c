@@ -120,32 +120,29 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
     int rows        = doppler_map->rows;
     float *win      = ws->hamming_win;
 
-    //#pragma omp parallel num_threads(2)
-    {
-        //#pragma omp for schedule(static)
-        for (int r = 0; r < rows; ++r) {
-            float complex *row = &CMAT_AT(doppler_map, r, 0);
+    
+    for (int r = 0; r < rows; ++r) {
+        float complex *row = &CMAT_AT(doppler_map, r, 0);
 
-            // 1. 윈도우 적용
-            for (int p = 0; p < pulses; ++p) {
-                ws->local_buf[p] = row[p] * win[p];
-            }
+        // 1. 윈도우 적용
+        for (int p = 0; p < pulses; ++p) {
+            ws->local_buf[p] = row[p] * win[p];
+        }
 
-            // 2. Zero-padding
-            if (nfft > pulses) {
-                memset(&ws->local_buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
-            }
+        // 2. Zero-padding
+        // if (nfft > pulses) {
+        //     memset(&ws->local_buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
+        // }
 
-            // 3. FFT 실행 (ws->mtd_plan 대신 개별 plan 또는 전용 실행 함수 필요)
-            // fftwf_execute_dft를 쓰면 버퍼를 지정해서 실행 가능합니다.
-            fftwf_execute_dft(ws->mtd_plan, ws->local_buf, ws->local_buf);
+        // 3. FFT 실행 (ws->mtd_plan 대신 개별 plan 또는 전용 실행 함수 필요)
+        // fftwf_execute_dft를 쓰면 버퍼를 지정해서 실행 가능합니다.
+        fftwf_execute_dft(ws->mtd_plan, ws->local_buf, ws->local_buf);
 
-            // 4. Shift 및 복사
-            int half = nfft / 2;
-            for (int i = 0; i < half; ++i) {
-                row[i] = ws->local_buf[i + half];
-                row[i + half] = ws->local_buf[i];
-            }
+        // 4. Shift 및 복사
+        int half = nfft / 2;
+        for (int i = 0; i < half; ++i) {
+            row[i] = ws->local_buf[i + half];
+            row[i + half] = ws->local_buf[i];
         }
     }
 

@@ -31,9 +31,6 @@
 
 #define MAX_UDP_FRAMES 100000
 
-// =========================================================
-// 전역 상태 - init()에서 한 번만 초기화
-// =========================================================
 typedef struct {
     int valid_files;
     Pipeline        pipe;
@@ -65,11 +62,12 @@ typedef struct {
 } AppState;
 
 static AppState g_state;
+
+// 임시 로그 찍는 거
 extern atomic_int pop_sleep_count;
 extern atomic_int push_sleep_count;
 extern atomic_int post_pop_sleep_count;
 extern atomic_int post_push_sleep_count;
-// main.c 또는 pipelineset.c
 ThreadTiming pc_timing[2] = {0};
 ThreadTiming post_timing  = {0};
 
@@ -114,180 +112,6 @@ void handle_sigint(int sig) {
     printf("[post thread] wait: %.2f ms | work: %.2f ms\n",
         post_timing.wait_ms / n, post_timing.work_ms / n);
     exit(0);
-}
-// =========================================================
-// init - 프로그램 시작 시 한 번만
-// =========================================================
-static int app_init(const char *dir_path, const RadarMeta *meta,
-                    struct dirent **namelist, int num_files) 
-    {
-    AppState *s = &g_state;
-    memset(s, 0, sizeof(*s));
-
-    s->meta = meta;
-    
-    // 파이프라인 초기화
-    if (init_pipeline_pool(meta, &s->pipe) != 0) 
-    {
-        fprintf(stderr, "init_pipeline failed\n");
-        return -1;
-    }
-    
-    // 큐 초기화
-    size_t q_size = (meta->num_pulses / 2 + 1) * NUM_BUFFERS;
-    if (pulse_queue_init(&s->pipe.even_q, q_size) != 0 ||
-        pulse_queue_init(&s->pipe.odd_q,  q_size) != 0) 
-    {
-        fprintf(stderr, "pulse_queue_init failed\n");
-        cleanup_pipeline_pool(&s->pipe);
-        return -1;
-    }
-
-    if (post_queue_init(&s->pipe.post_q, NUM_BUFFERS) != 0) 
-    {
-        fprintf(stderr, "post_queue_init failed\n");
-        pulse_queue_destroy(&s->pipe.even_q);
-        pulse_queue_destroy(&s->pipe.odd_q);
-        cleanup_pipeline_pool(&s->pipe);
-        return -1;
-    }
-
-    // loader 초기화
-    if (loader_thread_init(meta, &s->ld, &s->pipe, 5555) != 0) 
-    {
-        fprintf(stderr, "loader_thread_init failed\n");
-        post_queue_destroy(&s->pipe.post_q);
-        pulse_queue_destroy(&s->pipe.even_q);
-        pulse_queue_destroy(&s->pipe.odd_q);
-        cleanup_pipeline_pool(&s->pipe);
-        return -1;
-    }
-
-    // 펄스 압축 컨텍스트
-    if (pulse_compress_ctx_init(meta, &s->wk_even.ctx) != 0 ||
-        pulse_compress_ctx_init(meta, &s->wk_odd.ctx)  != 0) 
-    {
-        fprintf(stderr, "pulse_compress_ctx_init failed\n");
-        pulse_compress_ctx_destroy(&s->wk_even.ctx);
-        pulse_compress_ctx_destroy(&s->wk_odd.ctx);
-        loader_thread_destroy(&s->ld);
-        post_queue_destroy(&s->pipe.post_q);
-        pulse_queue_destroy(&s->pipe.even_q);
-        pulse_queue_destroy(&s->pipe.odd_q);
-        cleanup_pipeline_pool(&s->pipe);
-        return -1;
-    }
-
-    // CFAR, Doppler 워크스페이스
-    if (init_cfar_workspace(&s->cfar_ws,
-    meta->num_fast_time_samples,
-    meta->num_pulses) != 0) 
-    {
-        fprintf(stderr, "init_cfar_workspace failed\n");
-        pulse_compress_ctx_destroy(&s->wk_even.ctx);
-        pulse_compress_ctx_destroy(&s->wk_odd.ctx);
-        loader_thread_destroy(&s->ld);
-        post_queue_destroy(&s->pipe.post_q);
-        pulse_queue_destroy(&s->pipe.even_q);
-        pulse_queue_destroy(&s->pipe.odd_q);
-        cleanup_pipeline_pool(&s->pipe);
-        return -1;
-    }
-
-    if (init_doppler_workspace(&s->doppler_ws,
-        meta->num_pulses,
-        meta->num_pulses) != 0) 
-    {
-        fprintf(stderr, "init_doppler_workspace failed\n");
-        cleanup_cfar_workspace(&s->cfar_ws);
-        pulse_compress_ctx_destroy(&s->wk_even.ctx);
-        pulse_compress_ctx_destroy(&s->wk_odd.ctx);
-        loader_thread_destroy(&s->ld);
-        post_queue_destroy(&s->pipe.post_q);
-        pulse_queue_destroy(&s->pipe.even_q);
-        pulse_queue_destroy(&s->pipe.odd_q);
-        cleanup_pipeline_pool(&s->pipe);
-        return -1;
-    }
-
-    if (init_cluster_workspace(&s->cluster_ws,
-        meta->num_fast_time_samples,
-        meta->num_pulses,
-        (float)meta->fs_hz,
-        299792458.0f,
-        (float)meta->prf_hz,
-        (float)meta->fc_hz,
-        meta->num_pulses) != 0) 
-    {
-        fprintf(stderr, "init_cluster_workspace failed\n");
-        cleanup_doppler_workspace(&s->doppler_ws);
-        cleanup_cfar_workspace(&s->cfar_ws);
-        pulse_compress_ctx_destroy(&s->wk_even.ctx);
-        pulse_compress_ctx_destroy(&s->wk_odd.ctx);
-        loader_thread_destroy(&s->ld);
-        post_queue_destroy(&s->pipe.post_q);
-        pulse_queue_destroy(&s->pipe.even_q);
-        pulse_queue_destroy(&s->pipe.odd_q);
-        cleanup_pipeline_pool(&s->pipe);
-        return -1;
-    }
-
-    s->cluster_history = calloc(num_files, sizeof(ClusterList));
-    s->history = calloc(num_files, sizeof(DetectionList));
-    s->valid_files = 0;
-    s->total_acc = (Accumulator){0};
-  
-    s->ld.meta      = meta;
-    s->ld.pipe      = &s->pipe;
-    s->ld.cpu_id    = 0;
-    s->ld.timing    = &s->timing;
-    s->ld.file_list = namelist;
-    s->ld.num_files = num_files;
-    s->ld.dir_path  = dir_path;
-
-    s->wk_even.meta    = meta;
-    s->wk_even.pipe    = &s->pipe;
-    s->wk_even.q       = &s->pipe.even_q;
-    s->wk_even.cpu_id  = 1;
-    s->wk_even.timing  = &s->timing;
-
-    s->wk_odd.meta     = meta;
-    s->wk_odd.pipe     = &s->pipe;
-    s->wk_odd.q        = &s->pipe.odd_q;
-    s->wk_odd.cpu_id   = 2;
-    s->wk_odd.timing   = &s->timing;
-
-    s->cluster_params = (ClusterParams)
-    {
-        .range_radius   = 2,
-        .doppler_radius = 2,
-        .min_pts        = 3,
-        .max_targets    = 5,
-        .power_ratio_min = 0.1f,  // 1위의 10% 미만이면 사이드로브로 제거
-    };
-
-    s->post.meta       = meta;
-    s->post.pipe       = &s->pipe;
-    s->post.det        = &s->det;
-    s->post.cfar_ws    = &s->cfar_ws;
-    s->post.doppler_ws = &s->doppler_ws;
-    s->post.cluster_ws     = &s->cluster_ws;
-    s->post.clusters       = &s->clusters;
-    s->post.cluster_params = &s->cluster_params;
-    s->post.cpu_id     = 3;
-    s->post.timing     = &s->timing;
-    s->post.total_acc   = &s->total_acc;
-    s->post.history     = s->history;
-    s->post.valid_files = &s->valid_files;
-    s->post.cluster_history = s->cluster_history;
-
-    // UDP
-    udp_init("127.0.0.1", 7777);
-
-    // TCP
-    send_graph_data_init("127.0.0.1", 9999, meta->num_fast_time_samples, meta->num_pulses);
-        
-    return 0;
 }
 
 // UDP 모드용 init (dir_path, namelist, num_files 없음)
@@ -398,7 +222,6 @@ static int app_init_udp(const RadarMeta *meta)
         return -1;
     }
 
-    // UDP 모드는 프레임 수를 모르므로 최대값으로 잡음
     s->history         = calloc(MAX_UDP_FRAMES, sizeof(DetectionList));
     s->cluster_history = calloc(MAX_UDP_FRAMES, sizeof(ClusterList));
     s->valid_files = 0;
@@ -453,9 +276,7 @@ static int app_init_udp(const RadarMeta *meta)
 
     return 0;
 }
-// =========================================================
-// cleanup - 프로그램 종료 시 한 번만
-// =========================================================
+
 static void app_cleanup(void) 
 {
     cleanup_pipeline_pool (&g_state.pipe);
@@ -496,76 +317,6 @@ static int process_udp(const RadarMeta *meta)
 }
 
 // =========================================================
-// 디렉토리 순회
-// =========================================================
-static int process_directory(const char *dir_path, const char *metadata_path) 
-{
-    RadarMeta meta = {0};
-    if (load_metadata(metadata_path, &meta) != 0) 
-    {
-        fprintf(stderr, "failed to read metadata\n");
-        return -1;
-    }
-    print_metadata(&meta);
-
-    struct dirent **namelist;
-    int num_files = scandir(dir_path, &namelist, NULL, versionsort);
-    if (num_files < 0) 
-    {
-        perror("scandir failed");
-        return -1;
-    }
-    
-    if (app_init(dir_path, &meta, namelist, num_files) != 0) 
-    {
-        return -1;
-    }
-    AppState *s = &g_state;
-
- // 큐 열기
-    pulse_queue_open(&s->pipe.even_q);
-    pulse_queue_open(&s->pipe.odd_q);
-    post_queue_open(&s->pipe.post_q);
-
-    double frame_start = now_ms();
-
-    // 스레드 한 번만 생성
-    pthread_create(&s->th_loader, NULL, loader_thread_main, &s->ld);
-    pthread_create(&s->th_even,   NULL, worker_thread_main, &s->wk_even);
-    pthread_create(&s->th_odd,    NULL, worker_thread_main, &s->wk_odd);
-    pthread_create(&s->th_post,   NULL, post_thread_main,   &s->post);
-
-    pthread_join(s->th_loader, NULL);
-    pthread_join(s->th_even,   NULL);
-    pthread_join(s->th_odd,    NULL);
-    pthread_join(s->th_post,   NULL);
-    
-    double frame_total = now_ms() - frame_start;
-    printf("total time: %lf\n", frame_total/188);
-
-    if (s->valid_files > 0) 
-    {
-        print_trajectory_summary(s->history, s->cluster_history, s->valid_files);
-        print_global_average(&s->total_acc, s->valid_files);
-    }
-
-    for (int i = 0; i < s->valid_files; i++)
-    {
-        free_detection_list(&s->history[i]);
-    }
-    free(s->history);
-    s->history = NULL;
-
-    for (int i = 0; i < num_files; i++){
-        free(namelist[i]);
-    }
-    free(namelist);
-
-    app_cleanup();
-    return 0;
-}
-
-// =========================================================
 // main
 // =========================================================
 int main(int argc, char **argv) 
@@ -591,21 +342,6 @@ int main(int argc, char **argv)
     {
         printf("UDP 모드: 포트 5555에서 수신 대기\n");
         return process_udp(&meta);
-    }
-
-    // 파일 모드
-    struct stat st;
-    if (stat(argv[2], &st) != 0) 
-    {
-        perror("stat failed");
-        return 1;
-    }
-
-    if (S_ISDIR(st.st_mode)) 
-    {
-        printf("Target is a DIRECTORY. Batch processing...\n");
-        int ret = process_directory(argv[2], argv[1]);
-        return ret;
     }
 
     fprintf(stderr, "target must be a directory\n");

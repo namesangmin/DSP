@@ -17,19 +17,13 @@ void *post_thread_main(void *arg)
     pin_thread_to_cpu(a->cpu_id);
 
     while (1) {
-        // 대기 시간 측정 (post_queue_pop 내부 usleep 포함)
         double wait_start = now_ms();
-
         int got = post_queue_pop(&a->pipe->post_q, &job);
 
         post_timing.wait_ms += now_ms() - wait_start;
 
-        if (!got) break;
-
-        if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) 
-        {
-            break;
-        }
+        if (got) break;
+        if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) break;
 
         // 실제 처리 시간 측정 시작
         double work_start = now_ms();
@@ -48,49 +42,33 @@ void *post_thread_main(void *arg)
             a->timing->compress_ms = a->timing->compress_core2_ms;
         }
  
-        atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_PROCESSING, memory_order_release);
+        atomic_store_explicit(&a->pipe->pulse_compress_map[idx].state, BUF_PROCESSING, memory_order_release);
 
-        // =========================================================
-        // 0. Transpose
-        // =========================================================
         double execute_time = 0.0;
-        if (transpose_rd_pulse_range_to_doppler_range_pulse(
-                &a->pipe->rd_maps[idx].data,
-                &a->pipe->doppler_maps[idx].data,
-                a->meta, &execute_time) != 0) 
+        int transpose_ret = transpose_rd_pulse_range_to_doppler_range_pulse(
+                &a->pipe->pulse_compress_map[idx].data,
+                &a->pipe->doppler_map[idx].data,
+                a->meta, &execute_time); 
+        if (transpose_ret != 0) 
         {
-            fprintf(stderr, "post: transpose failed: buffer_idx=%d\n", idx);
+            fprintf(stderr, "post: transpose failed: ret=%d buffer_idx=%d\n", transpose_ret, idx);
             a->status = -1;
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             break;
         }
         a->timing->transpose_ms = execute_time;
 
-        // =========================================================
-        // 1. 도플러 처리
-        // =========================================================
-        int doppler_ret = doppler_fft_processing(&a->pipe->doppler_maps[idx].data,
-                                a->meta->num_pulses,
-                                a->timing,
-                                a->doppler_ws);
-
+        int doppler_ret = doppler_fft_processing(&a->pipe->doppler_map[idx].data, a->meta->num_pulses, a->timing, a->doppler_ws);
         if ( doppler_ret != 0) 
         {
-            fprintf(stderr, "post: doppler_fft_processing failed: buffer_idx=%d\n", idx);
+            fprintf(stderr, "post: doppler_fft_processing failed: ret=%d buffer_idx=%d\n", doppler_ret, idx);
             a->status = -1;
             atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
             break;
         }
 
-        // =========================================================
-        // 2. CFAR
-        // =========================================================
         execute_time = 0.0;
-        int cfar_ret = cfar_detect(&a->pipe->doppler_maps[idx].data,
-                           a->meta,
-                           a->cfar_ws,
-                           a->det, &execute_time);
-
+        int cfar_ret = cfar_detect(&a->pipe->doppler_map[idx].data, a->meta, a->cfar_ws, a->det, &execute_time);
         if (cfar_ret != 0) 
         {
             fprintf(stderr, "post: cfar_detect failed: ret=%d buffer_idx=%d\n", cfar_ret, idx);
@@ -100,9 +78,6 @@ void *post_thread_main(void *arg)
         }
         a->timing->cfar_ms = execute_time;
 
-        // =========================================================
-        // 3. Clustering
-        // =========================================================
         execute_time = 0.0;
         cluster_detections(a->cfar_ws->det_mask,
                         a->cfar_ws->powerMap,
@@ -140,7 +115,7 @@ void *post_thread_main(void *arg)
         send_graph_data(dwell_id,
             a->meta->num_fast_time_samples, a->meta->num_pulses,
             a->pipe->raw_data[idx],
-            a->pipe->rd_maps[idx].data.data,
+            a->pipe->pulse_compress_map[idx].data.data,
             a->cfar_ws->powerMap,
             a->cfar_ws->threshold_map,
             a->cfar_ws->det_mask);
@@ -151,8 +126,8 @@ void *post_thread_main(void *arg)
         // =========================================================
         // 5. 버퍼 반납 + 인덱스 증가
         // =========================================================
-        atomic_store_explicit(&a->pipe->rd_maps[idx].done_count, 0, memory_order_release);
-        atomic_store_explicit(&a->pipe->rd_maps[idx].state, BUF_FREE, memory_order_release);
+        atomic_store_explicit(&a->pipe->pulse_compress_map[idx].done_count, 0, memory_order_release);
+        atomic_store_explicit(&a->pipe->pulse_compress_map[idx].state, BUF_FREE, memory_order_release);
       
         // =========================================================
         // 6. 결과 출력 + 누적

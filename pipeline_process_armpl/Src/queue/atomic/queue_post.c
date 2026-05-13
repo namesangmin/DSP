@@ -33,7 +33,7 @@ int post_queue_push(PostQueue *q, PostJob job) {
         usleep(100);
     }
 
-    if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
+    if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -2;
 
     q->buf[tail] = job;
     atomic_store_explicit(&q->tail, next_tail, memory_order_release);
@@ -41,23 +41,24 @@ int post_queue_push(PostQueue *q, PostJob job) {
 }
 
 int post_queue_pop(PostQueue *q, PostJob *job) {
+
     int head = atomic_load_explicit(&q->head, memory_order_relaxed);
 
     while (head == atomic_load_explicit(&q->tail, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) {
             if (head == atomic_load_explicit(&q->tail, memory_order_acquire)) 
-                return 0;
+                return 1;
 
             break;
         }
 
         atomic_fetch_add(&post_push_sleep_count, 1);
-        usleep(100);
+        usleep(5000);
     }
 
     *job = q->buf[head];
     atomic_store_explicit(&q->head, (head + 1) % q->cap, memory_order_release);
-    return 1;
+    return 0;
 }
 
 void post_queue_close(PostQueue *q) {
