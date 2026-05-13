@@ -1,4 +1,3 @@
-//#define _GNU_SOURCE
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
@@ -15,5 +14,10 @@ void pin_thread_to_cpu(int cpu_id)
 
     if (pthread_setaffinity_np(pthread_self(), sizeof(set), &set) != 0) {
         perror("pthread_setaffinity_np");
+    }
+
+    struct sched_param sp = { .sched_priority = 80 };
+    if (sched_setscheduler(0, SCHED_FIFO, &sp) != 0) {
+        perror("sched_setscheduler");
     }
 }

@@ -50,9 +50,9 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
         return 1;
     }
 
+    int head = atomic_load_explicit(&q->head, memory_order_relaxed);
     while (1) 
     {
-        int head = atomic_load_explicit(&q->head, memory_order_relaxed);
         int tail = atomic_load_explicit(&q->tail, memory_order_acquire);
 
         if (head != tail) 
@@ -68,7 +68,7 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
             return 1;
         }
 
-        atomic_fetch_add(&pop_sleep_count, 1);
+        atomic_fetch_add_explicit(&pop_sleep_count, 1, memory_order_relaxed);
         usleep(5000);
     }
 }

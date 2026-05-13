@@ -13,20 +13,17 @@ typedef struct {
 typedef struct {
     PulseJob *buf;
     int cap;
-
     char pad0[64 - sizeof(PulseJob*) - sizeof(int)];
 
     atomic_int head;
-
     char pad1[64 - sizeof(atomic_int)];
 
     atomic_int tail;
-
     char pad2[64 - sizeof(atomic_int)];
 
     atomic_int closed;
-
     char pad3[64 - sizeof(atomic_int)];
+    
 } __attribute__((aligned(64))) PulseQueue;
 
 int pulse_queue_init(PulseQueue *q, int cap);

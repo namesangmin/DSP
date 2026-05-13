@@ -12,18 +12,17 @@ typedef struct {
 
 typedef struct {
     PostJob *buf;
-    char pad1[64 - sizeof(PostJob*)];
-
     int cap;
-    char pad2[64 - sizeof(int)];
+    char pad0[64 - sizeof(PostJob*) - sizeof(int)];
 
     atomic_int head;   // 빼는 쪽 (Consumer - Core 3)
-    char pad3[64 - sizeof(atomic_int)];
+    char pad1[64 - sizeof(atomic_int)];
     
     atomic_int tail;   // 넣는 쪽 (Producer - Core 1, 2)
-    char pad4[64 - sizeof(atomic_int)];
+    char pad2[64 - sizeof(atomic_int)];
 
     atomic_int closed; // 종료 플래그 (int로 통일)
+    char pad3[64 - sizeof(atomic_int)];
 }__attribute__((aligned(64))) PostQueue;
 
 int post_queue_init(PostQueue *q, int cap);
