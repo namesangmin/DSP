@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <sys/syscall.h>    
+#include <linux/futex.h>
 
 #include "timer.h" 
 #include "loader_thread.h"
@@ -247,6 +249,9 @@ void *loader_thread_main(void *arg)
         }
         
         if (push_err) break;
+        // 512번 push 완료 후 큐당 1번씩
+        syscall(SYS_futex, (int *)&a->pipe->even_q.tail, FUTEX_WAKE, 1, NULL, NULL, 0);
+        syscall(SYS_futex, (int *)&a->pipe->odd_q.tail,  FUTEX_WAKE, 1, NULL, NULL, 0);
 
         frame_idx++;  // ← 여기 추가
         double t1 = now_ms();

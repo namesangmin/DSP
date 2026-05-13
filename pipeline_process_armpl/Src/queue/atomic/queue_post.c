@@ -1,5 +1,8 @@
 #include <unistd.h>
+#include <sys/syscall.h>
+#include <linux/futex.h>
 #include "queue_post.h"
+
 atomic_int post_pop_sleep_count = 0;
 atomic_int post_push_sleep_count = 0;
 int post_queue_init(PostQueue *q, int cap) {
@@ -21,32 +24,72 @@ void post_queue_destroy(PostQueue *q) {
     memset(q, 0, sizeof(*q));
 }
 
-int post_queue_push(PostQueue *q, PostJob job) {
+// int post_queue_push(PostQueue *q, PostJob job) {
+//     int tail = atomic_load_explicit(&q->tail, memory_order_relaxed);
+//     int next_tail = (tail + 1) % q->cap;
+
+//     // 꽉 찼으면 빈 자리가 날 때까지 대기 (Pure Spin-wait)
+//     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
+//         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
+        
+//         atomic_fetch_add(&post_push_sleep_count, 1);
+//         usleep(100);
+//     }
+
+//     if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -2;
+
+//     q->buf[tail] = job;
+//     atomic_store_explicit(&q->tail, next_tail, memory_order_release);
+//     return  0;
+// }
+
+// int post_queue_pop(PostQueue *q, PostJob *job) 
+// {
+//     if (!q || !job) 
+//     {
+//         return 1;
+//     }
+
+//     int head = atomic_load_explicit(&q->head, memory_order_relaxed);
+
+//     while (1) {
+//         int tail = atomic_load_explicit(&q->tail, memory_order_acquire);
+
+//         if (head != tail) {
+//             *job = q->buf[head];
+//             atomic_store_explicit(&q->head, (head + 1) % q->cap, memory_order_release);
+//             return 0;
+//         }
+
+//         if (atomic_load_explicit(&q->closed, memory_order_acquire))
+//             return 1;
+
+//         atomic_fetch_add_explicit(&post_pop_sleep_count, 1, memory_order_relaxed);
+//         usleep(5000);
+//     }
+// }
+
+int post_queue_push(PostQueue *q, PostJob job)
+{
     int tail = atomic_load_explicit(&q->tail, memory_order_relaxed);
     int next_tail = (tail + 1) % q->cap;
 
-    // 꽉 찼으면 빈 자리가 날 때까지 대기 (Pure Spin-wait)
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
-        
-        atomic_fetch_add(&post_push_sleep_count, 1);
+        atomic_fetch_add_explicit(&post_push_sleep_count, 1, memory_order_relaxed);
         usleep(100);
     }
 
-    if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -2;
+    if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
 
     q->buf[tail] = job;
     atomic_store_explicit(&q->tail, next_tail, memory_order_release);
-    return  0;
+    syscall(SYS_futex, (int *)&q->tail, FUTEX_WAKE, 1, NULL, NULL, 0);
+    return 0;
 }
 
-int post_queue_pop(PostQueue *q, PostJob *job) 
+int post_queue_pop(PostQueue *q, PostJob *job)
 {
-    if (!q || !job) 
-    {
-        return 1;
-    }
-
     int head = atomic_load_explicit(&q->head, memory_order_relaxed);
 
     while (1) {
@@ -58,11 +101,10 @@ int post_queue_pop(PostQueue *q, PostJob *job)
             return 0;
         }
 
-        if (atomic_load_explicit(&q->closed, memory_order_acquire))
-            return 1;
+        if (atomic_load_explicit(&q->closed, memory_order_acquire)) return 1;
 
         atomic_fetch_add_explicit(&post_pop_sleep_count, 1, memory_order_relaxed);
-        usleep(5000);
+        syscall(SYS_futex, (int *)&q->tail, FUTEX_WAIT, tail, NULL, NULL, 0);
     }
 }
 
