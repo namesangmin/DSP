@@ -3,8 +3,6 @@
 #include <linux/futex.h>
 #include "queue_post.h"
 
-atomic_int post_pop_sleep_count = 0;
-atomic_int post_push_sleep_count = 0;
 int post_queue_init(PostQueue *q, int cap) {
     memset(q, 0, sizeof(*q));
 
@@ -76,7 +74,7 @@ int post_queue_push(PostQueue *q, PostJob job)
 
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
-        atomic_fetch_add_explicit(&post_push_sleep_count, 1, memory_order_relaxed);
+        //atomic_fetch_add_explicit(&post_push_sleep_count, 1, memory_order_relaxed);
         usleep(100);
     }
 
@@ -103,7 +101,7 @@ int post_queue_pop(PostQueue *q, PostJob *job)
 
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return 1;
 
-        atomic_fetch_add_explicit(&post_pop_sleep_count, 1, memory_order_relaxed);
+        //atomic_fetch_add_explicit(&post_pop_sleep_count, 1, memory_order_relaxed);
         syscall(SYS_futex, (int *)&q->tail, FUTEX_WAIT, tail, NULL, NULL, 0);
     }
 }
