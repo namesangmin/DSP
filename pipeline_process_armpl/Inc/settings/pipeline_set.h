@@ -55,8 +55,6 @@ typedef struct {
     long   sleep_count;  // sleep 횟수
 } ThreadTiming;
 
-extern ThreadTiming pc_timing[2];
-extern ThreadTiming post_timing;
 struct RadarMeta;
 
 int init_pipeline_pool(const RadarMeta *meta, Pipeline *pipe);

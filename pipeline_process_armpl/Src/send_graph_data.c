@@ -16,8 +16,6 @@
 
 static int sock_fd = -1;
 static uint8_t *tmp = NULL;
-static fftwf_complex *rxsig_transpose = NULL;
-static fftwf_complex *pc_map_transpose = NULL;
 static uint8_t header[HEADER_SIZE];
 
 static void write_u32(uint8_t *buf, uint32_t val)
@@ -96,139 +94,6 @@ static inline void get_src_block_range(
     }
 }
 
-static float pooled_rxsig_power_mean(
-    uint32_t dst_ft,
-    uint32_t dst_pl,
-    uint32_t dst_fasttime,
-    uint32_t dst_pulses,
-    uint32_t src_fasttime,
-    uint32_t src_pulses,
-    const fftwf_complex *rxsig
-)
-{
-    uint32_t ft_start, ft_end, pl_start, pl_end;
-    uint32_t count;
-    uint32_t idx;
-    uint32_t sft, spl;
-    float sum;
-
-    get_src_block_range(
-        dst_ft,
-        dst_pl,
-        dst_fasttime,
-        dst_pulses,
-        src_fasttime,
-        src_pulses,
-        &ft_start,
-        &ft_end,
-        &pl_start,
-        &pl_end
-    );
-
-    sum = 0.0;
-    count = 0;
-
-    for (sft = ft_start; sft < ft_end; ++sft) 
-    {
-        for (spl = pl_start; spl < pl_end; ++spl) 
-        {
-            idx = sft * src_pulses + spl;
-            sum += calc_power_from_rxsig(rxsig[idx]);
-            ++count;
-        }
-    }
-
-    return (count > 0) ? (sum / count) : 0.0f;
-}
-
-static float pooled_f32_mean(
-    uint32_t dst_ft,
-    uint32_t dst_pl,
-    uint32_t dst_fasttime,
-    uint32_t dst_pulses,
-    uint32_t src_fasttime,
-    uint32_t src_pulses,
-    const float *src
-)
-{
-    uint32_t ft_start, ft_end, pl_start, pl_end;
-    uint32_t count;
-    uint32_t idx;
-    uint32_t sft, spl;
-    float sum;
-
-    get_src_block_range(
-        dst_ft,
-        dst_pl,
-        dst_fasttime,
-        dst_pulses,
-        src_fasttime,
-        src_pulses,
-        &ft_start,
-        &ft_end,
-        &pl_start,
-        &pl_end
-    );
-
-    sum = 0.0;
-    count = 0;
-
-    for (sft = ft_start; sft < ft_end; ++sft) 
-    {
-        for (spl = pl_start; spl < pl_end; ++spl) 
-        {
-            idx = sft * src_pulses + spl;
-            sum += src[idx];
-            ++count;
-        }
-    }
-
-    return (count > 0) ? (sum / count) : 0.0f;
-}
-
-static int pooled_det_mask_value(
-    uint32_t dst_ft,
-    uint32_t dst_pl,
-    uint32_t dst_fasttime,
-    uint32_t dst_pulses,
-    uint32_t src_fasttime,
-    uint32_t src_pulses,
-    const uint8_t *det_mask
-)
-{
-    uint32_t ft_start, ft_end, pl_start, pl_end;
-    uint32_t idx;
-    uint32_t sft, spl;
-
-    get_src_block_range(
-        dst_ft,
-        dst_pl,
-        dst_fasttime,
-        dst_pulses,
-        src_fasttime,
-        src_pulses,
-        &ft_start,
-        &ft_end,
-        &pl_start,
-        &pl_end
-    );
-
-    for (sft = ft_start; sft < ft_end; ++sft) 
-    {
-        for (spl = pl_start; spl < pl_end; ++spl) 
-        {
-            idx = sft * src_pulses + spl;
-
-            if (det_mask[idx] != 0) 
-            {
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
 /* public */
 int send_graph_data_init(
     const char *dst_ip,
@@ -291,39 +156,6 @@ int send_graph_data_init(
         close(sock_fd);
         sock_fd = -1;
         return -4;
-    }
-
-    rxsig_transpose = (fftwf_complex *)fftwf_malloc(
-        sizeof(fftwf_complex) *
-        (size_t)fasttime *
-        (size_t)num_pulses
-    );
-    
-    pc_map_transpose = (fftwf_complex *)fftwf_malloc(
-        sizeof(fftwf_complex) *
-        (size_t)fasttime *
-        (size_t)num_pulses
-    );
-
-    if (!rxsig_transpose) 
-    {
-        perror("fftwf_malloc");
-        free(tmp);
-        tmp = NULL;
-        close(sock_fd);
-        sock_fd = -1;
-        return -5;
-    }
-
-    if (!pc_map_transpose) 
-    {
-        perror("fftwf_malloc pc map");
-        fftwf_free(rxsig_transpose);
-        free(tmp);
-        tmp = NULL;
-        close(sock_fd);
-        sock_fd = -1;
-        return -5;
     }
 
     return 0;
@@ -418,92 +250,41 @@ int send_graph_data(
         return -2;
     }
 
-    /*
-     * rxsig 입력은 [pulse][fasttime] 구조.
-     * Helix 그래프 송신은 [fasttime][pulse] 구조로 맞추기 위해 transpose.
-     */
-    for (ft = 0; ft < src_fasttime; ++ft) 
-    {
-        for (pl = 0; pl < src_pulses; ++pl) 
-        {
-            size_t dst = (size_t)ft * (size_t)src_pulses + (size_t)pl;
-            size_t src = (size_t)pl * (size_t)src_fasttime + (size_t)ft;
-
-            rxsig_transpose[dst] = ((fftwf_complex *)rxsig)[src];
-            pc_map_transpose[dst] = ((fftwf_complex *)pc_map)[src];
-        }
-    }
-
-    for (ft = 0; ft < TX_FASTTIME; ++ft) 
-    {
-        for (pl = 0; pl < TX_PULSES; ++pl) 
-        {
+    for (ft = 0; ft < TX_FASTTIME; ++ft) {
+        for (pl = 0; pl < TX_PULSES; ++pl) {
             dst_idx = ft * TX_PULSES + pl;
 
-            write_f32(
-                buf_rxsig + dst_idx * 4u,
-                pooled_rxsig_power_mean(
-                    ft,
-                    pl,
-                    TX_FASTTIME,
-                    TX_PULSES,
-                    src_fasttime,
-                    src_pulses,
-                    rxsig_transpose
-                )
-            );
+            // 블록 범위 한 번만 계산
+            uint32_t ft_start, ft_end, pl_start, pl_end;
+            get_src_block_range(ft, pl, TX_FASTTIME, TX_PULSES,
+                                src_fasttime, src_pulses,
+                                &ft_start, &ft_end, &pl_start, &pl_end);
 
-            write_f32(
-                buf_pc + dst_idx * 4u,
-                pooled_rxsig_power_mean(
-                    ft,
-                    pl,
-                    TX_FASTTIME,
-                    TX_PULSES,
-                    src_fasttime,
-                    src_pulses,
-                    pc_map_transpose
-                )
-            );
+            // 5개 값을 한 루프에서 계산
+            float sum_rxsig = 0, sum_pc = 0, sum_power = 0, sum_thresh = 0;
+            int det_hit = 0;
+            uint32_t count = 0;
 
-            write_f32(
-                buf_power + dst_idx * 4u,
-                pooled_f32_mean(
-                    ft,
-                    pl,
-                    TX_FASTTIME,
-                    TX_PULSES,
-                    src_fasttime,
-                    src_pulses,
-                    power_map
-                )
-            );
+            for (uint32_t spl = pl_start; spl < pl_end; ++spl) {
+                for (uint32_t sft = ft_start; sft < ft_end; ++sft) {
+                    uint32_t i_pulse  = spl * src_fasttime + sft;  // [pulse][fasttime]
+                    uint32_t i_range  = sft * src_pulses   + spl;  // [fasttime][pulse]
 
-            write_f32(
-                buf_thresh + dst_idx * 4u,
-                pooled_f32_mean(
-                    ft,
-                    pl,
-                    TX_FASTTIME,
-                    TX_PULSES,
-                    src_fasttime,
-                    src_pulses,
-                    threshold_map
-                )
-            );
+                    sum_rxsig  += calc_power_from_rxsig(((fftwf_complex *)rxsig)[i_pulse]);
+                    sum_pc     += calc_power_from_rxsig(((fftwf_complex *)pc_map)[i_pulse]);
+                    sum_power  += power_map[i_range];
+                    sum_thresh += threshold_map[i_range];
+                    if (det_mask[i_range]) det_hit = 1;
+                    ++count;
+                }
+            }
 
-            write_i32(
-                buf_det + dst_idx * 4u,
-                pooled_det_mask_value(
-                    ft,
-                    pl,
-                    TX_FASTTIME,
-                    TX_PULSES,
-                    src_fasttime,
-                    src_pulses,
-                    det_mask
-                )
-            );
+            float inv = (count > 0) ? 1.0f / count : 0.0f;
+            write_f32(buf_rxsig  + dst_idx * 4u, sum_rxsig  * inv);
+            write_f32(buf_pc     + dst_idx * 4u, sum_pc     * inv);
+            write_f32(buf_power  + dst_idx * 4u, sum_power  * inv);
+            write_f32(buf_thresh + dst_idx * 4u, sum_thresh * inv);
+            write_i32(buf_det    + dst_idx * 4u, det_hit);
         }
     }
 
@@ -536,18 +317,6 @@ void send_graph_data_destroy(void)
     {
         free(tmp);
         tmp = NULL;
-    }
-
-    if (rxsig_transpose) 
-    {
-        fftwf_free(rxsig_transpose);
-        rxsig_transpose = NULL;
-    }
-
-    if (pc_map_transpose) 
-    {
-        fftwf_free(pc_map_transpose);
-        pc_map_transpose = NULL;
     }
      
 }

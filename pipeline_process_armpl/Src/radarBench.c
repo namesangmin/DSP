@@ -63,57 +63,11 @@ typedef struct {
 
 static AppState g_state;
 
-// 임시 로그 찍는 거
-extern atomic_int pop_sleep_count;
-extern atomic_int push_sleep_count;
-extern atomic_int post_pop_sleep_count;
-extern atomic_int post_push_sleep_count;
-ThreadTiming pc_timing[2] = {0};
-ThreadTiming post_timing  = {0};
-
 void handle_sigint(int sig) {
-    printf("\n[DEBUG] pop  sleep: %d\n", atomic_load(&pop_sleep_count));
-    printf("[DEBUG] push sleep: %d\n", atomic_load(&push_sleep_count));
-
-    printf("\n[DEBUG] post pop  sleep: %d\n", atomic_load(&post_pop_sleep_count));
-    printf("[DEBUG] post push sleep: %d\n", atomic_load(&post_push_sleep_count));
-
     print_global_average(&g_state.total_acc, g_state.valid_files);
     print_trajectory_summary(g_state.history, g_state.cluster_history, g_state.valid_files);
-
-    printf("[DEBUG] pulse pop  sleep: %d\n", atomic_load(&pop_sleep_count));
-    printf("[DEBUG] pulse push sleep: %d\n", atomic_load(&push_sleep_count));
-
-    printf("\n[DEBUG] post pop  sleep: %d\n", atomic_load(&post_pop_sleep_count));
-    printf("[DEBUG] post push sleep: %d\n", atomic_load(&post_push_sleep_count));
-
-
-    // main.c process_directory 끝난 후 또는 시그널 핸들러에서
-    for (int i = 0; i < NUM_BUFFERS; i++) {
-        printf("[DEBUG] buf[%d] used: %d\n", i,
-            atomic_load(&g_state.pipe.buf_use_count[i]));
-    }
-
-    // process_directory 끝난 후
-    int n = 188;
-    printf("\n========== Thread Timing (total) ==========\n");
-    printf("[PC thread 0] wait: %.1f ms | work: %.1f ms\n",
-        pc_timing[0].wait_ms, pc_timing[0].work_ms);
-    printf("[PC thread 1] wait: %.1f ms | work: %.1f ms\n",
-        pc_timing[1].wait_ms, pc_timing[1].work_ms);
-    printf("[post thread] wait: %.1f ms | work: %.1f ms\n",
-        post_timing.wait_ms, post_timing.work_ms);
-
-    printf("\n========== Thread Timing (per file avg) ==========\n");
-    printf("[PC thread 0] wait: %.2f ms | work: %.2f ms\n",
-        pc_timing[0].wait_ms / n, pc_timing[0].work_ms / n);
-    printf("[PC thread 1] wait: %.2f ms | work: %.2f ms\n",
-        pc_timing[1].wait_ms / n, pc_timing[1].work_ms / n);
-    printf("[post thread] wait: %.2f ms | work: %.2f ms\n",
-        post_timing.wait_ms / n, post_timing.work_ms / n);
     exit(0);
 }
-
 // UDP 모드용 init (dir_path, namelist, num_files 없음)
 static int app_init_udp(const RadarMeta *meta)
 {

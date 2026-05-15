@@ -4,8 +4,8 @@
 #include <linux/futex.h>
 
 // 임시 디버그용
-atomic_int pop_sleep_count = 0;
-atomic_int push_sleep_count = 0;
+// atomic_int pop_sleep_count = 0;
+// atomic_int push_sleep_count = 0;
 int pulse_queue_init(PulseQueue *q, int cap) 
 {
     memset(q, 0, sizeof(*q));
@@ -83,7 +83,7 @@ int pulse_queue_push(PulseQueue *q, PulseJob job)
 
     while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
-        atomic_fetch_add_explicit(&push_sleep_count, 1, memory_order_relaxed);
+        //atomic_fetch_add_explicit(&push_sleep_count, 1, memory_order_relaxed);
         usleep(100);  // push 풀은 그대로 (꽉 찬 경우라 드묾)
     }
 
@@ -112,7 +112,7 @@ int pulse_queue_pop(PulseQueue *q, PulseJob *job)
 
         if (atomic_load_explicit(&q->closed, memory_order_acquire)) return 1;
 
-        atomic_fetch_add_explicit(&pop_sleep_count, 1, memory_order_relaxed);
+        //atomic_fetch_add_explicit(&pop_sleep_count, 1, memory_order_relaxed);
         syscall(SYS_futex, (int *)&q->tail, FUTEX_WAIT, tail, NULL, NULL, 0);  // tail 바뀔 때까지 sleep
         // EAGAIN(이미 바뀜), EINTR(시그널) 둘 다 그냥 루프 재시도
     }

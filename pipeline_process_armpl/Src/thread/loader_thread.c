@@ -76,7 +76,8 @@ int loader_thread_destroy(LoaderArgs *ld) {
     free(ld->buffer);
     ld->buffer = NULL;
 
-    if (sock_fd >= 0) {
+    if (sock_fd >= 0) 
+    {
         close(sock_fd);
         sock_fd = -1;
     }
@@ -86,7 +87,7 @@ int loader_thread_destroy(LoaderArgs *ld) {
 
 static int load_bin_to_float_array(float *out_buf,
                                     size_t count,        
-                                    size_t offset_count)  // 232 (파일 헤더 크기)
+                                    size_t offset_count)
 {
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
@@ -95,13 +96,14 @@ static int load_bin_to_float_array(float *out_buf,
     uint32_t total_packets = 0;
     uint8_t packet_raw[1500]; 
 
-    size_t total_expected_bytes = count * sizeof(float); // 512 * 1001 * 8
+    size_t total_expected_bytes = count * sizeof(float);
 
     printf("\n[DEBUG] 수신 시작: 기대 데이터 총량: %zu bytes\n", total_expected_bytes);
     
     int isFirstGetData = 0;
 
-    while (1) {
+    while (1) 
+    {
         ssize_t n = recvfrom(sock_fd, packet_raw, sizeof(packet_raw), 0, 
                              (struct sockaddr *)&client_addr, &addr_len);
         if (n < 0) {
@@ -110,7 +112,8 @@ static int load_bin_to_float_array(float *out_buf,
             return -1;
         } 
         
-        if(!isFirstGetData){
+        if(!isFirstGetData)
+        {
             isFirstGetData = 1;
             t0 = now_ms();
         }
@@ -131,7 +134,8 @@ static int load_bin_to_float_array(float *out_buf,
         offset[3] = curr_payload;
         offset[4] = curr_fsize;
 
-        if (curr_id % 500 == 0 || curr_id == 0xFFFFFFFF) {
+        if (curr_id % 500 == 0 || curr_id == 0xFFFFFFFF) 
+        {
             printf("[RECV] DWELL ID: %u | curr ID: %u | total packets %u | Payload Size: %ld\t", curr_dwell_id, curr_id, total_packets, n-24);
             printf("receive data size: %ld\n", n -header_size);
         }
@@ -139,11 +143,13 @@ static int load_bin_to_float_array(float *out_buf,
         uint8_t *payload_ptr = packet_raw + header_size;
         
         // 데이터 헤더 정보
-        if (curr_id == 0xFFFFFFFF) {
+        if (curr_id == 0xFFFFFFFF) 
+        {
             memcpy(icd_data, payload_ptr, sizeof(ICDHeader_t));
             continue;
         }
-        else {
+        else 
+        {
             if(total_packets == 0) 
                 total_packets = curr_count;
 
@@ -153,17 +159,20 @@ static int load_bin_to_float_array(float *out_buf,
             size_t data_len = (size_t)(n - header_size);
 
             // 버퍼 오버플로우 안전장치
-            if (write_pos_bytes + data_len <= total_expected_bytes) {
+            if (write_pos_bytes + data_len <= total_expected_bytes) 
+            {
                 memcpy((uint8_t*)out_buf + write_pos_bytes, payload_ptr, data_len);
             }
-            else {
+            else 
+            {
                 printf("[ERROR] Memory Overflow! ID:%u\n", curr_id);
             }
             received_packet_count++;
         }
 
         // 모든 패킷을 다 받았는지 확인하여 루프 탈출
-        if (total_packets > 0 && received_packet_count >= total_packets) {
+        if (total_packets > 0 && received_packet_count >= total_packets) 
+        {
             printf("[SUCCESS] 모든 패킷 수신 완료 (%u/%u)\n", received_packet_count, total_packets);
             break; 
         }
@@ -226,15 +235,16 @@ void *loader_thread_main(void *arg)
         a->pipe->dwell_ids[raw_idx] = icd_data->DwellId;
         a->pipe->phi[raw_idx] = icd_data->Phi; 
 
-        for (int p = 0; p < cols; p++) {
-            for (int s = 0; s < rows; s++) {
-                size_t idx  = (size_t)p * rows + s;
-                size_t bidx = 2u * idx;
-                a->pipe->raw_data[raw_idx][idx] =
-                    a->buffer[bidx] + a->buffer[bidx + 1] * I;
-            }
-        }
-        
+        // for (int p = 0; p < cols; p++) {
+        //     for (int s = 0; s < rows; s++) {
+        //         size_t idx  = (size_t)p * rows + s;
+        //         size_t bidx = 2u * idx;
+        //         a->pipe->raw_data[raw_idx][idx] =
+        //             a->buffer[bidx] + a->buffer[bidx + 1] * I;
+        //     }
+        // }
+        memcpy(a->pipe->raw_data[raw_idx], a->buffer, (size_t)cols * rows * sizeof(float complex));
+
         for (int p = 0; p < cols; p++) {
             PulseJob job = { .pulse_idx = p, .raw_idx = raw_idx };
             PulseQueue *q = (p < half) ? &a->pipe->even_q : &a->pipe->odd_q;
@@ -246,6 +256,7 @@ void *loader_thread_main(void *arg)
                 push_err = 1;
                 break;
             }
+            
         }
         
         if (push_err) break;

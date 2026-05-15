@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "common.h"
+#include "cluster.h"
 
 #define MAX_TARGETS (32)   // 추가
 
@@ -43,7 +44,7 @@ typedef struct {
 int  udp_init(const char *dst_ip, uint16_t dst_port);
 int  udp_loop(uint32_t dwell_id,
             uint32_t target_num,
-            const udp_target_t *targets,
+            const ClusterResult *targets,
             float angle,    
             PipelineTiming *timing);
 void udp_destroy(void);
