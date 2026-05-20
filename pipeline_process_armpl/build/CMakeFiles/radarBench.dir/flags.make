@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = 
 
-C_INCLUDES = -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/thread -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/settings -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/futex -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/lock_free -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/mutex -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/usleep -I/opt/arm/arm-performance-libraries/include
+C_INCLUDES = -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/thread -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/settings -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/futex -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/lock_free -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/mutex -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/queue/usleep -I/home/sigprocess/sangmin/git/DSP/pipeline_process_armpl/Inc/transpose -I/opt/arm/arm-performance-libraries/include
 
 C_FLAGS = -std=gnu99 -O3 -ffast-math -fcx-limited-range -Wall -Wdouble-promotion -D_GNU_SOURCE
 
