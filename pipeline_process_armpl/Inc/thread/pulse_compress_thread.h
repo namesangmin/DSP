@@ -13,10 +13,9 @@ typedef struct {
     Pipeline *pipe;
     PulseCompressCtx ctx;
     PulseQueue* q;
-    PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
 
     int cpu_id;
-    double compress_ms; 
+    int tid;
 } WorkerArgs;
 
 void *worker_thread_main(void *arg);

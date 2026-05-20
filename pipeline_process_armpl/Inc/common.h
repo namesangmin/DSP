@@ -30,6 +30,8 @@ typedef struct {
     double mtd_ms;
     double cfar_ms;
     double cluster_ms;
+
+    double tcp_send_ms;
 } PipelineTiming;
 
 #define CMAT_AT(m, r, c) ((m)->data[(size_t)(r) * (size_t)((m)->cols) + (size_t)(c)])

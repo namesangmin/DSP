@@ -2,7 +2,6 @@
 #ifndef __RADAR_TYPES_H__
 #define __RADAR_TYPES_H__
 
-//#include <complex.h>
 #include <stddef.h>
 #include <stdatomic.h>
 #include <stdint.h>

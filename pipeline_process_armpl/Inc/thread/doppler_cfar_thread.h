@@ -6,6 +6,7 @@
 #include "doppler_fft.h"
 #include "cfar.h"
 #include "cluster.h"
+#include "transpose_interface.h"
 #include "common.h"
 
 typedef struct {
@@ -21,14 +22,13 @@ typedef struct {
     ClusterWorkspace *cluster_ws;   // 추가
     ClusterParams    *cluster_params; // 추가
     ClusterList      *clusters;     // 추가
-    ClusterList *cluster_history;  // 추가
-
     
+    Transpose *transpose;
+
     int cpu_id;
     int status;   
     
     Accumulator      *total_acc;   // 추가
-    DetectionList    *history;     // 추가
     int              *valid_files; // 추가
 } PostArgs;
 

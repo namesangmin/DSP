@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-// =========================================================
-// 구조체 정의
-// =========================================================
-
 typedef struct {
     int r;
     int d;
@@ -33,9 +29,6 @@ typedef struct {
     int            count;
 } ClusterList;
 
-// =========================================================
-// Workspace: static 전역 대신 명시적 할당
-// =========================================================
 typedef struct {
     uint8_t     *visited;     // 방문 플래그 [num_range * num_doppler]
     ClusterNode *queue;       // BFS 큐    [num_range * num_doppler]

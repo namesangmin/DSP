@@ -45,6 +45,8 @@ int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft)
     }   
     ws->mtd_plan = fftwf_plan_dft_1d(nfft, ws->plan_buf, ws->plan_buf,
                                      FFTW_FORWARD, FFTW_MEASURE);
+
+                                    
     if (!ws->mtd_plan)
     {
         cleanup_doppler_workspace(ws); 
@@ -73,14 +75,16 @@ static int apply_mti(ComplexMatrix *map, int order)
     int cols = map->cols;
 
     if (order == 1) {
-        for (int r = 0; r < rows; r++) {
+        for (int r = 0; r < rows; r++) 
+        {
             float complex *row = &CMAT_AT(map, r, 0);
             for (int c = cols - 1; c >= 1; --c)
                 row[c] = row[c] - row[c - 1];
             row[0] = 0.0f + 0.0f * I;
         }
     }
-    else if (order == 2) {
+    else if (order == 2) 
+    {
         for (int r = 0; r < rows; r++) {
             float complex *row = &CMAT_AT(map, r, 0);
             for (int c = cols - 1; c >= 2; --c)
@@ -104,14 +108,16 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
 
     if (pulses <= 0 || nfft <= 0 || nfft < pulses) return -1;
 
-    if (ws->pulses != pulses || ws->nfft != nfft) {
+    if (ws->pulses != pulses || ws->nfft != nfft) 
+    {
         fprintf(stderr,
                 "apply_mtd: workspace mismatch ws_pulses=%d ws_nfft=%d pulses=%d nfft=%d\n",
                 ws->pulses, ws->nfft, pulses, nfft);
         return -1;
     }
 
-    if (doppler_map->cols < nfft) {
+    if (doppler_map->cols < nfft) 
+    {
         fprintf(stderr, "apply_mtd: doppler cols too small cols=%d nfft=%d\n",
                 doppler_map->cols, nfft);
         return -1;
@@ -120,7 +126,6 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
     int rows        = doppler_map->rows;
     float *win      = ws->hamming_win;
 
-    
     for (int r = 0; r < rows; ++r) {
         float complex *row = &CMAT_AT(doppler_map, r, 0);
 
@@ -128,11 +133,6 @@ static int apply_mtd(ComplexMatrix *doppler_map, int pulses, int nfft, DopplerWo
         for (int p = 0; p < pulses; ++p) {
             ws->local_buf[p] = row[p] * win[p];
         }
-
-        // 2. Zero-padding
-        // if (nfft > pulses) {
-        //     memset(&ws->local_buf[pulses], 0, (size_t)(nfft - pulses) * sizeof(float complex));
-        // }
 
         // 3. FFT 실행 (ws->mtd_plan 대신 개별 plan 또는 전용 실행 함수 필요)
         // fftwf_execute_dft를 쓰면 버퍼를 지정해서 실행 가능합니다.

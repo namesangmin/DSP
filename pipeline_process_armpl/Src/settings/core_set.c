@@ -12,12 +12,14 @@ void pin_thread_to_cpu(int cpu_id)
     CPU_ZERO(&set);
     CPU_SET(cpu_id, &set);
 
-    if (pthread_setaffinity_np(pthread_self(), sizeof(set), &set) != 0) {
+    if (pthread_setaffinity_np(pthread_self(), sizeof(set), &set) != 0) 
+    {
         perror("pthread_setaffinity_np");
     }
 
-    struct sched_param sp = { .sched_priority = 80 };
-    if (sched_setscheduler(0, SCHED_FIFO, &sp) != 0) {
+    struct sched_param sp = { .sched_priority = 99 };
+    if (sched_setscheduler(0, SCHED_FIFO, &sp) != 0) 
+    {
         perror("sched_setscheduler");
     }
 }

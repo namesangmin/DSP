@@ -1,0 +1,93 @@
+/* Src/queue/futex/pulse_queue_fu.c */
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <linux/futex.h>
+#include <stdatomic.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include "pulse_queue_fu.h"
+
+typedef struct {
+    PulseJob   *buf;
+    int         cap;
+    char pad0[64 - sizeof(PulseJob*) - sizeof(int)];
+    atomic_int  head;
+    char pad1[64 - sizeof(atomic_int)];
+    atomic_int  tail;
+    char pad2[64 - sizeof(atomic_int)];
+    atomic_int  closed;
+    char pad3[64 - sizeof(atomic_int)];
+} __attribute__((aligned(64))) PulseQueue_Fu;
+
+int pulse_queue_init_fu(void **out, int cap) {
+    PulseQueue_Fu *q = aligned_alloc(64, sizeof(PulseQueue_Fu));
+    if (!q) return -1;
+    memset(q, 0, sizeof(*q));
+    q->cap = cap + 1;
+    q->buf = calloc((size_t)q->cap, sizeof(PulseJob));
+    if (!q->buf) { free(q); return -1; }
+    atomic_init(&q->head, 0);
+    atomic_init(&q->tail, 0);
+    atomic_init(&q->closed, 0);
+    *out = q;
+    return 0;
+}
+
+int pulse_queue_push_fu(void *impl, PulseJob job) {
+    PulseQueue_Fu *q = (PulseQueue_Fu *)impl;
+    int tail      = atomic_load_explicit(&q->tail, memory_order_relaxed);
+    int next_tail = (tail + 1) % q->cap;
+
+    while (next_tail == atomic_load_explicit(&q->head, memory_order_acquire)) {
+        if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
+        usleep(100);
+    }
+    if (atomic_load_explicit(&q->closed, memory_order_acquire)) return -1;
+
+    q->buf[tail] = job;
+    atomic_store_explicit(&q->tail, next_tail, memory_order_release);
+    //syscall(SYS_futex, (int *)&q->tail, FUTEX_WAKE, 1, NULL, NULL, 0);
+    return 0;
+}
+
+int pulse_queue_pop_fu(void *impl, PulseJob *job) {
+    PulseQueue_Fu *q = (PulseQueue_Fu *)impl;
+    if (!q || !job) return 1;
+
+    int head = atomic_load_explicit(&q->head, memory_order_relaxed);
+
+    while (1) {
+        int tail = atomic_load_explicit(&q->tail, memory_order_acquire);
+        if (head != tail) {
+            *job = q->buf[head];
+            atomic_store_explicit(&q->head, (head + 1) % q->cap, memory_order_release);
+            return 0;
+        }
+        if (atomic_load_explicit(&q->closed, memory_order_acquire)) return 1;
+        syscall(SYS_futex, (int *)&q->tail, FUTEX_WAIT, tail, NULL, NULL, 0);
+    }
+}
+
+void pulse_queue_close_fu(void *impl) {
+    PulseQueue_Fu *q = (PulseQueue_Fu *)impl;
+    atomic_store_explicit(&q->closed, 1, memory_order_release);
+    syscall(SYS_futex, (int *)&q->tail, FUTEX_WAKE, INT_MAX, NULL, NULL, 0);
+}
+
+void pulse_queue_open_fu(void *impl) {
+    PulseQueue_Fu *q = (PulseQueue_Fu *)impl;
+    atomic_store_explicit(&q->closed, 0, memory_order_release);
+}
+
+void pulse_queue_destroy_fu(void *impl) {
+    PulseQueue_Fu *q = (PulseQueue_Fu *)impl;
+    if (!q) return;
+    free(q->buf);
+    free(q);
+}
+
+void pulse_queue_flush_fu(void *impl) {
+    PulseQueue_Fu *q = (PulseQueue_Fu *)impl;
+    syscall(SYS_futex, (int *)&q->tail, FUTEX_WAKE, INT_MAX, NULL, NULL, 0);
+}

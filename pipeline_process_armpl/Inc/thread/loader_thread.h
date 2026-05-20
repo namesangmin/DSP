@@ -9,14 +9,8 @@ typedef struct {
     Pipeline *pipe;  
     PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
     
-    //double *buffer;
     float *buffer;
     int cpu_id;
-    
-    struct dirent **file_list;   // 추가
-    const char *dir_path;
-    int num_files;      // 추가
-    int valid_files;
 } LoaderArgs;
 
 typedef struct{
