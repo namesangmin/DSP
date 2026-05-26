@@ -73,10 +73,10 @@ static int serialize_meta(const udp_header_t *meta, uint8_t *buf, int start_offs
     return offset;
 }
 
-static int serialize_data(const udp_target_t *data, uint8_t *buf, int offset)
+static int serialize_data(const ClusterResult *data, uint8_t *buf, int offset)
 {
-    write_f32(buf + offset, data->distance);    offset += 4;
-    write_f32(buf + offset, data->speed);       offset += 4;
+    write_f32(buf + offset, data->range_m);    offset += 4;
+    write_f32(buf + offset, data->velocity_mps);       offset += 4;
 
     return offset;
 }
@@ -115,7 +115,7 @@ int udp_init(const char *dst_ip, uint16_t dst_port)
 
 int udp_loop(uint32_t dwell_id,
             uint32_t target_num,
-            const udp_target_t *targets,
+            const ClusterResult *targets,
             float angle,
             PipelineTiming *timing)
 {

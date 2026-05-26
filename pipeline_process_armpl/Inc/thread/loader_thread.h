@@ -4,19 +4,20 @@
 #include "pipeline_set.h"
 #include "types.h"
 #include "common.h"
+#include "dispatch_interface.h"
+#include "layout_interface.h"
+
 typedef struct {
     const RadarMeta *meta;
     Pipeline *pipe;  
     PipelineTiming *timing;  // cfar_ms, transpose_ms 대신
-    
-    //double *buffer;
+    Dispatch        *dispatch;   /* 추가 */
+    Layout *layout;
+
     float *buffer;
     int cpu_id;
-    
-    struct dirent **file_list;   // 추가
-    const char *dir_path;
-    int num_files;      // 추가
-    int valid_files;
+    int num_workers;   /* 추가 */
+
 } LoaderArgs;
 
 typedef struct{

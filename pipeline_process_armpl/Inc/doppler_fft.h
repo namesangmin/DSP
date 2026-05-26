@@ -6,13 +6,13 @@
 #include "common.h"
 
 typedef struct {
+    fftwf_plan mtd_plan;
     int pulses;             // 512
     int nfft;               // 512
     float *hamming_win;     // length = pulses
 
     float complex *plan_buf;
     float complex *local_buf;
-    fftwf_plan mtd_plan;
 } DopplerWorkspace;
 
 int init_doppler_workspace(DopplerWorkspace *ws, int pulses, int nfft);

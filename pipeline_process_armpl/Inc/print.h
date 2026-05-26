@@ -12,6 +12,7 @@ void print_file_result(
     const ClusterList    *clusters,
     int                   file_num);
 
+
 void accumulate_result(
     Accumulator          *acc,
     const PipelineTiming *timing,
@@ -20,7 +21,6 @@ void accumulate_result(
 
 void print_metadata(const RadarMeta *meta);
 void print_average_line(const char *name, double avg_ms);
-long read_cpu_ticks(void);
 void print_usage(const char *prog);
 // 궤적 요약 테이블 + trajectory analysis
 void print_trajectory_summary(DetectionList *history,

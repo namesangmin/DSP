@@ -19,17 +19,17 @@ typedef struct {
 } DetectionList;
 
 typedef struct {
-    int numRange;
-    int numDoppler;
-    int detCapacity;
-    
     float *powerMap;
     float *col_sum_outer;
     float *col_sum_guard;
+    float *threshold_map;
     
     uint8_t *det_mask; 
     Detection *detBuf;
-    float *threshold_map;
+    
+    int numRange;
+    int numDoppler;
+    int detCapacity;
 } CfarWorkspace;
 
 int init_cfar_workspace(CfarWorkspace *ws, int numRange, int numDoppler);
