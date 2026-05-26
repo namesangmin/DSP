@@ -19,7 +19,7 @@ set(SOURCES
     Src/radarBench.c
     Src/loader.c
     Src/pulse.c
-    Src/doppler_fft.c
+    Src/doppler.c
     Src/cfar.c
     Src/print.c
     Src/cluster.c
