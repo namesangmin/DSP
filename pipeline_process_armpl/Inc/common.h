@@ -20,9 +20,8 @@ typedef struct {
 typedef struct {
     double loader_ms;
 
-    double compress_core1_ms; // 워커 1 (짝수 펄스)
-    double compress_core2_ms; // 워커 2 (홀수 펄스)
-
+    double compress_core1_ms; 
+    double compress_core2_ms; 
     double compress_ms;
     
     double transpose_ms;

@@ -95,3 +95,50 @@ QueueType queue_type_from_str(const char *s) {
     if (!strcmp(s, "usleep"))   return QUEUE_USLEEP;
     return QUEUE_FUTEX;
 }
+
+/* pulse queue */
+int queue_push_pulse(PulseQueue *q, PulseJob job)
+{
+    return q->ops->push(q->impl, job);
+}
+
+int queue_pop_pulse(PulseQueue *q, PulseJob *job)
+{
+    return q->ops->pop(q->impl, job);
+}
+
+void queue_close_pulse(PulseQueue *q)
+{
+    q->ops->close(q->impl);
+}
+
+void queue_open_pulse(PulseQueue *q)
+{
+    q->ops->open(q->impl);
+}
+
+void queue_flush_pulse(PulseQueue *q)
+{
+    if (q->ops->flush) q->ops->flush(q->impl);
+}
+
+/* post queue */
+int queue_push_post(PostQueue *q, PostJob job)
+{
+    return q->ops->push(q->impl, job);
+}
+
+int queue_pop_post(PostQueue *q, PostJob *job)
+{
+    return q->ops->pop(q->impl, job);
+}
+
+void queue_close_post(PostQueue *q)
+{
+    q->ops->close(q->impl);
+}
+
+void queue_open_post(PostQueue *q)
+{
+    q->ops->open(q->impl);
+}

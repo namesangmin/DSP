@@ -131,7 +131,7 @@ int cfar_detect(const ComplexMatrix *doppler_map,
     int inner_cells = (2 * numGuardR + 1) * (2 * numGuardD + 1);
     int training_cells = outer_cells - inner_cells;
 
-    if (training_cells <= 0) 
+    if (training_cells <= 0)
     {
         return -1;
     }

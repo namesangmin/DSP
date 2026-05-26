@@ -46,6 +46,14 @@ set(SOURCES
     Src/transpose/transpose_interface.c
     Src/transpose/transpose_tiling.c
     Src/transpose/transpose_comatcopy.c
+
+    Src/dispatch/dispatch_interface.c
+    Src/dispatch/dispatch_half.c
+    Src/dispatch/dispatch_evenodd.c
+
+    Src/layout/layout_interface.c
+    Src/layout/layout_default.c
+    Src/layout/layout_legacy.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -60,6 +68,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     Inc/queue/mutex
     Inc/queue/usleep
     Inc/transpose
+    Inc/dispatch
+    Inc/layout
+
     ${ARMPL_DIR}/include
 )
 

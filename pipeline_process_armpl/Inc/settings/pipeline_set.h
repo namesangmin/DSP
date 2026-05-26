@@ -7,7 +7,7 @@
 #include <fftw3.h>
 #include "types.h"
 #include "queue_interface.h"   /* queue_post.h, queue_pulse.h 대신 */
-
+#include "layout_interface.h"
 #define NUM_BUFFERS 2
 
 typedef enum {
@@ -29,11 +29,9 @@ typedef struct {
 } DopplerBuffer;
 
 typedef struct {
-    atomic_int    current_write_idx;
     atomic_int    error;
     atomic_int    active_workers;
     double        compress_times[NUM_BUFFERS][2];
-    double        transpose_times[NUM_BUFFERS][2];
 
     PulseQueue   *worker_q[2];   /* even_q, odd_q → worker_q[0], worker_q[1] */
     PostQueue    *post_q;
@@ -41,16 +39,14 @@ typedef struct {
     float complex  *raw_data[NUM_BUFFERS];
     RdMapBuffer     pulse_compress_map[NUM_BUFFERS];
     DopplerBuffer   doppler_map[NUM_BUFFERS];
-    char            filenames[NUM_BUFFERS][256];
 
     uint32_t        dwell_ids[NUM_BUFFERS];
     float           phi[NUM_BUFFERS];
-    atomic_int      buf_use_count[NUM_BUFFERS];
 } Pipeline;
 
 struct RadarMeta;
 
-int  init_pipeline_pool    (const RadarMeta *meta, Pipeline *pipe);
+int init_pipeline_pool(const RadarMeta *meta, Pipeline *pool, int num_workers, LayoutType lt);
 void cleanup_pipeline_pool (Pipeline *pool);
 
 #endif

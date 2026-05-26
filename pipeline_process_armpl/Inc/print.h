@@ -12,10 +12,12 @@ void print_file_result(
     const ClusterList    *clusters,
     int                   file_num);
 
+
 void accumulate_result(
     Accumulator          *acc,
     const PipelineTiming *timing,
-    const DetectionList  *det);
+    const DetectionList  *det,
+    Detection            *out_best);
 
 void print_metadata(const RadarMeta *meta);
 void print_average_line(const char *name, double avg_ms);

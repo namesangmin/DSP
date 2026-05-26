@@ -105,7 +105,7 @@ static int load_bin_to_float_array(float *out_buf,
 
     size_t total_expected_bytes = count * sizeof(float);
 
-    printf("\n[DEBUG] 수신 시작: 기대 데이터 총량: %zu bytes\n", total_expected_bytes);
+    // printf("\n[DEBUG] 수신 시작: 기대 데이터 총량: %zu bytes\n", total_expected_bytes);
     
     int isFirstGetData = 0;
 
@@ -141,11 +141,11 @@ static int load_bin_to_float_array(float *out_buf,
         offset[3] = curr_payload;
         offset[4] = curr_fsize;
 
-        if (curr_id % 500 == 0 || curr_id == 0xFFFFFFFF) 
-        {
-            printf("[RECV] DWELL ID: %u | curr ID: %u | total packets %u | Payload Size: %ld\t", curr_dwell_id, curr_id, total_packets, n-24);
-            printf("receive data size: %ld\n", n -header_size);
-        }
+        // if (curr_id % 500 == 0 || curr_id == 0xFFFFFFFF) 
+        // {
+        //     printf("[RECV] DWELL ID: %u | curr ID: %u | total packets %u | Payload Size: %ld\t", curr_dwell_id, curr_id, total_packets, n-24);
+        //     printf("receive data size: %ld\n", n -header_size);
+        // }
         
         uint8_t *payload_ptr = packet_raw + header_size;
         
@@ -153,6 +153,9 @@ static int load_bin_to_float_array(float *out_buf,
         if (curr_id == 0xFFFFFFFF) 
         {
             memcpy(icd_data, payload_ptr, sizeof(ICDHeader_t));
+            memset(out_buf, 0, total_expected_bytes);
+            received_packet_count = 0;
+            total_packets = 0;
             continue;
         }
         else 
@@ -180,24 +183,24 @@ static int load_bin_to_float_array(float *out_buf,
         // 모든 패킷을 다 받았는지 확인하여 루프 탈출
         if (total_packets > 0 && received_packet_count >= total_packets) 
         {
-            printf("[SUCCESS] 모든 패킷 수신 완료 (%u/%u)\n", received_packet_count, total_packets);
+            //printf("[SUCCESS] 모든 패킷 수신 완료 (%u/%u)\n", received_packet_count, total_packets);
             break; 
         }
     }
 
-    printf("\n");
-    printf("====================ICD_HEADER 정보====================\n");
-    printf("dwell id: %u\n", icd_data->DwellId);
-    printf("Phi: %f\n", icd_data->Phi);
-    printf("fc_Hz: %f\n", icd_data->fc_Hz);
-    printf("fs_Hz: %f\n", icd_data->fs_Hz);
-    printf("PRF_Hz: %f\n", icd_data->PRF_Hz);
-    printf("PulseWidth: %f\n", icd_data->PulseWidth);
-    printf("SweepBandwidth: %f\n", icd_data->SweepBandwidth);
-    printf("NumPulse: %u\n", icd_data->NumPulse);
-    printf("NumSample: %u\n", icd_data->NumSample);
-    printf("=======================================================\n");
-    printf("\n");
+    // printf("\n");
+    // printf("====================ICD_HEADER 정보====================\n");
+    // printf("dwell id: %u\n", icd_data->DwellId);
+    // printf("Phi: %f\n", icd_data->Phi);
+    // printf("fc_Hz: %f\n", icd_data->fc_Hz);
+    // printf("fs_Hz: %f\n", icd_data->fs_Hz);
+    // printf("PRF_Hz: %f\n", icd_data->PRF_Hz);
+    // printf("PulseWidth: %f\n", icd_data->PulseWidth);
+    // printf("SweepBandwidth: %f\n", icd_data->SweepBandwidth);
+    // printf("NumPulse: %u\n", icd_data->NumPulse);
+    // printf("NumSample: %u\n", icd_data->NumSample);
+    // printf("=======================================================\n");
+    // printf("\n");
     return 0;
 }
 
@@ -217,8 +220,8 @@ void *loader_thread_main(void *arg)
         int raw_idx  = frame_idx % NUM_BUFFERS;
         int push_err = 0;
        
-        //if (frame_idx >= MAX_FRAMES) break;
-        printf("frame idx: %d\n", frame_idx);
+        // printf("frame idx: %d\n", frame_idx);
+        if (frame_idx >= MAX_FRAMES) break;
         while (atomic_load_explicit(&a->pipe->pulse_compress_map[raw_idx].state, memory_order_acquire) != BUF_FREE) 
         {
             if (atomic_load_explicit(&a->pipe->error, memory_order_relaxed)) 
@@ -242,29 +245,31 @@ void *loader_thread_main(void *arg)
         a->pipe->dwell_ids[raw_idx] = icd_data->DwellId;
         a->pipe->phi[raw_idx]       = icd_data->Phi;
 
-        memcpy(a->pipe->raw_data[raw_idx], a->buffer, (size_t)cols * rows * sizeof(float complex));
+        layout_store_raw(a->layout, a->pipe->raw_data[raw_idx], a->buffer, cols, rows);
 
-        for (int p = 0; p < cols; p++) 
-        {
-            PulseJob job = { .pulse_idx = p, .raw_idx = raw_idx };
+       for (int p = 0; p < cols && !push_err; p++) {
+            PulseJob   job = { .pulse_idx = p, .raw_idx = raw_idx };
+            PulseQueue *q  = NULL;
 
-            /* even_q/odd_q → worker_q[0]/worker_q[1] */
-            PulseQueue *q = (p < half) ? a->pipe->worker_q[0] : a->pipe->worker_q[1];
+            if (a->num_workers == 1) {
+                q = a->pipe->worker_q[0]; 
+            } 
+            else {
+                dispatch_select_queue(a->dispatch, p, half, a->pipe->worker_q[0], a->pipe->worker_q[1], &q);
+            }
 
-            if (queue_push_pulse(q, job) != 0) 
-            {
-                fprintf(stderr, "[Loader ERROR] 큐 Push 실패: pulse_idx=%d\n", p);
+            if (queue_push_pulse(q, job) != 0) {
+                fprintf(stderr, "[Loader] push 실패: pulse=%d\n", p);
                 atomic_store(&a->pipe->error, 1);
                 push_err = 1;
-                break;
             }
         }
 
         if (push_err) break;
 
-        /* 배치 완료 후 한 번만 WAKE (futex만 실제 동작, 나머지는 NULL이라 스킵) */
         queue_flush_pulse(a->pipe->worker_q[0]);
-        queue_flush_pulse(a->pipe->worker_q[1]);
+        if (a->num_workers == 2)
+            queue_flush_pulse(a->pipe->worker_q[1]);
 
         frame_idx++;
         double t1 = now_ms();
@@ -273,7 +278,8 @@ void *loader_thread_main(void *arg)
     }
 
     queue_close_pulse(a->pipe->worker_q[0]);
-    queue_close_pulse(a->pipe->worker_q[1]);
+    if (a->num_workers == 2)
+        queue_close_pulse(a->pipe->worker_q[1]);
 
     return NULL;
 }

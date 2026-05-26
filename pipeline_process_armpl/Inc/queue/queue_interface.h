@@ -52,16 +52,19 @@ void        pulse_queue_destroy (PulseQueue *q);
 void        post_queue_destroy  (PostQueue  *q);
 QueueType   queue_type_from_str (const char *s);
 
-/* 매크로 */
-#define queue_push_pulse(q, job)  (q)->ops->push ((q)->impl,  (job))
-#define queue_pop_pulse(q, job)   (q)->ops->pop  ((q)->impl,  (job))
-#define queue_push_post(q, job)   (q)->ops->push ((q)->impl,  (job))
-#define queue_pop_post(q, job)    (q)->ops->pop  ((q)->impl,  (job))
-#define queue_close_pulse(q)      (q)->ops->close((q)->impl)
-#define queue_close_post(q)       (q)->ops->close((q)->impl)
-#define queue_open_pulse(q)       (q)->ops->open ((q)->impl)
-#define queue_open_post(q)        (q)->ops->open ((q)->impl)
-#define queue_flush_pulse(q) do { \
-    if ((q)->ops->flush) (q)->ops->flush((q)->impl); \
-} while(0)
+/* 매크로 제거하고 함수 선언으로 교체 */
+
+/* pulse queue */
+int  queue_push_pulse (PulseQueue *q, PulseJob job);
+int  queue_pop_pulse  (PulseQueue *q, PulseJob *job);
+void queue_close_pulse(PulseQueue *q);
+void queue_open_pulse (PulseQueue *q);
+void queue_flush_pulse(PulseQueue *q);
+
+/* post queue */
+int  queue_push_post  (PostQueue *q, PostJob job);
+int  queue_pop_post   (PostQueue *q, PostJob *job);
+void queue_close_post (PostQueue *q);
+void queue_open_post  (PostQueue *q);
+
 #endif

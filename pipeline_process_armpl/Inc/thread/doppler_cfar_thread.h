@@ -7,6 +7,7 @@
 #include "cfar.h"
 #include "cluster.h"
 #include "transpose_interface.h"
+#include "layout_interface.h"
 #include "common.h"
 
 typedef struct {
@@ -22,14 +23,19 @@ typedef struct {
     ClusterWorkspace *cluster_ws;   // 추가
     ClusterParams    *cluster_params; // 추가
     ClusterList      *clusters;     // 추가
-    
+    ClusterList *cluster_history;  // 추가
+
     Transpose *transpose;
 
     int cpu_id;
     int status;   
     
-    Accumulator      *total_acc;   // 추가
-    int              *valid_files; // 추가
+    Accumulator *total_acc;
+    DetectionList    *history;     // 추가
+    int *valid_files;
+
+    LayoutType layout_type;
+
 } PostArgs;
 
 void *post_thread_main(void *arg);

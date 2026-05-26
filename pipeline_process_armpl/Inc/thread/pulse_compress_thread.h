@@ -1,21 +1,24 @@
 #ifndef __PULSE_COMPRESS_THREAD_H__
 #define __PULSE_COMPRESS_THREAD_H__
 
-// pulse_compress_thread.h
 #include "pipeline_set.h"
 #include "types.h"
 #include "pulse.h"
 #include "common.h"
-// ← queue_*.h 제거, common.h는 types.h로 대체
+#include "layout_interface.h"
+
 
 typedef struct {
     const RadarMeta *meta;
     Pipeline *pipe;
     PulseCompressCtx ctx;
     PulseQueue* q;
+    Layout *layout;
 
     int cpu_id;
     int tid;
+    float complex *tmp_buf;   /* legacy용 임시 버퍼 */
+
 } WorkerArgs;
 
 void *worker_thread_main(void *arg);

@@ -27,6 +27,7 @@ void *post_thread_main(void *arg)
         
         a->timing->compress_core1_ms = a->pipe->compress_times[idx][0];
         a->timing->compress_core2_ms = a->pipe->compress_times[idx][1];
+        //printf(" a->pipe->compress_times[idx][0] :%f,  a->pipe->compress_times[idx][1]: %f\n",  a->pipe->compress_times[idx][0],  a->pipe->compress_times[idx][1]);
         a->pipe->compress_times[idx][0] = 0.0;
         a->pipe->compress_times[idx][1] = 0.0;
 
@@ -41,20 +42,28 @@ void *post_thread_main(void *arg)
 
         atomic_store_explicit(&a->pipe->pulse_compress_map[idx].state, BUF_PROCESSING, memory_order_release);
         double execute_time = 0.0;
-        int transpose_ret = transpose_exec(a->transpose,
-                                &a->pipe->pulse_compress_map[idx].data,
-                                &a->pipe->doppler_map[idx].data,
-                                a->meta, &execute_time);
-        if (transpose_ret != 0) 
-        {
-            fprintf(stderr, "post: transpose failed: ret=%d buffer_idx=%d\n", transpose_ret, idx);
-            a->status = -1;
-            atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
-            break;
-        }                     
-        a->timing->transpose_ms = execute_time;
+        ComplexMatrix *fft_input;
 
-        int doppler_ret = doppler_fft_processing(&a->pipe->doppler_map[idx].data, a->meta->num_pulses, a->timing, a->doppler_ws);
+        if (a->layout_type == LAYOUT_DEFAULT) {
+            if (transpose_exec(a->transpose,
+                               &a->pipe->pulse_compress_map[idx].data,
+                               &a->pipe->doppler_map[idx].data,
+                               a->meta, &execute_time) != 0) {
+                fprintf(stderr, "[Post] transpose 실패: idx=%d\n", idx);
+                a->status = -1;
+                atomic_store_explicit(&a->pipe->error, 1, memory_order_relaxed);
+                break;
+            }
+            a->timing->transpose_ms = execute_time;
+            fft_input = &a->pipe->doppler_map[idx].data;
+        } 
+        else {
+            /* legacy: transpose 없이 pulse_compress_map 바로 사용 */
+            a->timing->transpose_ms = 0.0;
+            fft_input = &a->pipe->pulse_compress_map[idx].data;
+        }
+
+        int doppler_ret = doppler_fft_processing(fft_input, a->meta->num_pulses, a->timing, a->doppler_ws);
         if (doppler_ret != 0) 
         {
             fprintf(stderr, "post: doppler_fft_processing failed: ret=%d buffer_idx=%d\n", doppler_ret, idx);
@@ -64,7 +73,7 @@ void *post_thread_main(void *arg)
         }
 
         execute_time = 0.0;
-        int cfar_ret = cfar_detect(&a->pipe->doppler_map[idx].data, a->meta, a->cfar_ws, a->det, &execute_time);
+        int cfar_ret = cfar_detect(fft_input, a->meta, a->cfar_ws, a->det, &execute_time);
         if (cfar_ret != 0) 
         {
             fprintf(stderr, "post: cfar_detect failed: ret=%d buffer_idx=%d\n", cfar_ret, idx);
@@ -89,7 +98,31 @@ void *post_thread_main(void *arg)
         atomic_store_explicit(&a->pipe->pulse_compress_map[idx].done_count, 0, memory_order_release);
         atomic_store_explicit(&a->pipe->pulse_compress_map[idx].state, BUF_FREE, memory_order_release);
          
-        accumulate_result(a->total_acc, a->timing, a->det);   
+      // cluster history 저장
+        int fi = *a->valid_files;
+                
+        // if (a->cluster_history && a->clusters->count > 0) {
+        //     printf("a->clusters->count: %d\n", a->clusters->count);
+        //     a->cluster_history[fi].count = a->clusters->count;
+        //     a->cluster_history[fi].items = malloc(a->clusters->count * sizeof(ClusterResult));
+        //     if (a->cluster_history[fi].items) {
+        //         memcpy(a->cluster_history[fi].items, a->clusters->items,
+        //             a->clusters->count * sizeof(ClusterResult));
+        //     }
+        // }
+        Detection best = {0};
+        best.range_bin = -1;
+        accumulate_result(a->total_acc, a->timing, a->det, &best);
+
+        // if (a->history && fi >= 0) {
+        //     a->history[fi].count = (best.range_bin != -1) ? 1 : 0;
+        //     if (a->history[fi].count > 0) {
+        //         a->history[fi].items = malloc(sizeof(Detection));
+        //         if (a->history[fi].items)
+        //             a->history[fi].items[0] = best;
+        //     }
+        // }
+
         (*a->valid_files)++;
         memset(a->timing, 0, sizeof(*a->timing));
 
