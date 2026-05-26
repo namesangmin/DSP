@@ -152,7 +152,7 @@ done
 │   ├── settings/                   # pipeline_set.c, core_set.c
 │   ├── thread/                     # loader/worker/post 스레드
 │   ├── pulse.c                     # Pulse Compress (FFTW3 기반)
-│   ├── doppler_fft.c               # Doppler FFT, MTI, MTD
+│   ├── doppler.c               # Doppler FFT, MTI, MTD
 │   ├── cfar.c                      # CFAR 탐지
 │   └── cluster.c                   # 클러스터링
 │
